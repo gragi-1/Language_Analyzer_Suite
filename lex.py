@@ -114,9 +114,9 @@ def main():
 	with open('output.txt', 'w', encoding="utf-8") as f:
 		for tok in lexer:
 			if tok.type in noattr:
-				f.write(f'<{tok.type},[]>\n')
+				f.write(f'<{tok.type},>\n')
 			else:
-				f.write(f'<{tok.type},[{tok.value}]>\n')
+				f.write(f'<{tok.type},{tok.value}>\n')
 
 if __name__ == "__main__":
 	main()
