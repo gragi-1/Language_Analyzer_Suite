@@ -1,6 +1,7 @@
 import ply.lex as lex
 import argparse
 
+######    SECCIÓN DE ANALIZADOR LÉXICO    ######
 noattr = [
         "PLUSEQ",
         "EQ",
@@ -83,6 +84,10 @@ def t_ID(t):
         t.value = ''
     else:
         t.type = "ID"
+        name = t.value
+        t.value = tok_gcounter
+
+        add_symbol(name, t.type, t.value)
     return t
 
 def t_COMMENT(t):
@@ -102,6 +107,39 @@ def t_eof(t):
 
 lexer = lex.lex()
 
+######    FIN SECCIÓN DE ANALIZADOR LÉXICO    ######
+
+
+######    SECCIÓN DE TABLA DE SÍMBOLOS    ######
+tok_gcounter = 0
+
+symbol_table = {}
+symbol_table_stack = [{}]
+
+def add_symbol(name, type=None, value=None):
+    global tok_gcounter
+    if name not in symbol_table_stack:
+        symbol_table_stack[-1][name] = {
+            'type': type,
+            'value': value,
+        }
+        tok_gcounter += 1
+
+def get_symbol(name):
+    for scope in reversed(symbol_table_stack):
+        if name in scope:
+            return scope[name]
+    return None
+
+def enter_scope():
+    symbol_table_stack.append({})
+
+def exit_scope():
+    symbol_table_stack.pop()
+
+######    FIN SECCIÓN DE TABLA DE SÍMBOLOS    ######
+
+
 def main():
     tok_counter = 0
 
@@ -114,16 +152,22 @@ def main():
 
     lexer.input(content)
 
-    with open('output.txt', 'w', encoding="utf-8") as f:
+    with open('lexed.txt', 'w', encoding="utf-8") as f:
         for tok in lexer:
             if tok.type in noattr:
                 f.write(f'<{tok.type},>\n')
-            elif tok.type == "ID":
-                f.write(f'<{tok.type},{tok_counter}>\n')
-                tok_counter += 1
             else:
                 f.write(f'<{tok.type},{tok.value}>\n')
         f.write(f'<EOF,>')
+
+    with open('symbols.txt', 'w', encoding='utf-8') as f_sym:
+        for i, scope in enumerate(symbol_table_stack):
+            f_sym.write(f"CONTENIDOS DE LA TABLA # {i+1}:\n")  # sumamos 1 aquí
+            for j, (name, info) in enumerate(scope.items()):
+                f_sym.write(f"* LEXEMA : '{name}'\n")
+                f_sym.write("  Atributos:\n")
+                f_sym.write("--------- ---------\n") # Además, hay que escribir cosas distintas si es variable o función
+            f_sym.write("\n")
 
 if __name__ == "__main__":
     main()
