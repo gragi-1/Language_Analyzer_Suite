@@ -1,0 +1,11 @@
+*.aux
+*.log
+*.out
+*.fdb_latexmk
+*.fls
+*.blg
+*.bbl
+*.thm
+*.brf
+missfont.log
+includes.log
