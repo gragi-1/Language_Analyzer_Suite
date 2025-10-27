@@ -52,6 +52,8 @@ t_MINORTHAN  = r'<'
 
 t_ignore = ' \t'
 
+#TODO: ES NECESARIO UN CONTROL DE ERRORS DESCRIPTIVO PARA TODOS LOS POSIBLES ERRORES
+
 #TODO: implementar límite 117549436.0
 def t_REALCONST(t):
     r'-?\d+\.\d+'
