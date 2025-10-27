@@ -10,7 +10,6 @@
 \newcommand{\reportauthorThree}{Antonio Bielza Díez }
 \newcommand{\cidThree}{22M049}
 \newcommand{\reporttype}{Coursework}
-\bibliographystyle{plain}
 
 % include files that load packages and define macros
 \input{includes} % various packages needed for maths etc.
@@ -19,6 +18,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\raggedbottom
 \begin{document}
 % front page
 \input{titlepage}
@@ -110,7 +110,7 @@ Los conjuntos definidos para el desarrollo de la gramática y del resto de la pr
 
 \subsection{Autómata}
 
-Un autómata es otro tipo de estructura matemática capaz de, al contrario que una gramática que se centra en generar un lenguaje, un autómata se encarga de comprenderlo.
+Un autómata es otro tipo de estructura matemática capaz de, al contrario que una gramática que se centra en generar un lenguaje, este se encarga de comprenderlo.
 \\
 \\
 El autómata que hemos planteado capaz de entender todas las palabras válidas de nuestro lenguaje es el siguiente:
@@ -359,7 +359,7 @@ En nuestro caso se asigna la posición dentro de la tabla de forma lineal, el pr
 \subsection{Casos Correctos}
 
 \subsubsection{Caso Correcto}
-\begin{itemize}[label={-}, itemsep=-1em, topsep=0.2em, parsep=-0.2em]
+\begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
     \item \textbf{Código:}
     \begin{verbatim} 
 let int a_53f = 3;
@@ -371,8 +371,7 @@ c = a_53f + 9;
 fl2 = fl + 3.0;
 let string str = 'Supercalifragilisticoespialidoso';
     \end{verbatim}
-    \item \textbf{Archivo de Tokens:}
-    \begin{verbatim}
+    \item \textbf{Archivo de Tokens:}\begin{verbatim}
 <LET,>
 <INT,>
 <ID,0>
@@ -417,8 +416,7 @@ let string str = 'Supercalifragilisticoespialidoso';
 <SEMICOLON,>
 <EOF,>
     \end{verbatim}
-    \item \textbf{Archivo de Tabla de Símbolos:}
-    \begin{verbatim}
+    \item \textbf{Archivo de Tabla de Símbolos:}\begin{verbatim}
 CONTENIDOS DE LA TABLA # 1:
 * LEXEMA : 'a_53f'
   Atributos:
@@ -617,7 +615,7 @@ Carácter ilegal '&' en línea 4
 \begin{figure}[h!]
 \centering
 \includegraphics[width=0.45\textwidth]{figures/goose.png} 
-\caption{A goose.}
+\caption{Ganso insencional.}
 \end{figure}
 
 \end{document}
