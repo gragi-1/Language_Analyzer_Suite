@@ -1,0 +1,14 @@
+CONTENIDOS DE LA TABLA # 1:
+* LEXEMA : 'sql'
+  Atributos:
+--------- ---------
+* LEXEMA : 'lt'
+  Atributos:
+--------- ---------
+* LEXEMA : 'b'
+  Atributos:
+--------- ---------
+* LEXEMA : 'dl'
+  Atributos:
+--------- ---------
+
