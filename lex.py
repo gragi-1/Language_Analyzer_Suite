@@ -52,6 +52,7 @@ t_MINORTHAN  = r'<'
 
 t_ignore = ' \t'
 
+#TODO: implementar límite 117549436.0
 def t_REALCONST(t):
     r'-?\d+\.\d+'
     try:
@@ -60,6 +61,7 @@ def t_REALCONST(t):
         print("Real number value error: ", t.value)
     return t
 
+#TODO: implementar límite 32767
 def t_INTCONST(t):
     r'\d+'
     try:
@@ -68,6 +70,7 @@ def t_INTCONST(t):
         print("Integer number value error:", t.value)
     return t
 
+#TODO: implementar límite 64 caracteres
 def t_STR(t):
     r'\'([^\\\n]|(\\.))*?\''
     try:
@@ -156,6 +159,8 @@ def main():
         for tok in lexer:
             if tok.type in noattr:
                 f.write(f'<{tok.type},>\n')
+            elif tok.type == 'STR':
+                f.write(f'<{tok.type},\"{tok.value}\">\n')
             else:
                 f.write(f'<{tok.type},{tok.value}>\n')
         f.write(f'<EOF,>')
