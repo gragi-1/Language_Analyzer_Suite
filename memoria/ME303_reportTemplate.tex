@@ -80,8 +80,40 @@ Hemos definido los siguientes tokens en funcion de las necesidades de nuestra pr
     \item EOF: $<$EOF, $>$
 \end{itemize}
 
-Todos los tokens definidos conforman la parte común, específica y opcional de los requeridos.
+Todos los tokens anteriores conforman todos los obligatorios, los específicos y los opcionales de la práctica.
 
+\subsection{Gramática}
+
+La gramática es la estructura matemática que define el lenguaje a generar, en nuestros caso es para una versión reducida de JS. Definir la gramática es una forma de estructurar por tanto el lenguaje y asegurarnos de que vamos a generar solo lo que queremos.
+\\
+\\
+Hemos definido las siguientes reglas:
+\begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
+    \item $S \to ~delS~|~+A~|~\&B~|~`C~|~dD~|~lF~|~\_F~|~/G~|~=~|~,~|~;~|~<~|~(~|~)~|~\{~|~\}$
+    \item $A \to ~=~|~\lambda$
+    \item $B \to ~\&$
+    \item $C \to ~cC~|~`$
+    \item $D \to ~dD~|~.E~|~\lambda$
+    \item $E \to ~dE~|~d$
+    \item $F \to ~lF~|~dF~|~\_F~|~\lambda$
+    \item $G \to ~/H$
+    \item $H \to ~c_2H~|~\text{\textbackslash n}S$
+\end{itemize}
+\vspace{1em}
+Los conjuntos definidos para el desarrollo de la gramática y del resto de la práctica son: 
+\begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
+    \item Conjunto l: representa cualquier letra.
+    \item Conjunto d: representa cualquier dígito.
+    \item Conjunto c: representa cualquier caracter.
+    \item Conjunto c$_2$: representa cualquier caracter sin \textbackslash n.
+\end{itemize}
+
+\subsection{Autómata}
+
+Un autómata es otro tipo de estructura matemática capaz de, al contrario que una gramática que se centra en generar un lenguaje, un autómata se encarga de comprenderlo.
+\\
+\\
+El autómata que hemos planteado capaz de entender todas las palabras válidas de nuestro lenguaje es el siguiente:
 
 \begin{center}
 \begin{tikzpicture}[scale=0.2]
@@ -167,7 +199,7 @@ Todos los tokens definidos conforman la parte común, específica y opcional de 
 \fill [black] (40.96,-41.91) -- (41.39,-41.07) -- (40.39,-41.15);
 \draw (39.88,-36.36) node [left] {$'$};
 \draw [black] (41.184,-47.888) arc (27.43495:-260.56505:2.25);
-\draw (35.36,-51.45) node [below] {$o.c\mbox{ }-\mbox{ }'$};
+\draw (35.36,-51.45) node [below] {$o.c$};
 \fill [black] (38.82,-46.71) -- (37.88,-46.63) -- (38.34,-47.52);
 \draw [black] (43.44,-46.89) -- (49.86,-52.61);
 \fill [black] (49.86,-52.61) -- (49.59,-51.7) -- (48.93,-52.45);
@@ -200,13 +232,13 @@ Todos los tokens definidos conforman la parte común, específica y opcional de 
 \fill [black] (12.79,-11.99) -- (13.56,-12.54) -- (13.62,-11.54);
 \draw (19.26,-11.85) node [above] {$/$};
 \draw [black] (8.806,-8.982) arc (227.15994:-60.84006:2.25);
-\draw (11.08,-4.44) node [above] {$o.c$};
+\draw (11.08,-4.44) node [above] {$c_2$};
 \fill [black] (11.43,-9.3) -- (12.34,-9.05) -- (11.61,-8.37);
 \draw [black] (39.36,-24.73) -- (37.74,-13.67);
 \fill [black] (37.74,-13.67) -- (37.36,-14.53) -- (38.35,-14.39);
-\draw (39.24,-19.02) node [right] {$l$};
+\draw (39.24,-19.02) node [right] {$l,\_$};
 \draw [black] (35.977,-8.02) arc (234:-54:2.25);
-\draw (37.3,-3.45) node [above] {$l,d,-$};
+\draw (37.3,-3.45) node [above] {$l,d,\_$};
 \fill [black] (38.62,-8.02) -- (39.5,-7.67) -- (38.69,-7.08);
 \draw [black] (34.49,-9.65) -- (25.41,-6.25);
 \fill [black] (25.41,-6.25) -- (25.98,-7) -- (26.33,-6.06);
@@ -219,7 +251,7 @@ Todos los tokens definidos conforman la parte común, específica y opcional de 
 \draw (48.07,-17.22) node [right] {$;$};
 \draw [black] (42.07,-25.73) -- (61.73,-8.67);
 \fill [black] (61.73,-8.67) -- (60.8,-8.81) -- (61.46,-9.57);
-\draw (52.76,-17.69) node [below] {$($};
+%TODO: descomentar esta linea \draw (52.76,-17.69) node [below] {$($};
 \draw [black] (42.49,-26.37) -- (67.91,-13.73);
 \fill [black] (67.91,-13.73) -- (66.97,-13.64) -- (67.42,-14.54);
 \draw (56.04,-20.55) node [below] {$)$};
@@ -237,9 +269,64 @@ Todos los tokens definidos conforman la parte común, específica y opcional de 
 \end{tikzpicture}
 \end{center}
 
-To tie-in the concepts seen in ME303, we will turn our attention to the fascinating physical phenomenon of sonoluminescence. This occurs when a single bubble, usually of micrometer in size, within a liquid emits a short burst of light when imploding under an externally excited acoustic source. As the energy is concentrated into a point source, local temperatures in the collapsing bubble can reach up to 10,000 K for up to 50 pico seconds and visible light is emitted.
+El autómata tiene que ir acompañado de una serie de acciones que realizar mientras se recorre para poder generar los tokens mientras vamos leyendo el archivo, que vamos a plantear en el siguiente punto.
 
-The origin of the light emission is an unsolved physical problem and obviously outside the scope of ME303. For project 1, we will be studying the governing equations behind the bubble oscillation leading up to a the light burst.
+\subsection{Acciones Semánticas}
+
+Las acciones semánticas son una serie de acciones que se realizan entre las transiciones del autómata que permiten realizar diferentes funciones como por ejemplo ir generando un string para cuando detectamos una cadena.
+\\
+\\
+Las acciones semánticas que hemos definido para nuestro proyecto son:
+\begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
+    \item 0:0 Leer
+    \item 0:18 Leer, gentoken(<COMMA, >)
+    \item 0:19 Leer, gentoken(<SEMICOLON, >)
+    \item 0:20 Leer, gentoken(<OPPAR, >)
+    \item 0:21 Leer, gentoken(<CLPAR, >)
+    \item 0:22 Leer, gentoken(<OPBRA, >)
+    \item 0:23 Leer, gentoken(<CLBRA, >)
+    \item 0:1 Leer
+    \item 1:6 gentoken(<SUM, >)
+    \item 1:24 Leer, gentoken(<EQ, >)
+    \item 0:2 Leer
+    \item 2:7 Leer, gentoken(<AND, >)
+    \item 0:3 Leer, $str=''$
+    \item 3:3 Leer, $str=str + c$
+    \item 3:8 Leer, gentoken(<STRING, str>)
+    \item 0:4 Leer, $num=d$
+    \item 4:4 Leer, $num = num*10 + d$
+    \item 4:10 gentoken(<INTCONST, num>) 
+    \item 4:9 Leer, $cont=1$
+    \item 9:11 Leer, $num = num*10 + d$, cont++
+    \item 11:11 Leer, $num = num*10 + d$, cont++
+    \item 11:12 $num = num*10^{-cont}$, gentoken(<REALCONST, num>)
+    \item 0:14 Leer
+    \item 0:15 Leer
+    \item 15:15 Leer
+    \item 15:0 Leer
+    \item 0:5 Leer, $id=c$
+    \item 5:5 Leer, $id=id + c$
+    \\
+    \\
+    \item 5:13
+    \begin{verbatim} 
+    if(id in palabrasReservadas)
+        posTS = insertTS(id)
+        gentoken(<toUpper(id), posTS>)
+    else
+        posTS = insertTS(id)
+        gentoken(<ID, posTS>)
+    \end{verbatim}
+\end{itemize}
+
+
+\subsection{Errores}
+
+Todo buen procesador de lenguajes debe de avisar al usuario de si existe algún error y además se capaz de tratar todos los posibles errores para una ejecución robusta y comprensible.
+
+Hemos detectado los siguientes casos capaces de generar algún error y que por tanto tratamos en nuestro código:
+
+
 \begin{figure}[h!]
 \centering
 \includegraphics[width=0.45\textwidth]{figures/goose.png} 
@@ -277,8 +364,6 @@ For more contextual information on the bubble dynamic phenomena, please see the 
 \section*{Students' contributions}
 Mr. Goose and Mrs. Goose worked together to understand the problem and write the numerical codes. The summary of the problem and Q2 were written up by Mr. Goose, Q1 and Q3 were completed by Mrs. Goose. Both students corrected the final report.
 
-\newpage
-%\bibliography{mybib}
 
 \end{document}
 %%% Local Variables: 
