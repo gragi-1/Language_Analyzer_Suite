@@ -7,5 +7,7 @@
 *.bbl
 *.thm
 *.brf
+*.pdf
+*.txt
 missfont.log
 includes.log
