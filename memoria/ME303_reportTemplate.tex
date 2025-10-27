@@ -3,11 +3,11 @@
 \setlength{\footskip}{1.5cm}
 
 \newcommand{\reporttitle}{Procesadores de Lenguajes: Memoria del Proyecto}
-\newcommand{\reportauthorOne}{Jose Luis Prado Sierra}
+\newcommand{\reportauthorOne}{Jose Luis Prado Sierra }
 \newcommand{\cidOne}{220070}
-\newcommand{\reportauthorTwo}{Alejandro Gragera Serradilla}
+\newcommand{\reportauthorTwo}{Alejandro Gragera Serradilla }
 \newcommand{\cidTwo}{22M043}
-\newcommand{\reportauthorThree}{Antonio Bielza Díez}
+\newcommand{\reportauthorThree}{Antonio Bielza Díez }
 \newcommand{\cidThree}{22M049}
 \newcommand{\reporttype}{Coursework}
 \bibliographystyle{plain}
@@ -270,7 +270,11 @@ El autómata que hemos planteado capaz de entender todas las palabras válidas d
 \end{center}
 
 El autómata tiene que ir acompañado de una serie de acciones que realizar mientras se recorre para poder generar los tokens mientras vamos leyendo el archivo, que vamos a plantear en el siguiente punto.
+\\
+\\
+Cuando aparece una transición o.c significa que es cualquier otro caracter distinto a las demás transiciones salientes del vértice.
 
+\newpage
 \subsection{Acciones Semánticas}
 
 Las acciones semánticas son una serie de acciones que se realizan entre las transiciones del autómata que permiten realizar diferentes funciones como por ejemplo ir generando un string para cuando detectamos una cadena.
@@ -279,36 +283,35 @@ Las acciones semánticas son una serie de acciones que se realizan entre las tra
 Las acciones semánticas que hemos definido para nuestro proyecto son:
 \begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
     \item 0:0 Leer
-    \item 0:18 Leer, gentoken(<COMMA, >)
-    \item 0:19 Leer, gentoken(<SEMICOLON, >)
-    \item 0:20 Leer, gentoken(<OPPAR, >)
-    \item 0:21 Leer, gentoken(<CLPAR, >)
-    \item 0:22 Leer, gentoken(<OPBRA, >)
-    \item 0:23 Leer, gentoken(<CLBRA, >)
+    \item 0:18 Leer, gentoken($<$COMMA, $>$)
+    \item 0:19 Leer, gentoken($<$SEMICOLON, $>$)
+    \item 0:20 Leer, gentoken($<$OPPAR, $>$)
+    \item 0:21 Leer, gentoken($<$CLPAR, $>$)
+    \item 0:22 Leer, gentoken($<$OPBRA, $>$)
+    \item 0:23 Leer, gentoken($<$CLBRA, $>$)
     \item 0:1 Leer
-    \item 1:6 gentoken(<SUM, >)
-    \item 1:24 Leer, gentoken(<EQ, >)
+    \item 1:6 gentoken($<$SUM, $>$)
+    \item 1:24 Leer, gentoken($<$EQ, $>$)
     \item 0:2 Leer
-    \item 2:7 Leer, gentoken(<AND, >)
+    \item 2:7 Leer, gentoken($<$AND, $>$)
     \item 0:3 Leer, $str=''$
     \item 3:3 Leer, $str=str + c$
-    \item 3:8 Leer, gentoken(<STRING, str>)
+    \item 3:8 Leer, gentoken($<$STRING, str$>$)
     \item 0:4 Leer, $num=d$
     \item 4:4 Leer, $num = num*10 + d$
-    \item 4:10 gentoken(<INTCONST, num>) 
+    \item 4:10 gentoken($<$INTCONST, num$>$) 
     \item 4:9 Leer, $cont=1$
-    \item 9:11 Leer, $num = num*10 + d$, cont++
-    \item 11:11 Leer, $num = num*10 + d$, cont++
-    \item 11:12 $num = num*10^{-cont}$, gentoken(<REALCONST, num>)
+    \item 9:11 Leer, $num = num*10 + d$, $cont++$
+    \item 11:11 Leer, $num = num*10 + d$, $cont++$
+    \item 11:12 $num = num*10^{-cont}$, gentoken($<$REALCONST, num$>$)
     \item 0:14 Leer
     \item 0:15 Leer
     \item 15:15 Leer
     \item 15:0 Leer
     \item 0:5 Leer, $id=c$
     \item 5:5 Leer, $id=id + c$
-    \\
-    \\
     \item 5:13
+    \vspace{-0.2cm}
     \begin{verbatim} 
     if(id in palabrasReservadas)
         posTS = insertTS(id)
@@ -325,8 +328,6 @@ Las acciones semánticas que hemos definido para nuestro proyecto son:
 Todo buen procesador de lenguajes debe de avisar al usuario de si existe algún error y además se capaz de tratar todos los posibles errores para una ejecución robusta y comprensible.
 
 Hemos detectado los siguientes casos capaces de generar algún error y que por tanto tratamos en nuestro código:
-
-
 \begin{figure}[h!]
 \centering
 \includegraphics[width=0.45\textwidth]{figures/goose.png} 
@@ -334,36 +335,11 @@ Hemos detectado los siguientes casos capaces de generar algún error y que por t
 \label{goose}
 \end{figure}
 
-The radius of a bubble under a varying pressure field is defined by the Rayleigh-Plesset equation. This equation is derived using standard conservation law under a number of simplifying assumptions:
-\begin{equation}
-\rho_l \left(R\ddot{R} + \frac{3}{2}\dot{R}^2\right) = p_{gas} -P(t) -P_0 +\frac{R}{c}\frac{d p_{gas}}{dt} - 4\mu \frac{\dot{R}}{R}-\frac{2\sigma}{R}
-\label{RP}
-\end{equation}
-In the above equation $R(t)$ [m] represents the bubble radius. The other terms are: $\rho_l$ [$kg\cdot m^3$]  the density of the liquid, $p_{gas}$ [Pa] the pressure of the gas inside the bubble, $P(t)$ [Pa] the imposed oscillatory pressure field, $P_0$ [Pa] the baseline pressure, $c$ [$m/s$] speed of sound in the liquid, $\mu$ [$Pa\cdot s$] molecular viscosity of the liquid and $\sigma$ [$kg\cdot s^{-2}$] the surface tension at the bubble-water interface.
-
-For more contextual information on the bubble dynamic phenomena, please see the following sources: \cite{Hilgenfeldt1998}, \cite{Kreider2011}, and \cite{Lohse2003}.
-
-
-
-\section{Tabla de Símbolos}
-\emph{This section answers the individual questions of the project description.  For each question, provide an answer and short analysis.}
-\subsection*{Question 1: Forced bubble oscillation}
-\subsubsection*{(a)} \emph{References to equations can be written out in latex \eqref{RP}. Similarly, figures  \ref{goose} and sections \ref{Q2} may also be referenced.}
-\subsubsection*{(b)} \emph{Citations require the mybib.tex file to be extended with the desired references. Students can use JabRef (\url{http://www.jabref.org}) to construct the mybib.bib file. Students are invited to link their Mendelay, CiteULike and Zotero account directly to Overleaf. }
-
-\subsection{Question 2: Bubble evolution \label{Q2}}
-
-\vfill
 \newpage
-
 \section{Analizador Sintáctico}
 
 \newpage
 \section{Analizador Semántico}
-
-\section*{Students' contributions}
-Mr. Goose and Mrs. Goose worked together to understand the problem and write the numerical codes. The summary of the problem and Q2 were written up by Mr. Goose, Q1 and Q3 were completed by Mrs. Goose. Both students corrected the final report.
-
 
 \end{document}
 %%% Local Variables: 
