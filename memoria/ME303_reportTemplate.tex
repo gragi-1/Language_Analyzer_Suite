@@ -281,7 +281,7 @@ Las acciones semánticas son una serie de acciones que se realizan entre las tra
 \\
 \\
 Las acciones semánticas que hemos definido para nuestro proyecto son:
-\begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
+\begin{itemize}[label={-}, itemsep=0.0em, topsep=0.5em]
     \item 0:0 Leer
     \item 0:18 Leer, gentoken($<$COMMA, $>$)
     \item 0:19 Leer, gentoken($<$SEMICOLON, $>$)
@@ -325,21 +325,53 @@ Las acciones semánticas que hemos definido para nuestro proyecto son:
 
 \subsection{Errores}
 
-Todo buen procesador de lenguajes debe de avisar al usuario de si existe algún error y además se capaz de tratar todos los posibles errores para una ejecución robusta y comprensible.
+Todo buen procesador de lenguajes debe de avisar al usuario de si existe algún error y además es capaz de tratar todos los posibles errores para una ejecución robusta y comprensible. 
+\\
+Sin embargo para esta entrega no es necesario que sean descriptivos pero si han de ser reconocidos y clasificados.
+\\
+\\
+Hemos detectado los siguientes casos capaces de generar errores:
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item \textbf{Cadena mal cerrada:} Al iniciar una cadena si queda mal cerrada (Ej. 'Hola buenas tardes).
+    \item \textbf{ID incorrecto:} Al generar o utilizar un ID si los caracteres que lo componen no son correctos.
+    \item \textbf{Caracter no reconocido:} Si se recibe un caracter no válido en el estado inicial.
+    \item \textbf{Operador lógico incorrecto:} Si se pone un operador lógico (como || o \&\&) de forma incorrecta (Ej. | o \&).
+    \item \textbf{Comentario de línea mal iniciado:} Al iniciar un comentario de línea incorrectamente (Ej. /Hola buenas tardes).
+    \item \textbf{Entero demasiado grande:} Al declarar un entero mayor que 32767.
+    \item \textbf{Real demasiado grande:} Al declarar un real mayor que 117549436.
+    \item \textbf{Cadena demasiado grande:} Al declarar una cadena de más de 64 caracteres.
+\end{itemize}
 
-Hemos detectado los siguientes casos capaces de generar algún error y que por tanto tratamos en nuestro código:
+\newpage
+\section{Tabla de Símbolos}
+
+La tabla de símbolos es una estructura de datos que contiene información adicional sobre los tokens cuyo atributo es su posición dentro de ella.
+\\
+\\
+El diseño elegido es una pila de diccionarios en la cual cada diccionario contiene la información extra del token (actualmente vacía) y que, al ser insertados, se devuelve la posición que han recibido dentro de ella, para posteriormente generar el token correctamente.
+\\
+\\
+En nuestro caso se asigna la posición dentro de la tabla de forma lineal, el primer elemento recibe la primera posición y la enésima inserción recibe la enésima posición.
+
+\newpage
+\section{Anexo}
+
+\subsection{Casos Correctos}
+\subsubsection{Caso A}
+\subsubsection{Caso B}
+\subsubsection{Caso C}
+
+\subsection{Casos Erróneos}
+\subsubsection{Caso A}
+\subsubsection{Caso B}
+\subsubsection{Caso C}
+
+
 \begin{figure}[h!]
 \centering
 \includegraphics[width=0.45\textwidth]{figures/goose.png} 
 \caption{A goose.}
-\label{goose}
 \end{figure}
-
-\newpage
-\section{Analizador Sintáctico}
-
-\newpage
-\section{Analizador Semántico}
 
 \end{document}
 %%% Local Variables: 
