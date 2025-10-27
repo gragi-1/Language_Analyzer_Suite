@@ -1,5 +1,0 @@
-
-Primera entrega: Analizador Léxico y Tabla de Símbolos. Deberán diseñarse e implementarse estos dos módulos. Se deberá entregar una memoria (extensión máxima de 10 páginas sin contar el anexo) con los siguientes contenidos:
-    - Diseño del Analizador Léxico (tokens, gramática, autómata, acciones semánticas y errores)
-    - Diseño inicial de la Tabla de Símbolos (diseño de su estructura y organización). No se debe describir el formato del fichero de Tabla de Símbolos.
-    - Anexo con 6 casos de prueba para mostrar el funcionamiento del Procesador construido, la mitad correctos y la mitad con errores léxicos. Deberá incluirse el listado del código fuente de cada caso de prueba, el volcado de los ficheros de tokens y el volcado de los ficheros de tablas de símbolos (para los 3 casos de prueba correctos) o el listado de errores detectados (para los 3 casos de prueba incorrectos). Los resultados de los casos de prueba deben ser generados por el procesador implementado, sin ningún tipo de edición manual.
