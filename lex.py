@@ -52,33 +52,43 @@ t_MINORTHAN  = r'<'
 
 t_ignore = ' \t'
 
-#TODO: ES NECESARIO UN CONTROL DE ERRORS DESCRIPTIVO PARA TODOS LOS POSIBLES ERRORES
+#TODO: revisar el comportamiento cuando nos encontramos un token invalido: se genera o no? Se devuelve none o un código?
 
-#TODO: implementar límite 117549436.0
 def t_REALCONST(t):
     r'-?\d+\.\d+'
     try:
         t.value = float(t.value)
     except ValueError:
         print("Real number value error: ", t.value)
+    
+    if t.value > 117549436.0:
+        print(f"Real fuera de rango {t.value!r} en línea {t.lineno}")
+        return None
     return t
 
-#TODO: implementar límite 32767
 def t_INTCONST(t):
     r'\d+'
     try:
         t.value = int(t.value)
     except ValueError:
         print("Integer number value error:", t.value)
+
+    if t.value > 32767:
+        print(f"Entero fuera de rango {t.value!r} en línea {t.lineno}")
+        return None
     return t
 
-#TODO: implementar límite 64 caracteres
 def t_STR(t):
     r'\'([^\\\n]|(\\.))*?\''
     try:
+        #TODO: revisar que realmente queremos que "'hola'" sea "hola"
         t.value = t.value[1:-1]
     except ValueError:
         print("String value error: ", t.value)
+
+    if len(t.value) > 64:
+        print(f"Cadena demasiado larga {t.value!r} en línea {t.lineno}")
+        return None
     return t
 
 def t_ID(t):
