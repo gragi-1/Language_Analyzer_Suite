@@ -11,3 +11,4 @@
 *.txt
 missfont.log
 includes.log
+/__pycache__
