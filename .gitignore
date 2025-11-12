@@ -12,3 +12,5 @@
 missfont.log
 includes.log
 /__pycache__
+/Ejemplos
+*.pdf
