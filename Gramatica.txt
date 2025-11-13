@@ -2,7 +2,7 @@ Terminales = { boolean else float function if int let read return string void wr
 //// Terminales código de los tokens
 
 //// No Terminales para funcionalidad, aparte existe lambda
-NoTerminales = { S AF A Definir Tipo Igualar Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num }
+NoTerminales = { S AF AB A Definir Tipo Igualar Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid }
 
 //// Axioma por defecto
 Axioma = S
@@ -10,16 +10,18 @@ Axioma = S
 Producciones = {
 S -> AF eof
 
-AF -> A AF
+AF -> AB AF
 AF -> DefFuncion AF //// Separado para no poder definir funciones dentro de otras funciones o condicionales
 AF -> lambda
 
-A -> Definir id Igualar semicolon
-A -> id pluseq Num semicolon
-A -> LlamarFuncion semicolon
-A -> read id semicolon
-A -> write WriteAlt semicolon
-A -> if oppar Booleano clpar Cond
+AB -> A semicolon AF
+AB -> if oppar Booleano clpar Cond
+
+A -> Definir id Igualar
+A -> id pluseq Num
+A -> LlamarFuncion
+A -> read id
+A -> write WriteAlt
 
 Definir -> let Tipo //// Definir no se anula solo en el caso de definir una variable
 Definir -> lambda
@@ -90,17 +92,17 @@ ArgRec -> lambda
 WriteAlt -> Descriptor
 WriteAlt -> oppar Descriptor ArgRec clpar
 
-Cond -> A CondEl //// Condicional simple
+Cond -> AB CondEl //// Condicional simple
 Cond -> semicolon CondEl //// Para poder dejarlo vacío
 Cond -> opbra ARec clbra CondEl //// Condicional complejo, se pone una A para asegurar al menos un argumento
 
-ARec -> A ARec
+ARec -> AB ARec
 ARec -> lambda
 
 CondEl -> else ElseAux //// Para poder poner else en los ifs
 CondEl -> lambda
 
-ElseAux -> A //// Else simple
+ElseAux -> AB //// Else simple
 ElseAux -> semicolon //// Para poder dejarlo vacío
 ElseAux -> opbra ARec clbra //// Else complejo
 
@@ -117,10 +119,49 @@ Arg -> lambda
 ArgAux -> comma Tipo id ArgAux //// Se hace un auxiliar exclusivamente por la coma
 ArgAux -> lambda
 
-AFuncion -> A AFuncion 
+AFuncion -> A semicolon AFuncion
+AFuncion -> if oppar Booleano clpar If2
 AFuncion -> return Descriptor semicolon //// No se ha implementado el caso de los return dentro de condicionales
 
 AFuncionVoid -> A AFuncionVoid
+AFuncionVoid -> if oppar Booleano clpar IfVoid
 AFuncionVoid -> return semicolon //// Para poder poner un return vacío
 AFuncionVoid -> lambda
+
+If2 -> AIfPre Else2 //// Condicional simple
+If2 -> opbra AIf clbra Else2 //// Condicional complejo, se pone una A para asegurar al menos un argumento
+
+Else2 -> else ElseAux2 //// Para poder poner else en los ifs
+Else2 -> lambda
+
+AIfPre -> A semicolon AIf
+AIfPre -> If2 AIf
+AIfPre -> semicolon
+
+AIf -> A semicolon AIf
+AIf -> return Descriptor semicolon
+AIf -> If2 AIf
+AIf -> lambda
+
+ElseAux2 -> AIfPre //// Else simple
+ElseAux2 -> opbra AIfPre clbra //// Else complejo
+
+IfVoid -> AIfPreVoid ElseVoid //// Condicional simple
+IfVoid -> opbra AIfVoid clbra ElseVoid //// Condicional complejo, se pone una A para asegurar al menos un argumento
+
+ElseVoid -> else ElseAuxVoid //// Para poder poner else en los ifs
+ElseVoid -> lambda
+
+AIfPreVoid -> A semicolon AIfVoid
+AIfPreVoid -> IfVoid AIfVoid
+AIfPreVoid -> semicolon
+
+AIfVoid -> A semicolon AIfVoid
+AIfVoid -> return semicolon
+AIfVoid -> IfVoid AIfVoid
+AIfVoid -> lambda
+
+ElseAuxVoid -> AIfPreVoid //// Else simple
+ElseAuxVoid -> opbra AIfPreVoid clbra //// Else complejo
+
 }
