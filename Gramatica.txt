@@ -1,0 +1,133 @@
+Terminales = { boolean else float function if int let read return string void write floatconst intconst str id pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
+//// Terminales código de los tokens
+
+//// No Terminales para funcionalidad, aparte existe lambda
+NoTerminales = { S AF A Definir Tipo Igualar Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool TermBool2 Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num }
+
+//// Axioma por defecto
+Axioma = S
+
+Producciones = {
+S -> AF eof
+
+AF -> A AF
+AF -> DefFuncion AF //// Separado para no poder definir funciones dentro de otras funciones o condicionales
+AF -> lambda
+
+A -> Definir id Igualar semicolon
+A -> id pluseq Num semicolon
+A -> LlamarFuncion semicolon
+A -> read id semicolon
+A -> write WriteAlt semicolon
+A -> if oppar Booleano clpar Cond
+
+Definir -> let Tipo //// Definir no se anula solo en el caso de definir una variable
+Definir -> lambda
+
+Num -> Entero
+Num -> Real
+
+Tipo -> int
+Tipo -> float
+Tipo -> string
+Tipo -> boolean
+
+Igualar -> eq Descriptor
+Igualar -> lambda
+
+Descriptor -> Num //// Para no duplicar entre enteros y reales
+Descriptor -> Booleano
+Descriptor -> Cadena
+Descriptor -> LlamarFuncion //// Para que no se repita la construcción al llamar la función entre tipos
+
+Entero -> TermInt IntRecur
+
+IntRecur -> sum TermInt2 IntRecur //// Para poder sumar en la misma línea
+IntRecur -> lambda
+
+TermInt -> id
+TermInt -> intconst
+TermInt -> LlamarFuncion sum TermInt2
+
+TermInt2 -> id
+TermInt2 -> intconst
+TermInt2 -> LlamarFuncion
+
+Real -> TermFl FlRecur //// Igual que para los enteros
+
+FlRecur -> sum TermFl2 FlRecur
+FlRecur -> lambda
+
+TermFl -> id
+TermFl -> floatconst
+TermFl -> LlamarFuncion sum TermFl2
+
+TermFl2 -> id
+TermFl2 -> floatconst
+TermFl2 -> LlamarFuncion
+
+Booleano -> TermBool BoolRecur
+
+BoolRecur -> and TermBool2 BoolRecur
+BoolRecur -> lambda
+
+TermBool -> id
+TermBool -> boolconst
+TermBool -> Entero minorthan Entero //// Para comparar operaciones de enteros y reales
+TermBool -> Real minorthan Real
+TermBool -> LlamarFuncion and TermBool2
+
+TermBool2 -> id
+TermBool2 -> boolconst
+TermBool2 -> Entero minorthan Entero
+TermBool2 -> Real minorthan Real
+TermBool2 -> LlamarFuncion
+
+Cadena -> id
+Cadena -> str
+
+LlamarFuncion -> id oppar ArgPre clpar
+
+ArgPre -> Descriptor ArgRec //// Para asegurarse que solo haya una opción de ningún argumento
+ArgPre -> lambda
+
+ArgRec -> comma Descriptor ArgRec
+ArgRec -> lambda
+
+WriteAlt -> Descriptor
+WriteAlt -> oppar ArgPre clpar
+
+Cond -> A CondEl //// Condicional simple
+Cond -> semicolon CondEl //// Para poder dejarlo vacío
+Cond -> opbra ARec clbra CondEl //// Condicional complejo, se pone una A para asegurar al menos un argumento
+
+ARec -> A ARec
+ARec -> lambda
+
+CondEl -> else ElseAux //// Para poder poner else en los ifs
+CondEl -> lambda
+
+ElseAux -> A //// Else simple
+ElseAux -> semicolon //// Para poder dejarlo vacío
+ElseAux -> opbra ARec clbra //// Else complejo
+
+DefFuncion -> function DefFuncionAux clbra
+
+DefFuncionAux -> Tipo DescripFun AFuncion
+DefFuncionAux -> void DescripFun AFuncionVoid
+
+DescripFun -> id oppar Arg clpar opbra
+
+Arg -> Tipo id ArgAux
+Arg -> lambda
+
+ArgAux -> comma Tipo id ArgAux //// Se hace un auxiliar exclusivamente por la coma
+ArgAux -> lambda
+
+AFuncion -> A AFuncion 
+AFuncion -> return Descriptor semicolon //// No se ha implementado el caso de los return dentro de condicionales
+
+AFuncionVoid -> A AFuncionVoid
+AFuncionVoid -> return semicolon //// Para poder poner un return vacío
+AFuncionVoid -> lambda
+}
