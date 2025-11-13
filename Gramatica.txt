@@ -95,7 +95,7 @@ ArgRec -> comma Descriptor ArgRec
 ArgRec -> lambda
 
 WriteAlt -> Descriptor
-WriteAlt -> oppar ArgPre clpar
+WriteAlt -> oppar Descriptor ArgRec clpar
 
 Cond -> A CondEl //// Condicional simple
 Cond -> semicolon CondEl //// Para poder dejarlo vacío

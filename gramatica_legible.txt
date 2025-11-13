@@ -95,7 +95,7 @@ Producciones = {
     ArgRec -> lambda
 
     WriteAlt -> Descriptor
-    WriteAlt -> ( ArgPre )
+    WriteAlt -> ( Descriptor ArgRec )
 
     Cond -> A CondEl                    				// Condicional simple
     Cond -> ; CondEl                    				// Para poder dejarlo vacío
