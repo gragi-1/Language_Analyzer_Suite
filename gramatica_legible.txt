@@ -2,7 +2,7 @@ Terminales = { boolean else float function if int let read return string void wr
 
 ## No Terminales para funcionalidad, aparte existe lambda ##
 
-NoTerminales = { S AF A Definir Tipo Igualar Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool TermBool2 Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num }
+NoTerminales = { S AF A Definir Tipo Igualar Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num }
 
 
 Axioma = S
@@ -38,7 +38,6 @@ Producciones = {
     Descriptor -> Num                   				// Para no duplicar entre enteros y reales
     Descriptor -> Booleano
     Descriptor -> Cadena
-    Descriptor -> LlamarFuncion         				// Para que no se repita la construcción al llamar la función entre tipos
 
     Entero -> TermInt IntRecur
 
@@ -68,20 +67,14 @@ Producciones = {
 
     Booleano -> TermBool BoolRecur
 
-    BoolRecur -> && TermBool2 BoolRecur
+    BoolRecur -> && TermBool BoolRecur
     BoolRecur -> lambda
 
     TermBool -> id
     TermBool -> boolconst
     TermBool -> Entero < Entero         				// Para comparar operaciones de enteros y reales
     TermBool -> Real < Real
-    TermBool -> LlamarFuncion && TermBool2
-
-    TermBool2 -> id
-    TermBool2 -> boolconst
-    TermBool2 -> Entero < Entero
-    TermBool2 -> Real < Real
-    TermBool2 -> LlamarFuncion
+    TermBool -> LlamarFuncion
 
     Cadena -> id
     Cadena -> str
