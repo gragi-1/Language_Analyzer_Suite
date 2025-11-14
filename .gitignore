@@ -15,3 +15,4 @@ includes.log
 /Ejemplos
 *.pdf
 !GramaticaLL1.txt
+!GramaticaLL1_legible.txt
