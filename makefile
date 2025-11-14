@@ -1,2 +1,2 @@
 clean:
-	rm *.txt parser.out parsetab.py
+	rm lexed.txt symbols.txt
