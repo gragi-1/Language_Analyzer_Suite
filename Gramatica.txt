@@ -1,8 +1,8 @@
-Terminales = { boolean else float function if int let read return string void write floatconst intconst str id pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
+Terminales = { boolean else float function if int let read return string void write floatconst intconst str idint idfl idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 //// Terminales código de los tokens
 
 //// No Terminales para funcionalidad, aparte existe lambda
-NoTerminales = { S AF AB A Definir Tipo Igualar Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid }
 
 //// Axioma por defecto
 Axioma = S
@@ -14,17 +14,14 @@ AF -> AB AF
 AF -> DefFuncion AF //// Separado para no poder definir funciones dentro de otras funciones o condicionales
 AF -> lambda
 
-AB -> A semicolon AF
+AB -> A semicolon
 AB -> if oppar Booleano clpar Cond
 
-A -> Definir id Igualar
-A -> id pluseq Num
-A -> LlamarFuncion
-A -> read id
+A -> let Tipo Id Igualar
+A -> Id IgualarPre
+A -> LlamarFuncion 
+A -> read Id
 A -> write WriteAlt
-
-Definir -> let Tipo //// Definir no se anula solo en el caso de definir una variable
-Definir -> lambda
 
 Num -> Entero
 Num -> Real
@@ -33,6 +30,14 @@ Tipo -> int
 Tipo -> float
 Tipo -> string
 Tipo -> boolean
+
+Id -> idint
+Id -> idfl
+Id -> idbool
+Id -> idstr
+
+IgualarPre -> Igualar
+IgualarPre -> pluseq Num
 
 Igualar -> eq Descriptor
 Igualar -> lambda
@@ -46,11 +51,11 @@ Entero -> TermInt IntRecur
 IntRecur -> sum TermInt2 IntRecur //// Para poder sumar en la misma línea
 IntRecur -> lambda
 
-TermInt -> id
+TermInt -> idint
 TermInt -> intconst
 TermInt -> LlamarFuncion sum TermInt2
 
-TermInt2 -> id
+TermInt2 -> idint
 TermInt2 -> intconst
 TermInt2 -> LlamarFuncion
 
@@ -59,11 +64,11 @@ Real -> TermFl FlRecur //// Igual que para los enteros
 FlRecur -> sum TermFl2 FlRecur
 FlRecur -> lambda
 
-TermFl -> id
+TermFl -> idfl
 TermFl -> floatconst
 TermFl -> LlamarFuncion sum TermFl2
 
-TermFl2 -> id
+TermFl2 -> idfl
 TermFl2 -> floatconst
 TermFl2 -> LlamarFuncion
 
@@ -72,16 +77,16 @@ Booleano -> TermBool BoolRecur
 BoolRecur -> and TermBool BoolRecur
 BoolRecur -> lambda
 
-TermBool -> id
+TermBool -> idbool
 TermBool -> boolconst
 TermBool -> Entero minorthan Entero //// Para comparar operaciones de enteros y reales
 TermBool -> Real minorthan Real
-TermBool -> LlamarFuncion //// Para conseguir
+TermBool -> LlamarFuncion //// Para conseguir poder llamar exclusivamente a una función
 
-Cadena -> id
+Cadena -> idstr
 Cadena -> str
 
-LlamarFuncion -> id oppar ArgPre clpar
+LlamarFuncion -> idfun oppar ArgPre clpar
 
 ArgPre -> Descriptor ArgRec //// Para asegurarse que solo haya una opción de ningún argumento
 ArgPre -> lambda
@@ -111,12 +116,12 @@ DefFuncion -> function DefFuncionAux clbra
 DefFuncionAux -> Tipo DescripFun AFuncion
 DefFuncionAux -> void DescripFun AFuncionVoid
 
-DescripFun -> id oppar Arg clpar opbra
+DescripFun -> idfun oppar Arg clpar opbra
 
-Arg -> Tipo id ArgAux
+Arg -> Tipo Id ArgAux
 Arg -> lambda
 
-ArgAux -> comma Tipo id ArgAux //// Se hace un auxiliar exclusivamente por la coma
+ArgAux -> comma Tipo Id ArgAux //// Se hace un auxiliar exclusivamente por la coma
 ArgAux -> lambda
 
 AFuncion -> A semicolon AFuncion

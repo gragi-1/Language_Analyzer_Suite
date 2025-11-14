@@ -1,10 +1,7 @@
 Terminales = { boolean else float function if int let read return string void write floatconst intconst str idint idfl idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
-//// Terminales código de los tokens
 
-//// No Terminales para funcionalidad, aparte existe lambda
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid EOF }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid EOF EntComp FlComp CompIntAux CompFlAux }
 
-//// Axioma por defecto
 Axioma = S
 
 Producciones = {
@@ -13,8 +10,8 @@ S -> AF EOF
 EOF -> eof
 EOF -> lambda
 
-AF -> AB
-AF -> DefFuncion //// Separado para no poder definir funciones dentro de otras funciones o condicionales
+AF -> AB AF
+AF -> DefFuncion AF
 AF -> lambda
 
 AB -> A semicolon
@@ -22,7 +19,7 @@ AB -> if oppar Booleano clpar Cond
 
 A -> let Tipo Id Igualar
 A -> Id IgualarPre
-A -> LlamarFuncion 
+A -> LlamarFuncion
 A -> read Id
 A -> write WriteAlt
 
@@ -45,13 +42,13 @@ IgualarPre -> pluseq Num
 Igualar -> eq Descriptor
 Igualar -> lambda
 
-Descriptor -> Num //// Para no duplicar entre enteros y reales
+Descriptor -> Num
 Descriptor -> Booleano
 Descriptor -> Cadena
 
 Entero -> TermInt IntRecur
 
-IntRecur -> sum TermInt2 IntRecur //// Para poder sumar en la misma línea
+IntRecur -> sum TermInt2 IntRecur
 IntRecur -> lambda
 
 TermInt -> idint
@@ -62,7 +59,7 @@ TermInt2 -> idint
 TermInt2 -> intconst
 TermInt2 -> LlamarFuncion
 
-Real -> TermFl FlRecur //// Igual que para los enteros
+Real -> TermFl FlRecur
 
 FlRecur -> sum TermFl2 FlRecur
 FlRecur -> lambda
@@ -82,16 +79,26 @@ BoolRecur -> lambda
 
 TermBool -> idbool
 TermBool -> boolconst
-TermBool -> Entero minorthan Entero //// Para comparar operaciones de enteros y reales
-TermBool -> Real minorthan Real
-TermBool -> LlamarFuncion //// Para conseguir poder llamar exclusivamente a una función
+TermBool -> EntComp
+TermBool -> FlComp
+TermBool -> LlamarFuncion
+
+EntComp -> TermInt IntRecur CompIntAux
+
+CompIntAux -> minorthan TermInt IntRecur
+CompIntAux -> lambda
+
+FlComp -> TermFl FlRecur CompFlAux
+
+CompFlAux -> minorthan TermFl FlRecur
+CompFlAux -> lambda
 
 Cadena -> idstr
 Cadena -> str
 
 LlamarFuncion -> idfun oppar ArgPre clpar
 
-ArgPre -> Descriptor ArgRec //// Para asegurarse que solo haya una opción de ningún argumento
+ArgPre -> Descriptor ArgRec
 ArgPre -> lambda
 
 ArgRec -> comma Descriptor ArgRec
@@ -100,19 +107,19 @@ ArgRec -> lambda
 WriteAlt -> Descriptor
 WriteAlt -> oppar Descriptor ArgRec clpar
 
-Cond -> AB CondEl //// Condicional simple
-Cond -> semicolon CondEl //// Para poder dejarlo vacío
-Cond -> opbra ARec clbra CondEl //// Condicional complejo, se pone una A para asegurar al menos un argumento
+Cond -> AB CondEl
+Cond -> semicolon CondEl
+Cond -> opbra ARec clbra CondEl
 
 ARec -> AB ARec
 ARec -> lambda
 
-CondEl -> else ElseAux //// Para poder poner else en los ifs
+CondEl -> else ElseAux
 CondEl -> lambda
 
-ElseAux -> AB //// Else simple
-ElseAux -> semicolon //// Para poder dejarlo vacío
-ElseAux -> opbra ARec clbra //// Else complejo
+ElseAux -> AB
+ElseAux -> semicolon
+ElseAux -> opbra ARec clbra
 
 DefFuncion -> function DefFuncionAux clbra
 
@@ -124,52 +131,56 @@ DescripFun -> idfun oppar Arg clpar opbra
 Arg -> Tipo Id ArgAux
 Arg -> lambda
 
-ArgAux -> comma Tipo Id ArgAux //// Se hace un auxiliar exclusivamente por la coma
+ArgAux -> comma Tipo Id ArgAux
 ArgAux -> lambda
 
 AFuncion -> A semicolon AFuncion
-AFuncion -> if oppar Booleano clpar If2
-AFuncion -> return Descriptor semicolon //// No se ha implementado el caso de los return dentro de condicionales
+AFuncion -> if oppar Booleano clpar If2 AFuncion
+AFuncion -> return Descriptor semicolon AFuncion
+AFuncion -> lambda
 
-AFuncionVoid -> A AFuncionVoid
-AFuncionVoid -> if oppar Booleano clpar IfVoid
-AFuncionVoid -> return semicolon //// Para poder poner un return vacío
+AFuncionVoid -> A semicolon AFuncionVoid
+AFuncionVoid -> if oppar Booleano clpar IfVoid AFuncionVoid
+AFuncionVoid -> return semicolon AFuncionVoid
 AFuncionVoid -> lambda
 
-If2 -> AIfPre Else2 //// Condicional simple
-If2 -> opbra AIf clbra Else2 //// Condicional complejo, se pone una A para asegurar al menos un argumento
+If2 -> AIfPre Else2
+If2 -> opbra AIf clbra Else2
 
-Else2 -> else ElseAux2 //// Para poder poner else en los ifs
+Else2 -> else ElseAux2
 Else2 -> lambda
 
 AIfPre -> A semicolon AIf
 AIfPre -> If2 AIf
-AIfPre -> semicolon
+AIfPre -> semicolon AIf
+AIfPre -> lambda
 
 AIf -> A semicolon AIf
-AIf -> return Descriptor semicolon
+AIf -> return Descriptor semicolon AIf
 AIf -> If2 AIf
+AIf -> semicolon AIf
 AIf -> lambda
 
-ElseAux2 -> AIfPre //// Else simple
-ElseAux2 -> opbra AIfPre clbra //// Else complejo
+ElseAux2 -> opbra AIf clbra
+ElseAux2 -> AIfPre
 
-IfVoid -> AIfPreVoid ElseVoid //// Condicional simple
-IfVoid -> opbra AIfVoid clbra ElseVoid //// Condicional complejo, se pone una A para asegurar al menos un argumento
+IfVoid -> AIfPreVoid ElseVoid
+IfVoid -> opbra AIfVoid clbra ElseVoid
 
-ElseVoid -> else ElseAuxVoid //// Para poder poner else en los ifs
+ElseVoid -> else ElseAuxVoid
 ElseVoid -> lambda
 
 AIfPreVoid -> A semicolon AIfVoid
 AIfPreVoid -> IfVoid AIfVoid
-AIfPreVoid -> semicolon
+AIfPreVoid -> semicolon AIfVoid
+AIfPreVoid -> lambda
 
 AIfVoid -> A semicolon AIfVoid
-AIfVoid -> return semicolon
+AIfVoid -> return semicolon AIfVoid
 AIfVoid -> IfVoid AIfVoid
+AIfVoid -> semicolon AIfVoid
 AIfVoid -> lambda
 
-ElseAuxVoid -> AIfPreVoid //// Else simple
-ElseAuxVoid -> opbra AIfPreVoid clbra //// Else complejo
-
+ElseAuxVoid -> opbra AIfVoid clbra
+ElseAuxVoid -> AIfPreVoid
 }
