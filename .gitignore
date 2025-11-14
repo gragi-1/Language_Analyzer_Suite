@@ -16,3 +16,4 @@ includes.log
 *.pdf
 !gramatica_legible.txt
 !Gramatica.txt
+!GramaticaLL1.txt
