@@ -110,9 +110,7 @@ def t_ID(t):
     else:
         t.type = "ID"
         name = t.value
-        t.value = tok_gcounter
-
-        add_symbol(name, t.type, t.value)
+        t.value = add_symbol(name, t.type, t.value)
     return t
 
 def t_COMMENT(t):
@@ -136,19 +134,23 @@ lexer = lex.lex()
 
 
 ######    SECCIÓN DE TABLA DE SÍMBOLOS    ######
-tok_gcounter = 0
+tok_gcounter = -1
 
 symbol_table = {}
 symbol_table_stack = [{}]
 
 def add_symbol(name, type=None, value=None):
     global tok_gcounter
-    if name not in symbol_table_stack:
+    if name not in symbol_table_stack[-1]:
+        tok_gcounter += 1
         symbol_table_stack[-1][name] = {
             'type': type,
             'value': value,
+            'position': tok_gcounter
         }
-        tok_gcounter += 1
+        return tok_gcounter
+    else:
+        return symbol_table_stack[-1][name]['position']
 
 def get_symbol(name):
     for scope in reversed(symbol_table_stack):
