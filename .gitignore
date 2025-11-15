@@ -16,3 +16,5 @@ includes.log
 *.pdf
 !GramaticaLL1.txt
 !GramaticaLL1_legible.txt
+!Gramatica.txt
+!programa_myjs.txt

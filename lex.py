@@ -545,7 +545,7 @@ def main():
                 f_sym.write("--------- ---------\n")
             f_sym.write("\n")
     
-    load_grammar('GramaticaLL1.txt')
+    load_grammar('Gramatica.txt')
     build_parsing_table()
     
     if parse():

@@ -1,0 +1,14 @@
+function int calcular(int x, int y) {
+    let int temp = x + y;
+    return temp
+}
+
+let int num1 = 10;
+let int num2 = 20;
+let int resultado = calcular(num1, num2);
+write(resultado);
+
+let boolean condicion = num1 < num2;
+if (condicion) {
+    write('num1 es menor');
+}
