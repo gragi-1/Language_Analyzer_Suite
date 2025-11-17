@@ -148,6 +148,7 @@ Else2 -> else ElseAux2
 Else2 -> lambda
 
 AIfPre -> A semicolon
+AIfPre -> return Descriptor semicolon
 AIfPre -> If2
 AIfPre -> semicolon
 
@@ -167,6 +168,7 @@ ElseVoid -> else ElseAuxVoid
 ElseVoid -> lambda
 
 AIfPreVoid -> A semicolon
+AIfPreVoid -> return semicolon
 AIfPreVoid -> IfVoid
 AIfPreVoid -> semicolon
 
