@@ -1,6 +1,6 @@
 function int calcular(int x, int y) {
     let int temp = x + y;
-    return temp
+    return temp;
 }
 
 let int num1 = 10;
