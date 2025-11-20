@@ -133,12 +133,11 @@ ArgAux -> lambda
 
 AFuncion -> A semicolon AFuncion
 AFuncion -> if oppar Booleano clpar If2 AFuncion
-AFuncion -> return Descriptor semicolon AFuncion
-AFuncion -> lambda
+AFuncion -> return Descriptor semicolon
 
 AFuncionVoid -> A semicolon AFuncionVoid
 AFuncionVoid -> if oppar Booleano clpar IfVoid AFuncionVoid
-AFuncionVoid -> return semicolon AFuncionVoid
+AFuncionVoid -> return semicolon
 AFuncionVoid -> lambda
 
 If2 -> AIfPre Else2
@@ -149,12 +148,12 @@ Else2 -> lambda
 
 AIfPre -> A semicolon
 AIfPre -> return Descriptor semicolon
-AIfPre -> If2
+AIfPre -> if oppar Booleano clpar If2
 AIfPre -> semicolon
 
 AIf -> A semicolon AIf
-AIf -> return Descriptor semicolon AIf
-AIf -> If2 AIf
+AIf -> return Descriptor semicolon
+AIf -> if oppar Booleano clpar If2 AIf
 AIf -> semicolon AIf
 AIf -> lambda
 
@@ -169,12 +168,12 @@ ElseVoid -> lambda
 
 AIfPreVoid -> A semicolon
 AIfPreVoid -> return semicolon
-AIfPreVoid -> IfVoid
+AIfPreVoid -> if oppar Booleano clpar IfVoid
 AIfPreVoid -> semicolon
 
 AIfVoid -> A semicolon AIfVoid
-AIfVoid -> return semicolon AIfVoid
-AIfVoid -> IfVoid AIfVoid
+AIfVoid -> return semicolon
+AIfVoid -> if oppar Booleano clpar IfVoid AIfVoid
 AIfVoid -> semicolon AIfVoid
 AIfVoid -> lambda
 
