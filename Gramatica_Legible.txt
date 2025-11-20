@@ -1,0 +1,182 @@
+Terminales = { boolean else float function if int let read return string void write floatconst intconst str idint idfl idbool idstr idfun += = , ; ( ) { } + && < boolconst eof }
+
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid EntComp FlComp CompIntAux CompFlAux }
+
+Axioma = S
+
+Producciones = {
+    S -> AF eof
+
+    AF -> AB AF
+    AF -> DefFuncion AF
+    AF -> lambda
+
+    AB -> A ;
+    AB -> if ( Booleano ) Cond
+
+    A -> let Tipo Id Igualar
+    A -> Id IgualarPre
+    A -> LlamarFuncion
+    A -> read Id
+    A -> write WriteAlt
+
+    Num -> Entero
+    Num -> Real
+
+    Tipo -> int
+    Tipo -> float
+    Tipo -> string
+    Tipo -> boolean
+
+    Id -> idint
+    Id -> idfl
+    Id -> idbool
+    Id -> idstr
+
+    IgualarPre -> Igualar
+    IgualarPre -> += Num
+
+    Igualar -> = Descriptor
+    Igualar -> lambda
+
+    Descriptor -> Num
+    Descriptor -> Booleano
+    Descriptor -> Cadena
+
+    Entero -> TermInt IntRecur
+
+    IntRecur -> + TermInt2 IntRecur
+    IntRecur -> lambda
+
+    TermInt -> idint
+    TermInt -> intconst
+    TermInt -> LlamarFuncion + TermInt2
+
+    TermInt2 -> idint
+    TermInt2 -> intconst
+    TermInt2 -> LlamarFuncion
+
+    Real -> TermFl FlRecur
+
+    FlRecur -> + TermFl2 FlRecur
+    FlRecur -> lambda
+
+    TermFl -> idfl
+    TermFl -> floatconst
+    TermFl -> LlamarFuncion + TermFl2
+
+    TermFl2 -> idfl
+    TermFl2 -> floatconst
+    TermFl2 -> LlamarFuncion
+
+    Booleano -> TermBool BoolRecur
+
+    BoolRecur -> && TermBool BoolRecur
+    BoolRecur -> lambda
+
+    TermBool -> idbool
+    TermBool -> boolconst
+    TermBool -> EntComp
+    TermBool -> FlComp
+    TermBool -> LlamarFuncion
+
+    EntComp -> TermInt IntRecur CompIntAux
+
+    CompIntAux -> < TermInt IntRecur
+    CompIntAux -> lambda
+
+    FlComp -> TermFl FlRecur CompFlAux
+
+    CompFlAux -> < TermFl FlRecur
+    CompFlAux -> lambda
+
+    Cadena -> idstr
+    Cadena -> str
+
+    LlamarFuncion -> idfun ( ArgPre )
+
+    ArgPre -> Descriptor ArgRec
+    ArgPre -> lambda
+
+    ArgRec -> , Descriptor ArgRec
+    ArgRec -> lambda
+
+    WriteAlt -> Descriptor
+    WriteAlt -> ( Descriptor ArgRec )
+
+    Cond -> AB CondEl
+    Cond -> ; CondEl
+    Cond -> { ARec } CondEl
+
+    ARec -> AB ARec
+    ARec -> lambda
+
+    CondEl -> else ElseAux
+    CondEl -> lambda
+
+    ElseAux -> AB
+    ElseAux -> ;
+    ElseAux -> { ARec }
+
+    DefFuncion -> function DefFuncionAux }
+
+    DefFuncionAux -> Tipo DescripFun AFuncion
+    DefFuncionAux -> void DescripFun AFuncionVoid
+
+    DescripFun -> idfun ( Arg ) {
+
+    Arg -> Tipo Id ArgAux
+    Arg -> lambda
+
+    ArgAux -> , Tipo Id ArgAux
+    ArgAux -> lambda
+
+    AFuncion -> A ; AFuncion
+    AFuncion -> if ( Booleano ) If2 AFuncion
+    AFuncion -> return Descriptor ;
+
+    AFuncionVoid -> A ; AFuncionVoid
+    AFuncionVoid -> if ( Booleano ) IfVoid AFuncionVoid
+    AFuncionVoid -> return ;
+    AFuncionVoid -> lambda
+
+    If2 -> AIfPre Else2
+    If2 -> { AIf } Else2
+
+    Else2 -> else ElseAux2
+    Else2 -> lambda
+
+    AIfPre -> A ;
+    AIfPre -> return Descriptor ;
+    AIfPre -> if ( Booleano ) If2 
+    AIfPre -> ;
+
+    AIf -> A ; AIf
+    AIf -> return Descriptor ;
+    AIf -> if ( Booleano ) If2 AIf
+    AIf -> ; AIf
+    AIf -> lambda
+
+    ElseAux2 -> { AIf }
+    ElseAux2 -> AIfPre
+
+    IfVoid -> AIfPreVoid ElseVoid
+    IfVoid -> { AIfVoid } ElseVoid
+
+    ElseVoid -> else ElseAuxVoid
+    ElseVoid -> lambda
+
+    AIfPreVoid -> A ;
+    AIfPreVoid -> return ;
+    AIfPreVoid -> if ( Booleano ) IfVoid 
+    AIfPreVoid -> ;
+
+    AIfVoid -> A ; AIfVoid
+    AIfVoid -> return ; 
+    AIfVoid -> if ( Booleano ) IfVoid AIfVoid
+    AIfVoid -> ; AIfVoid
+    AIfVoid -> lambda
+
+    ElseAuxVoid -> { AIfVoid }
+    ElseAuxVoid -> AIfPreVoid
+}
