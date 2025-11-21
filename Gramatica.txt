@@ -1,6 +1,6 @@
 Terminales = { boolean else float function if int let read return string void write idnum numconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool Comp CompAux Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool CompAux Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
 
 Axioma = S
 
@@ -60,13 +60,11 @@ BoolRecur -> lambda
 
 TermBool -> idbool
 TermBool -> boolconst
-TermBool -> Comp
+TermBool -> CompAux NumRecur minorthan CompAux NumRecur
 TermBool -> LlamarFuncion
 
-Comp -> TermNum NumRecur CompAux
-
-CompAux -> minorthan TermCom ComRecur
-CompAux -> lambda
+CompAux -> TermNum
+CompAux -> LlamarFuncion
 
 Cadena -> idstr
 Cadena -> str
@@ -154,7 +152,7 @@ ElseAuxVoid -> opbra AIfVoid clbra
 ElseAuxVoid -> AIfPreVoid
 
 IfFinal -> return Descriptor semicolon
-IfFinal -> oppbra IfFinalAux clbra
+IfFinal -> opbra IfFinalAux clbra
 
 IfFinalAux -> A semicolon IfFinalAux
 IfFinalAux -> if oppar Booleano clpar If2 IfFinalAux
