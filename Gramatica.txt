@@ -1,6 +1,6 @@
 Terminales = { boolean else float function if int let read return string void write idnum numconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool CompAux Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
 
 Axioma = S
 
@@ -41,6 +41,7 @@ Descriptor -> Booleano
 Descriptor -> Cadena
 
 Num -> TermNum NumRecur
+Num -> oppar TermNum2 NumRecur clpar NumRecur
 
 NumRecur -> sum TermNum2 NumRecur
 NumRecur -> lambda
@@ -51,6 +52,7 @@ TermNum -> LlamarFuncion sum TermNum2
 
 TermNum2 -> idnum
 TermNum2 -> numconst
+TermNum2 -> oppar TermNum2 NumRecur clpar
 TermNum2 -> LlamarFuncion
 
 Booleano -> TermBool BoolRecur
@@ -60,11 +62,8 @@ BoolRecur -> lambda
 
 TermBool -> idbool
 TermBool -> boolconst
-TermBool -> CompAux NumRecur minorthan CompAux NumRecur
+TermBool -> TermNum2 minorthan TermNum2
 TermBool -> LlamarFuncion
-
-CompAux -> TermNum
-CompAux -> LlamarFuncion
 
 Cadena -> idstr
 Cadena -> str
