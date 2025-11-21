@@ -1,6 +1,6 @@
 Terminales = { boolean else float function if int let read return string void write idnum numconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid Comp CompAux }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool Comp CompAux Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
 
 Axioma = S
 
@@ -19,6 +19,7 @@ A -> Id IgualarPre
 A -> LlamarFuncion
 A -> read Id
 A -> write WriteAlt
+A -> lambda
 
 Tipo -> int
 Tipo -> float
@@ -82,7 +83,6 @@ WriteAlt -> Descriptor
 WriteAlt -> oppar Descriptor ArgRec clpar
 
 Cond -> AB CondEl
-Cond -> semicolon CondEl
 Cond -> opbra ARec clbra CondEl
 
 ARec -> AB ARec
@@ -92,7 +92,6 @@ CondEl -> else ElseAux
 CondEl -> lambda
 
 ElseAux -> AB
-ElseAux -> semicolon
 ElseAux -> opbra ARec clbra
 
 DefFuncion -> function DefFuncionAux clbra
@@ -111,6 +110,7 @@ ArgAux -> lambda
 AFuncion -> A semicolon AFuncion
 AFuncion -> if oppar Booleano clpar If2 AFuncion
 AFuncion -> return Descriptor semicolon
+AFuncion -> if oppar Booleano clpar IfFinal else IfFinal
 
 AFuncionVoid -> A semicolon AFuncionVoid
 AFuncionVoid -> if oppar Booleano clpar IfVoid AFuncionVoid
@@ -126,12 +126,10 @@ Else2 -> lambda
 AIfPre -> A semicolon
 AIfPre -> return Descriptor semicolon
 AIfPre -> if oppar Booleano clpar If2
-AIfPre -> semicolon
 
 AIf -> A semicolon AIf
 AIf -> return Descriptor semicolon
 AIf -> if oppar Booleano clpar If2 AIf
-AIf -> semicolon AIf
 AIf -> lambda
 
 ElseAux2 -> opbra AIf clbra
@@ -146,14 +144,20 @@ ElseVoid -> lambda
 AIfPreVoid -> A semicolon
 AIfPreVoid -> return semicolon
 AIfPreVoid -> if oppar Booleano clpar IfVoid
-AIfPreVoid -> semicolon
 
 AIfVoid -> A semicolon AIfVoid
 AIfVoid -> return semicolon
 AIfVoid -> if oppar Booleano clpar IfVoid AIfVoid
-AIfVoid -> semicolon AIfVoid
 AIfVoid -> lambda
 
 ElseAuxVoid -> opbra AIfVoid clbra
 ElseAuxVoid -> AIfPreVoid
+
+IfFinal -> return Descriptor semicolon
+IfFinal -> oppbra IfFinalAux clbra
+
+IfFinalAux -> A semicolon IfFinalAux
+IfFinalAux -> if oppar Booleano clpar If2 IfFinalAux
+IfFinalAux -> return Descriptor semicolon
+IfFinalAux -> if oppar Booleano clpar IfFinal else IfFinal
 }
