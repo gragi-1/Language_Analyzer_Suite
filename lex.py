@@ -125,7 +125,7 @@ def t_error(t):
 def t_eof(t):
     return None
 
-lexer = lex.lex()
+lexer = lex.lex(debug=True)
 
 ######    FIN SECCIÓN DE ANALIZADOR LÉXICO    ######
 
@@ -188,10 +188,10 @@ def first_pass_analyze(tokens_list):
         if tok.type == 'LET' and i + 2 < len(tokens_list):
             if tokens_list[i+1].type == 'INT' and tokens_list[i+2].type == 'ID':
                 var_id = tokens_list[i+2].value
-                id_types[var_id] = 'idint'
+                id_types[var_id] = 'idnum'
             elif tokens_list[i+1].type == 'FLOAT' and tokens_list[i+2].type == 'ID':
                 var_id = tokens_list[i+2].value
-                id_types[var_id] = 'idfl'
+                id_types[var_id] = 'idnum'
             elif tokens_list[i+1].type == 'BOOLEAN' and tokens_list[i+2].type == 'ID':
                 var_id = tokens_list[i+2].value
                 id_types[var_id] = 'idbool'
@@ -205,9 +205,9 @@ def first_pass_analyze(tokens_list):
             if tokens_list[i+1].type == 'ID':
                 var_id = tokens_list[i+1].value
                 if tok.type == 'INT':
-                    id_types[var_id] = 'idint'
+                    id_types[var_id] = 'idnum'
                 elif tok.type == 'FLOAT':
-                    id_types[var_id] = 'idfl'
+                    id_types[var_id] = 'idnum'
                 elif tok.type == 'BOOLEAN':
                     id_types[var_id] = 'idbool'
                 elif tok.type == 'STRING':
@@ -448,61 +448,67 @@ def token_type_to_grammar_symbol(token):
         return mapping[token.type]
     
     if token.type == 'ID':
-        return id_types.get(token.value, 'idint')
+        return id_types.get(token.value, 'idnum')
     
     return token.type.lower()
 
 def parse():
     global stack, token_pointer, production_sequence
-    
+
     stack = ['eof', grammar['axiom']]
     token_pointer = 0
     production_sequence = []
-    
+
     while stack:
         top = stack[-1]
-        
+
         if token_pointer < len(input_tokens):
             current_token = input_tokens[token_pointer]
             current_symbol = token_type_to_grammar_symbol(current_token)
         else:
             current_symbol = 'eof'
-        
+
+        print("\n---- Paso de parsing ----")
+        print(f"Pila actual: {stack}")
+        print(f"Token actual: {current_token.type if token_pointer < len(input_tokens) else 'EOF'}, símbolo actual: {current_symbol}")
+
         if top in grammar['terminals'] or top == 'eof':
             if top == current_symbol:
+                print(f"Reconocido terminal: {top}, avanzando al siguiente token.")
                 stack.pop()
                 token_pointer += 1
             else:
-                print(f"Error: Se esperaba {top} pero se encontró {current_symbol}")
+                print(f"¡Error sintáctico! Esperaba '{top}' pero encontró '{current_symbol}' al procesar token: {current_token}")
                 return False
         elif top in grammar['non_terminals']:
             if current_symbol in parsing_table.get(top, {}):
                 production = parsing_table[top][current_symbol]
-                
-                # Registrar la producción aplicada
                 production_key = (top, tuple(production))
+                print(f"Aplicando producción: {top} -> {' '.join(production)} para símbolo terminal '{current_symbol}'")
                 if production_key in grammar['production_numbers']:
                     production_sequence.append(grammar['production_numbers'][production_key])
                 else:
                     print(f"Advertencia: No se encontró número para la producción {production_key}")
-                
+
                 stack.pop()
                 if production and production[0] != 'lambda':
                     for symbol in reversed(production):
                         stack.append(symbol)
             else:
-                print(f"Error: No hay producción para [{top}, {current_symbol}]")
+                print(f"¡Error sintáctico! No hay producción para [{top}, {current_symbol}] (token: {current_token})")
                 return False
         else:
             print(f"Error: Símbolo desconocido {top}")
             return False
-    
+
     if token_pointer >= len(input_tokens):
-        print("Análisis completado exitosamente")
+        print("\nAnálisis completado exitosamente")
+        print(f"Secuencia de producciones usadas: {production_sequence}")
         return True
     else:
         print("Error: Quedan tokens sin procesar")
         return False
+
 
 ######    FIN SECCIÓN DE ANALIZADOR SINTÁCTICO    ######
 
