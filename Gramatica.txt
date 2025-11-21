@@ -1,6 +1,6 @@
-Terminales = { boolean else float function if int let read return string void write floatconst intconst str idint idfl idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
+Terminales = { boolean else float function if int let read return string void write idnum numconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Entero IntRecur TermInt TermInt2 Real FlRecur TermFl TermFl2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun Num If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid EntComp FlComp CompIntAux CompFlAux }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid Comp CompAux }
 
 Axioma = S
 
@@ -20,16 +20,12 @@ A -> LlamarFuncion
 A -> read Id
 A -> write WriteAlt
 
-Num -> Entero
-Num -> Real
-
 Tipo -> int
 Tipo -> float
 Tipo -> string
 Tipo -> boolean
 
-Id -> idint
-Id -> idfl
+Id -> idnum
 Id -> idbool
 Id -> idstr
 
@@ -43,31 +39,18 @@ Descriptor -> Num
 Descriptor -> Booleano
 Descriptor -> Cadena
 
-Entero -> TermInt IntRecur
+Num -> TermNum NumRecur
 
-IntRecur -> sum TermInt2 IntRecur
-IntRecur -> lambda
+NumRecur -> sum TermNum2 NumRecur
+NumRecur -> lambda
 
-TermInt -> idint
-TermInt -> intconst
-TermInt -> LlamarFuncion sum TermInt2
+TermNum -> idnum
+TermNum -> numconst
+TermNum -> LlamarFuncion sum TermNum2
 
-TermInt2 -> idint
-TermInt2 -> intconst
-TermInt2 -> LlamarFuncion
-
-Real -> TermFl FlRecur
-
-FlRecur -> sum TermFl2 FlRecur
-FlRecur -> lambda
-
-TermFl -> idfl
-TermFl -> floatconst
-TermFl -> LlamarFuncion sum TermFl2
-
-TermFl2 -> idfl
-TermFl2 -> floatconst
-TermFl2 -> LlamarFuncion
+TermNum2 -> idnum
+TermNum2 -> numconst
+TermNum2 -> LlamarFuncion
 
 Booleano -> TermBool BoolRecur
 
@@ -76,19 +59,13 @@ BoolRecur -> lambda
 
 TermBool -> idbool
 TermBool -> boolconst
-TermBool -> EntComp
-TermBool -> FlComp
+TermBool -> Comp
 TermBool -> LlamarFuncion
 
-EntComp -> TermInt IntRecur CompIntAux
+Comp -> TermNum NumRecur CompAux
 
-CompIntAux -> minorthan TermInt IntRecur
-CompIntAux -> lambda
-
-FlComp -> TermFl FlRecur CompFlAux
-
-CompFlAux -> minorthan TermFl FlRecur
-CompFlAux -> lambda
+CompAux -> minorthan TermCom ComRecur
+CompAux -> lambda
 
 Cadena -> idstr
 Cadena -> str
