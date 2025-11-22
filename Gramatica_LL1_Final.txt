@@ -1,6 +1,6 @@
 Terminales = { boolean else float function if int let read return string void write idnum intconst realconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor DescriptorAux DescriptorParAux DescriptorFunAux NumRecur TermNum2 BoolRecur Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid }
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor DescriptorAux DescriptorParAux DescriptorFunAux NumRecur TermNum2 BoolRecur Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
 
 Axioma = S
 
