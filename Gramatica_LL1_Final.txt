@@ -119,7 +119,7 @@ ArgAux -> lambda
 AFuncion -> A semicolon AFuncion
 AFuncion -> if oppar Descriptor clpar If2 AFuncion
 AFuncion -> return Descriptor semicolon
-AFuncion -> lambda
+AFuncion -> if oppar Booleano clpar IfFinal else IfFinal
 
 AFuncionVoid -> A semicolon AFuncionVoid
 AFuncionVoid -> if oppar Descriptor clpar IfVoid AFuncionVoid
@@ -161,4 +161,12 @@ AIfVoid -> lambda
 
 ElseAuxVoid -> opbra AIfVoid clbra
 ElseAuxVoid -> AIfPreVoid
+
+IfFinal -> return Descriptor semicolon
+IfFinal -> opbra IfFinalAux clbra
+
+IfFinalAux -> A semicolon IfFinalAux
+IfFinalAux -> if oppar Booleano clpar If2 IfFinalAux
+IfFinalAux -> return Descriptor semicolon
+IfFinalAux -> if oppar Booleano clpar IfFinal else IfFinal
 }
