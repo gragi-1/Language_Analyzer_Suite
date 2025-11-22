@@ -1,0 +1,164 @@
+Terminales = { boolean else float function if int let read return string void write idnum intconst realconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
+
+NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor DescriptorAux DescriptorParAux DescriptorFunAux NumRecur TermNum2 BoolRecur Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid }
+
+Axioma = S
+
+Producciones = {
+S -> AF eof
+
+AF -> AB AF
+AF -> DefFuncion AF
+AF -> lambda
+
+AB -> A semicolon
+AB -> if oppar Descriptor clpar Cond
+
+A -> let Tipo Id Igualar
+A -> Id IgualarPre
+A -> LlamarFuncion
+A -> read Id
+A -> write WriteAlt
+A -> lambda
+
+Tipo -> int
+Tipo -> float
+Tipo -> string
+Tipo -> boolean
+
+Id -> idnum
+Id -> idbool
+Id -> idstr
+
+IgualarPre -> Igualar
+IgualarPre -> pluseq Descriptor
+
+Igualar -> eq Descriptor
+Igualar -> lambda
+
+//// PRODUCCIONES CORREGIDAS PARA DESCRIPTOR ////
+
+Descriptor -> idnum DescriptorAux
+Descriptor -> intconst DescriptorAux
+Descriptor -> realconst DescriptorAux
+Descriptor -> idbool BoolRecur
+Descriptor -> boolconst BoolRecur
+Descriptor -> oppar DescriptorParAux
+Descriptor -> idfun DescriptorFunAux
+Descriptor -> idstr
+Descriptor -> str
+
+DescriptorAux -> sum TermNum2 NumRecur
+DescriptorAux -> minorthan TermNum2 BoolRecur
+DescriptorAux -> and Descriptor BoolRecur
+DescriptorAux -> lambda
+
+DescriptorParAux -> TermNum2 NumRecur clpar sum TermNum2 NumRecur
+DescriptorParAux -> TermNum2 NumRecur clpar minorthan TermNum2 BoolRecur
+DescriptorParAux -> TermNum2 NumRecur clpar and Descriptor BoolRecur
+DescriptorParAux -> TermNum2 NumRecur clpar
+
+DescriptorFunAux -> oppar ArgPre clpar sum TermNum2 NumRecur
+DescriptorFunAux -> oppar ArgPre clpar minorthan TermNum2 BoolRecur
+DescriptorFunAux -> oppar ArgPre clpar and Descriptor BoolRecur
+DescriptorFunAux -> oppar ArgPre clpar
+
+//// FIN PRODUCCIONES DESCRIPTOR ////
+
+NumRecur -> sum TermNum2 NumRecur
+NumRecur -> lambda
+
+TermNum2 -> idnum
+TermNum2 -> intconst
+TermNum2 -> realconst
+TermNum2 -> oppar TermNum2 NumRecur clpar
+TermNum2 -> idfun oppar ArgPre clpar
+
+BoolRecur -> and Descriptor BoolRecur
+BoolRecur -> lambda
+
+Cadena -> idstr
+Cadena -> str
+
+LlamarFuncion -> idfun oppar ArgPre clpar
+
+ArgPre -> Descriptor ArgRec
+ArgPre -> lambda
+
+ArgRec -> comma Descriptor ArgRec
+ArgRec -> lambda
+
+WriteAlt -> Descriptor
+WriteAlt -> oppar Descriptor ArgRec clpar
+
+Cond -> AB CondEl
+Cond -> opbra ARec clbra CondEl
+
+ARec -> AB ARec
+ARec -> lambda
+
+CondEl -> else ElseAux
+CondEl -> lambda
+
+ElseAux -> AB
+ElseAux -> opbra ARec clbra
+
+DefFuncion -> function DefFuncionAux clbra
+
+DefFuncionAux -> Tipo DescripFun AFuncion
+DefFuncionAux -> void DescripFun AFuncionVoid
+
+DescripFun -> idfun oppar Arg clpar opbra
+
+Arg -> Tipo Id ArgAux
+Arg -> lambda
+
+ArgAux -> comma Tipo Id ArgAux
+ArgAux -> lambda
+
+AFuncion -> A semicolon AFuncion
+AFuncion -> if oppar Descriptor clpar If2 AFuncion
+AFuncion -> return Descriptor semicolon
+AFuncion -> lambda
+
+AFuncionVoid -> A semicolon AFuncionVoid
+AFuncionVoid -> if oppar Descriptor clpar IfVoid AFuncionVoid
+AFuncionVoid -> return semicolon
+AFuncionVoid -> lambda
+
+If2 -> AIfPre Else2
+If2 -> opbra AIf clbra Else2
+
+Else2 -> else ElseAux2
+Else2 -> lambda
+
+AIfPre -> A semicolon
+AIfPre -> return Descriptor semicolon
+AIfPre -> if oppar Descriptor clpar If2
+
+AIf -> A semicolon AIf
+AIf -> return Descriptor semicolon
+AIf -> if oppar Descriptor clpar If2 AIf
+AIf -> lambda
+
+ElseAux2 -> opbra AIf clbra
+ElseAux2 -> AIfPre
+
+IfVoid -> AIfPreVoid ElseVoid
+IfVoid -> opbra AIfVoid clbra ElseVoid
+
+ElseVoid -> else ElseAuxVoid
+ElseVoid -> lambda
+
+AIfPreVoid -> A semicolon
+AIfPreVoid -> return semicolon
+AIfPreVoid -> if oppar Descriptor clpar IfVoid
+
+AIfVoid -> A semicolon AIfVoid
+AIfVoid -> return semicolon
+AIfVoid -> if oppar Descriptor clpar IfVoid AIfVoid
+AIfVoid -> lambda
+
+ElseAuxVoid -> opbra AIfVoid clbra
+ElseAuxVoid -> AIfPreVoid
+}

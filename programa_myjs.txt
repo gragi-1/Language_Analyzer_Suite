@@ -1,6 +1,7 @@
 function int calcular(int x, int y) {
     let int temp = x + y;
-    return temp;
+    if (temp < 100)
+        return temp;
 }
 
 let int num1 = 10;
