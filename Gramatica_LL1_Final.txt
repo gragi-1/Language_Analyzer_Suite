@@ -19,7 +19,7 @@ A -> Id IgualarPre
 A -> LlamarFuncion
 A -> read Id
 A -> write WriteAlt
-
+A -> return DescriptorO
 A -> lambda
 
 Tipo -> int
