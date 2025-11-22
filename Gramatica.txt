@@ -15,7 +15,7 @@ LC -> if oppar Expresion clpar CuerpoIf ElseOpt
 LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
 
 CuerpoIf -> opbra Cuerpo clbra
-CuerpoIf -> LS semicolon
+CuerpoIf -> LC
 
 ElseOpt -> else CuerpoIf
 ElseOpt -> lambda
