@@ -12,7 +12,7 @@ S -> eof
 LC -> LS semicolon
 LC -> if oppar Expresion clpar CuerpoIf ElseOpt
 
-LF -> function TipoFun id oppar Args clpar opbra Cuerpo clbra
+LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
 
 CuerpoIf -> opbra Cuerpo clbra
 CuerpoIf -> LS
