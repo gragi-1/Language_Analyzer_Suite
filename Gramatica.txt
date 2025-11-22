@@ -1,160 +1,81 @@
-Terminales = { boolean else float function if int let read return string void write idnum numconst str idbool idstr idfun pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
+Terminales = { boolean else float function if int let read return string void write true false id intconst realconst str pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S AF AB A Tipo Id Igualar IgualarPre Descriptor Num NumRecur TermNum TermNum2 Booleano BoolRecur TermBool Cadena LlamarFuncion ArgPre ArgRec WriteAlt Cond ARec CondEl ElseAux DefFuncion Arg ArgAux AFuncion AFuncionVoid DefFuncionAux DescripFun If2 Else2 AIfPre ElseAux2 AIf IfVoid ElseVoid AIfPreVoid ElseAuxVoid AIfVoid IfFinal IfFinalAux }
+NoTerminales = { S LC LF CuerpoIf ElseOpt Cuerpo Args ArgMore LS IdOpt TypeFun Tipo Asignar ExpReturn Expresión ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion3 Expresion4 }
 
 Axioma = S
 
 Producciones = {
-S -> AF eof
+S -> LC S 
+S -> LF S
+S -> eof
 
-AF -> AB AF
-AF -> DefFuncion AF
-AF -> lambda
+LC -> LS semicolon
+LC -> if oppar Expresion clpar CuerpoIf ElseOpt
 
-AB -> A semicolon
-AB -> if oppar Booleano clpar Cond
+LF -> function TipoFun id oppar Args clpar opbra Cuerpo clbra
 
-A -> let Tipo Id Igualar
-A -> Id IgualarPre
-A -> LlamarFuncion
-A -> read Id
-A -> write WriteAlt
-A -> lambda
+CuerpoIf -> opbra Cuerpo clbra
+CuerpoIf -> LS
+
+ElseOpt -> else CuerpoIf
+ElseOpt -> lambda
+
+Cuerpo -> LC Cuerpo
+Cuerpo -> lambda
+
+Args -> Tipo id ArgMore
+Args -> void
+
+ArgMore -> comma Tipo id ArgMore
+ArgMore -> lambda
+
+LS -> let Tipo id Asignar
+LS -> id IdOpt
+LS -> read id
+LS -> write Tipo
+LS -> return ExpReturn
+
+IdOpt -> oppar Args clpar
+IdOpt -> eq Expresion
+IdOpt -> pluseq Expresion
+
+TypeFun -> void
+TypeFun -> Tipo
 
 Tipo -> int
 Tipo -> float
-Tipo -> string
+Tipo -> str
 Tipo -> boolean
 
-Id -> idnum
-Id -> idbool
-Id -> idstr
+Asignar -> eq Expresion
+Asignar -> lambda
 
-IgualarPre -> Igualar
-IgualarPre -> pluseq Num
+ExpReturn -> Expresion
+ExpReturn -> lambda
 
-Igualar -> eq Descriptor
-Igualar -> lambda
+Expresion -> Expresion1 ExpresionAux
 
-Descriptor -> Num
-Descriptor -> Booleano
-Descriptor -> Cadena
+ExpresionAux -> and Expresion
+ExpresionAux -> lambda
 
-Num -> TermNum NumRecur
-Num -> oppar TermNum2 NumRecur clpar NumRecur
+Expresion1 -> Expresion2 Expresion1Aux
 
-NumRecur -> sum TermNum2 NumRecur
-NumRecur -> lambda
+Expresion1Aux -> minorthan Expresion1
+Expresion1Aux -> lambda
 
-TermNum -> idnum
-TermNum -> numconst
-TermNum -> LlamarFuncion sum TermNum2
+Expresion2 -> Expresion3 Expresion2Aux
 
-TermNum2 -> idnum
-TermNum2 -> numconst
-TermNum2 -> oppar TermNum2 NumRecur clpar
-TermNum2 -> LlamarFuncion
+Expresion2Aux -> sum Expresion2
+Expresion2Aux -> lambda
 
-Booleano -> TermBool BoolRecur
+Expresion3 -> oppar Expresion clpar
+Expresion3 -> intconst
+Expresion3 -> realconst
+Expresion3 -> str
+Expresion3 -> true
+Expresion3 -> false
+Expresion3 -> id Expresion4
 
-BoolRecur -> and TermBool BoolRecur
-BoolRecur -> lambda
-
-TermBool -> idbool
-TermBool -> boolconst
-TermBool -> TermNum2 minorthan TermNum2
-TermBool -> LlamarFuncion
-
-Cadena -> idstr
-Cadena -> str
-
-LlamarFuncion -> idfun oppar ArgPre clpar
-
-ArgPre -> Descriptor ArgRec
-ArgPre -> lambda
-
-ArgRec -> comma Descriptor ArgRec
-ArgRec -> lambda
-
-WriteAlt -> Descriptor
-WriteAlt -> oppar Descriptor ArgRec clpar
-
-Cond -> AB CondEl
-Cond -> opbra ARec clbra CondEl
-
-ARec -> AB ARec
-ARec -> lambda
-
-CondEl -> else ElseAux
-CondEl -> lambda
-
-ElseAux -> AB
-ElseAux -> opbra ARec clbra
-
-DefFuncion -> function DefFuncionAux clbra
-
-DefFuncionAux -> Tipo DescripFun AFuncion
-DefFuncionAux -> void DescripFun AFuncionVoid
-
-DescripFun -> idfun oppar Arg clpar opbra
-
-Arg -> Tipo Id ArgAux
-Arg -> lambda
-
-ArgAux -> comma Tipo Id ArgAux
-ArgAux -> lambda
-
-AFuncion -> A semicolon AFuncion
-AFuncion -> if oppar Booleano clpar If2 AFuncion
-AFuncion -> return Descriptor semicolon
-AFuncion -> if oppar Booleano clpar IfFinal else IfFinal
-
-AFuncionVoid -> A semicolon AFuncionVoid
-AFuncionVoid -> if oppar Booleano clpar IfVoid AFuncionVoid
-AFuncionVoid -> return semicolon
-AFuncionVoid -> lambda
-
-If2 -> AIfPre Else2
-If2 -> opbra AIf clbra Else2
-
-Else2 -> else ElseAux2
-Else2 -> lambda
-
-AIfPre -> A semicolon
-AIfPre -> return Descriptor semicolon
-AIfPre -> if oppar Booleano clpar If2
-
-AIf -> A semicolon AIf
-AIf -> return Descriptor semicolon
-AIf -> if oppar Booleano clpar If2 AIf
-AIf -> lambda
-
-ElseAux2 -> opbra AIf clbra
-ElseAux2 -> AIfPre
-
-IfVoid -> AIfPreVoid ElseVoid
-IfVoid -> opbra AIfVoid clbra ElseVoid
-
-ElseVoid -> else ElseAuxVoid
-ElseVoid -> lambda
-
-AIfPreVoid -> A semicolon
-AIfPreVoid -> return semicolon
-AIfPreVoid -> if oppar Booleano clpar IfVoid
-
-AIfVoid -> A semicolon AIfVoid
-AIfVoid -> return semicolon
-AIfVoid -> if oppar Booleano clpar IfVoid AIfVoid
-AIfVoid -> lambda
-
-ElseAuxVoid -> opbra AIfVoid clbra
-ElseAuxVoid -> AIfPreVoid
-
-IfFinal -> return Descriptor semicolon
-IfFinal -> opbra IfFinalAux clbra
-
-IfFinalAux -> A semicolon IfFinalAux
-IfFinalAux -> if oppar Booleano clpar If2 IfFinalAux
-IfFinalAux -> return Descriptor semicolon
-IfFinalAux -> if oppar Booleano clpar IfFinal else IfFinal
+Expresion4 -> oppar ArgList clpar
+Expresion4 -> lambda
 }
