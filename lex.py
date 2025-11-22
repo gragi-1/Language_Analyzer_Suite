@@ -179,40 +179,21 @@ def first_pass_analyze(tokens_list):
         
         if tok.type == 'FUNCTION' and i + 2 < len(tokens_list):
             if tokens_list[i+1].type in ['INT', 'FLOAT', 'STRING', 'BOOLEAN', 'VOID']:
-                if tokens_list[i+2].type == 'ID':
-                    func_id = tokens_list[i+2].value
-                    id_types[func_id] = 'idfun'
-                    i += 3
-                    continue
+                func_id = tokens_list[i+2].value
+                id_types[func_id] = 'id'
+                i += 3
+                continue
         
         if tok.type == 'LET' and i + 2 < len(tokens_list):
-            if tokens_list[i+1].type == 'INT' and tokens_list[i+2].type == 'ID':
-                var_id = tokens_list[i+2].value
-                id_types[var_id] = 'idnum'
-            elif tokens_list[i+1].type == 'FLOAT' and tokens_list[i+2].type == 'ID':
-                var_id = tokens_list[i+2].value
-                id_types[var_id] = 'idnum'
-            elif tokens_list[i+1].type == 'BOOLEAN' and tokens_list[i+2].type == 'ID':
-                var_id = tokens_list[i+2].value
-                id_types[var_id] = 'idbool'
-            elif tokens_list[i+1].type == 'STRING' and tokens_list[i+2].type == 'ID':
-                var_id = tokens_list[i+2].value
-                id_types[var_id] = 'idstr'
+            var_id = tokens_list[i+2].value
+            id_types[var_id] = 'id'
             i += 3
             continue
         
         if tok.type in ['INT', 'FLOAT', 'BOOLEAN', 'STRING'] and i + 1 < len(tokens_list):
             if tokens_list[i+1].type == 'ID':
                 var_id = tokens_list[i+1].value
-                if tok.type == 'INT':
-                    id_types[var_id] = 'idnum'
-                elif tok.type == 'FLOAT':
-                    id_types[var_id] = 'idnum'
-                elif tok.type == 'BOOLEAN':
-                    id_types[var_id] = 'idbool'
-                elif tok.type == 'STRING':
-                    id_types[var_id] = 'idstr'
-        
+                id_types[var_id] = 'id'
         i += 1
 
 def load_grammar(filename):
@@ -448,7 +429,7 @@ def token_type_to_grammar_symbol(token):
         return mapping[token.type]
     
     if token.type == 'ID':
-        return id_types.get(token.value, 'idnum')
+        return id_types.get(token.value, 'id')
     
     return token.type.lower()
 
