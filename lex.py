@@ -363,34 +363,49 @@ def build_parsing_table():
     
     parsing_table = {}
     
+    print("Construyendo tabla de análisis sintáctico...")
     for nt in grammar['non_terminals']:
         parsing_table[nt] = {}
+        print(f"Procesando no terminal: {nt}")
         for production in grammar['productions'].get(nt, []):
             first_of_production = set()
             
+            print(f"  Producción: {nt} -> {' '.join(production) if production else 'lambda'}")
             if not production or production[0] == 'lambda':
                 first_of_production.add('lambda')
             else:
                 for symbol in production:
+                    print(f"    Analizando símbolo: {symbol}")
                     if symbol in grammar['terminals']:
+                        print(f"      Es terminal, añadiendo a FIRST de la producción: {symbol}")
                         first_of_production.add(symbol)
                         break
                     elif symbol in grammar['non_terminals']:
+                        print(f"      Es no terminal, añadiendo FIRST({symbol}) a FIRST de la producción")
                         for f in first[symbol]:
+                            print(f"        Añadiendo {f} a FIRST de la producción")
                             if f != 'lambda':
                                 first_of_production.add(f)
                         if 'lambda' not in first[symbol]:
                             break
-                else:
-                    first_of_production.add('lambda')
+                    else:
+                        print(f"    Todos los símbolos son anulables, añadiendo 'lambda' a FIRST de la producción")
+                        first_of_production.add('lambda')
             
             for terminal in first_of_production:
+                print(f"    Añadiendo a la tabla de análisis: M[{nt}, {terminal}] = {' '.join(production) if production else 'lambda'}")
                 if terminal != 'lambda':
                     parsing_table[nt][terminal] = production
             
             if 'lambda' in first_of_production:
                 for terminal in follow[nt]:
+                    print(f"    Producción es anulable, añadiendo a la tabla de análisis: M[{nt}, {terminal}] = {' '.join(production) if production else 'lambda'}")
                     parsing_table[nt][terminal] = production
+
+    print("Parsing Table:")
+    for nt, rules in parsing_table.items():
+        for term, prod in rules.items():
+            print(f"M[{nt}, {term}] = {' '.join(prod)}")
 
 def token_type_to_grammar_symbol(token):
     mapping = {
