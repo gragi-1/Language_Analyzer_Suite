@@ -5,6 +5,7 @@
 *.fls
 *.blg
 *.bbl
+*.toc
 *.thm
 *.brf
 *.pdf
