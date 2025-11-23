@@ -1,6 +1,6 @@
 Terminales = { boolean else float function if int let read return string void write true false id intconst realconst str pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan boolconst eof }
 
-NoTerminales = { S LC LF CuerpoIf ElseOpt Cuerpo Args ArgsLlamada ArgMore LS IdOpt TypeFun Tipo Asignar ExpReturn Expresion ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion4 }
+NoTerminales = { S LC LF CuerpoIf ElseOpt Cuerpo Args ArgsLlamada ArgMore ArgMoreLlamada LS IdOpt TypeFun Tipo Asignar ExpReturn Expresion ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion4 }
 
 Axioma = S
 
@@ -10,15 +10,13 @@ S -> LF S
 S -> eof
 
 LC -> LS semicolon
-LC -> if oppar Expresion clpar CuerpoIf ElseOpt
+LC -> if oppar Expresion clpar CuerpoIf 
+LC -> else CuerpoIf
 
 LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
 
 CuerpoIf -> opbra Cuerpo clbra
 CuerpoIf -> LC
-
-ElseOpt -> else CuerpoIf
-ElseOpt -> lambda
 
 Cuerpo -> LC Cuerpo
 Cuerpo -> lambda
@@ -38,7 +36,7 @@ ArgMore -> lambda
 LS -> let Tipo id Asignar
 LS -> id IdOpt
 LS -> read id
-LS -> write Tipo
+LS -> write Expresion
 LS -> return ExpReturn
 
 IdOpt -> oppar ArgsLlamada clpar
