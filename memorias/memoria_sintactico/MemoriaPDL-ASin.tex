@@ -1,4 +1,17 @@
 \documentclass[12pt,twoside,letterpaper]{article}
+
+\usepackage[utf8]{inputenc}        % codificación UTF-8
+\usepackage[T1]{fontenc}           % codificación de salida
+\usepackage[spanish]{babel}        % idioma
+\usepackage{amsmath,amssymb}       % entornos matemáticos
+\usepackage{graphicx}              % inclusión de imágenes
+\usepackage{enumitem}              % listas personalizables
+\usepackage{microtype}             % mejor tipografía
+\usepackage[hidelinks]{hyperref}   % hipervínculos sin color
+\usepackage{geometry}              % márgenes
+\usepackage{booktabs}              % tablas bonitas (por si hace falta)
+\usepackage{caption}               % control de captions
+
 %NOTE: This report format is 
 \setlength{\footskip}{1.5cm}
 
@@ -47,38 +60,62 @@ Contienen la información necesaria para que las reciba el Analizador Sintáctic
 \\
 Hemos definido los siguientes tokens en funcion de las necesidades de nuestra práctica:
 
-\begin{itemize}[itemsep=0.1em, topsep=1em, parsep=0pt, partopsep=0pt]
-    \item Boolean: $<$BOOLEAN, $>$
-    \item Else: $<$ELSE, $>$
-    \item Float: $<$FLOAT, $>$
-    \item Function: $<$FUNCTION, $>$
-    \item If: $<$IF, $>$
-    \item Int: $<$INT, $>$
-    \item Let: $<$LET, $>$
-    \item Read: $<$READ, $>$
-    \item Return: $<$RETURN, $>$
-    \item String: $<$STRING, $>$
-    \item Void: $<$VOID, $>$
-    \item Write: $<$WRITE, $>$
-    \item Constante real: $<$REALCONST, $>$
-    \item Constante entera: $<$INTCONST, $>$
-    \item Cadena: $<$STR, '$\text{c*}$'$>$
-    \item Identificador: $<$ID, posTS$>$
-    \item Suma con asignación [+=]: $<$PLUSEQ, $>$
-    \item Igual [=]: $<$EQ, $>$
-    \item Coma [,]: $<$COMMA, $>$
-    \item Punto y coma [;]: $<$SEMICOLON, $>$
-    \item Paréntesis abierto [(]: $<$OPPAR, $>$
-    \item Paréntesis cerrado [)]: $<$CLPAR, $>$
-    \item Llave abierta [\{]: $<$OPBRA, $>$
-    \item Llave cerrada [\}]: $<$CLBRA, $>$
-    \item Suma [+]: $<$SUM, $>$
-    \item Y Lógico [\&\&]: $<$AND, $>$
-    \item Menor [$<$]: $<$MINORTHAN, $>$
-    \item false: $<$FALSE, $>$
-    \item true: $<$TRUE, $>$
-    \item EOF: $<$EOF, $>$
-\end{itemize}
+\section{Gramática}
+
+A continuación se presenta la gramática completa del lenguaje, en formato claro,
+profesional y con numeración automática de reglas. Todas las producciones usan
+alternativas separadas mediante el símbolo ``|'' y se mantienen los nombres de
+terminales y no terminales exactamente como en la especificación.
+
+% --- Inicio: bloque de gramática limpio y compilable ---
+% Requiere: \usepackage{enumitem} en el preámbulo (si no lo tienes, añádelo)
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*:}]
+  \item \texttt{S} ::= \texttt{LC S} \;|\; \texttt{LF S} \;|\; \texttt{eof}
+
+  \item \texttt{LC} ::= \texttt{LS semicolon} \;|\; \texttt{if oppar Expresion clpar CuerpoIf} \;|\; \texttt{else CuerpoIf}
+
+  \item \texttt{LF} ::= \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
+
+  \item \texttt{CuerpoIf} ::= \texttt{opbra Cuerpo clbra} \;|\; \texttt{LC}
+
+  \item \texttt{Cuerpo} ::= \texttt{LC Cuerpo} \;|\; $\lambda$
+
+  \item \texttt{Args} ::= \texttt{Tipo id ArgMore} \;|\; \texttt{void}
+
+  \item \texttt{ArgsLlamada} ::= \texttt{Expresion ArgMoreLlamada} \;|\; $\lambda$
+
+  \item \texttt{ArgMoreLlamada} ::= \texttt{comma Expresion ArgMoreLlamada} \;|\; $\lambda$
+
+  \item \texttt{ArgMore} ::= \texttt{comma Tipo id ArgMore} \;|\; $\lambda$
+
+  \item \texttt{LS} ::= \texttt{let Tipo id Asignar} \;|\; \texttt{id IdOpt} \;|\; \texttt{read id} \;|\; \texttt{write Expresion} \;|\; \texttt{return ExpReturn}
+
+  \item \texttt{IdOpt} ::= \texttt{oppar ArgsLlamada clpar} \;|\; \texttt{eq Expresion} \;|\; \texttt{pluseq Expresion}
+
+  \item \texttt{TypeFun} ::= \texttt{void} \;|\; \texttt{Tipo}
+
+  \item \texttt{Tipo} ::= \texttt{int} \;|\; \texttt{float} \;|\; \texttt{string} \;|\; \texttt{boolean}
+
+  \item \texttt{Asignar} ::= \texttt{eq Expresion} \;|\; $\lambda$
+
+  \item \texttt{ExpReturn} ::= \texttt{Expresion} \;|\; $\lambda$
+
+  \item \texttt{Expresion} ::= \texttt{Expresion1 ExpresionAux}
+
+  \item \texttt{ExpresionAux} ::= \texttt{and Expresion} \;|\; $\lambda$
+
+  \item \texttt{Expresion1} ::= \texttt{Expresion2 Expresion1Aux}
+
+  \item \texttt{Expresion1Aux} ::= \texttt{minorthan Expresion1} \;|\; $\lambda$
+
+  \item \texttt{Expresion2} ::= \texttt{Expresion3 Expresion2Aux}
+
+  \item \texttt{Expresion2Aux} ::= \texttt{sum Expresion2} \;|\; $\lambda$
+
+  \item \texttt{Expresion3} ::= \texttt{oppar Expresion clpar} \;|\; \texttt{intconst} \;|\; \texttt{realconst} \;|\; \texttt{string} \;|\; \texttt{true} \;|\; \texttt{false} \;|\; \texttt{id Expresion4}
+
+  \item \texttt{Expresion4} ::= \texttt{oppar ArgsLlamada clpar} \;|\; $\lambda$
+\end{enumerate}
 
 Todos los tokens anteriores conforman todos los obligatorios, los específicos y los opcionales de la práctica.
 
