@@ -45,26 +45,53 @@ La gramática es la estructura matemática que define el lenguaje a generar, en 
 \\
 \\
 Hemos definido las siguientes reglas:
-\begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
-    \item $S \to ~delS~|~+A~|~\&B~|~`C~|~dD~|~lF~|~\_F~|~/G~|~=~|~,~|~;~|~<~|~(~|~)~|~\{~|~\}$
-    \item $A \to ~=~|~\lambda$
-    \item $B \to ~\&$
-    \item $C \to ~cC~|~`$
-    \item $D \to ~dD~|~.E~|~\lambda$
-    \item $E \to ~dE~|~d$
-    \item $F \to ~lF~|~dF~|~\_F~|~\lambda$
-    \item $G \to ~/H$
-    \item $H \to ~c_2H~|~\text{\textbackslash n}S$
-\end{itemize}
-\vspace{1em}
-Los conjuntos definidos para el desarrollo de la gramática y del resto de la práctica son: 
-\begin{itemize}[label={}, itemsep=0.0em, topsep=0.5em]
-    \item Conjunto l: representa cualquier letra.
-    \item Conjunto d: representa cualquier dígito.
-    \item Conjunto c: representa cualquier caracter.
-    \item Conjunto c$_2$: representa cualquier caracter sin \textbackslash n.
-\end{itemize}
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*:}]
+  \item \texttt{S} ::= \texttt{LC S} \;|\; \texttt{LF S} \;|\; \texttt{eof}
 
+  \item \texttt{LC} ::= \texttt{LS semicolon} \;|\; \texttt{if oppar Expresion clpar CuerpoIf} \;|\; \texttt{else CuerpoIf}
+
+  \item \texttt{LF} ::= \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
+
+  \item \texttt{CuerpoIf} ::= \texttt{opbra Cuerpo clbra} \;|\; \texttt{LC}
+
+  \item \texttt{Cuerpo} ::= \texttt{LC Cuerpo} \;|\; $\lambda$
+
+  \item \texttt{Args} ::= \texttt{Tipo id ArgMore} \;|\; \texttt{void}
+
+  \item \texttt{ArgsLlamada} ::= \texttt{Expresion ArgMoreLlamada} \;|\; $\lambda$
+
+  \item \texttt{ArgMoreLlamada} ::= \texttt{comma Expresion ArgMoreLlamada} \;|\; $\lambda$
+
+  \item \texttt{ArgMore} ::= \texttt{comma Tipo id ArgMore} \;|\; $\lambda$
+
+  \item \texttt{LS} ::= \texttt{let Tipo id Asignar} \;|\; \texttt{id IdOpt} \;|\; \texttt{read id} \;|\; \texttt{write Expresion} \;|\; \texttt{return ExpReturn}
+
+  \item \texttt{IdOpt} ::= \texttt{oppar ArgsLlamada clpar} \;|\; \texttt{eq Expresion} \;|\; \texttt{pluseq Expresion}
+
+  \item \texttt{TypeFun} ::= \texttt{void} \;|\; \texttt{Tipo}
+
+  \item \texttt{Tipo} ::= \texttt{int} \;|\; \texttt{float} \;|\; \texttt{string} \;|\; \texttt{boolean}
+
+  \item \texttt{Asignar} ::= \texttt{eq Expresion} \;|\; $\lambda$
+
+  \item \texttt{ExpReturn} ::= \texttt{Expresion} \;|\; $\lambda$
+
+  \item \texttt{Expresion} ::= \texttt{Expresion1 ExpresionAux}
+
+  \item \texttt{ExpresionAux} ::= \texttt{and Expresion} \;|\; $\lambda$
+
+  \item \texttt{Expresion1} ::= \texttt{Expresion2 Expresion1Aux}
+
+  \item \texttt{Expresion1Aux} ::= \texttt{minorthan Expresion1} \;|\; $\lambda$
+
+  \item \texttt{Expresion2} ::= \texttt{Expresion3 Expresion2Aux}
+
+  \item \texttt{Expresion2Aux} ::= \texttt{sum Expresion2} \;|\; $\lambda$
+
+  \item \texttt{Expresion3} ::= \texttt{oppar Expresion clpar} \;|\; \texttt{intconst} \;|\; \texttt{realconst} \;|\; \texttt{string} \;|\; \texttt{true} \;|\; \texttt{false} \;|\; \texttt{id Expresion4}
+
+  \item \texttt{Expresion4} ::= \texttt{oppar ArgsLlamada clpar} \;|\; $\lambda$
+\end{enumerate}
 \newpage
 \subsection{Acciones Semánticas}
 
