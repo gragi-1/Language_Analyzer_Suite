@@ -1,4 +1,4 @@
-Terminales = { boolean else float function if int let read return string void write true false id intconst realconst str pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan eof }
+Terminales = { boolean else float function if int let read return string void write true false id intconst realconst pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan eof }
 
 NoTerminales = { S LC LF CuerpoIf ElseOpt Cuerpo Args ArgsLlamada ArgMore ArgMoreLlamada LS IdOpt TypeFun Tipo Asignar ExpReturn Expresion ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion4 }
 
@@ -48,7 +48,7 @@ TypeFun -> Tipo
 
 Tipo -> int
 Tipo -> float
-Tipo -> str
+Tipo -> string
 Tipo -> boolean
 
 Asignar -> eq Expresion
@@ -75,7 +75,7 @@ Expresion2Aux -> lambda
 Expresion3 -> oppar Expresion clpar
 Expresion3 -> intconst
 Expresion3 -> realconst
-Expresion3 -> str
+Expresion3 -> string
 Expresion3 -> true
 Expresion3 -> false
 Expresion3 -> id Expresion4
