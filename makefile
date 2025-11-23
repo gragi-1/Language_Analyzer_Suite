@@ -1,2 +1,2 @@
 clean:
-	rm lexed.txt symbols.txt
+	rm lexed.txt symbols.txt parse.txt
