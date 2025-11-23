@@ -45,7 +45,7 @@ reserved.update({
 })
 
 tokens = [
-        "REALCONST", "INTCONST", "STR", "ID",
+        "REALCONST", "INTCONST", "ID",
         ] + noattr + list(reserved.values())
 
 t_PLUSEQ     = r'\+='
@@ -86,7 +86,7 @@ def t_INTCONST(t):
         return None
     return t
 
-def t_STR(t):
+def t_STRING(t):
     r'\'([^\\\n]|(\\.))*?\''
     try:
         t.value = t.value[1:-1]
@@ -418,14 +418,13 @@ def token_type_to_grammar_symbol(token):
         'LET': 'let',
         'READ': 'read',
         'RETURN': 'return',
-        'STRING': 'string',
         'VOID': 'void',
         'WRITE': 'write',
         'FALSE': 'false',
         'TRUE': 'true',
         'REALCONST': 'floatconst',
         'INTCONST': 'intconst',
-        'STR': 'str',
+        'STR': 'string',
         'PLUSEQ': 'pluseq',
         'EQ': 'eq',
         'COMMA': 'comma',
