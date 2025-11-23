@@ -76,6 +76,6 @@ Expresion3 -> true
 Expresion3 -> false
 Expresion3 -> id Expresion4
 
-Expresion4 -> oppar ArgList clpar
+Expresion4 -> oppar Args clpar
 Expresion4 -> lambda
 }
