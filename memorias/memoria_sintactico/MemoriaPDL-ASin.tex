@@ -72,6 +72,138 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
 
 \subsection{Demostración de que la gramática es LL(1)}
 
+
+Para demostrar que una gramática es LL(1), debemos verificar que cumple las siguientes propiedades:
+
+\begin{enumerate}[itemsep=0.2em, topsep=0.5em]
+    \item No existe recursividad por la izquierda.
+    \item Está factorizada por la izquierda.
+    \item Para cada no terminal $A$ con producciones alternativas $A \rightarrow \alpha_1 ~|~ \alpha_2 ~|~ \ldots ~|~ \alpha_n$, los conjuntos FIRST($\alpha_{i}$) son disjuntos.
+    \item Para cada producción con $\lambda$: $A \rightarrow \alpha ~|~ \lambda$, se cumple que $\text{FIRST}(\alpha) \cap \text{FOLLOW}(A) = \emptyset$.
+\end{enumerate}
+
+\subsubsection{Cálculo de Conjuntos FIRST}
+
+El conjunto $\text{FIRST}(\alpha)$ contiene todos los terminales que pueden aparecer al inicio de una derivación desde $\alpha$.
+
+\vspace{0.3em}
+\textbf{Conjuntos FIRST principales:}
+\begin{align*}
+\text{FIRST}(Tipo) ={}& \{\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}\} \\
+\text{FIRST}(TypeFun) ={}& \{\mathit{void}, \mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}\} \\
+\text{FIRST}(LS) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}\} \\
+\text{FIRST}(LC) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
+\text{FIRST}(LF) ={}& \{\mathit{function}\} \\
+\text{FIRST}(S) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}\} \\
+\text{FIRST}(Expresion3) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}\} \\
+\text{FIRST}(Expresion2) ={}& \text{FIRST}(Expresion3) \\
+\text{FIRST}(Expresion1) ={}& \text{FIRST}(Expresion2) \\
+\text{FIRST}(Expresion) ={}& \text{FIRST}(Expresion1) \\
+\text{FIRST}(Args) ={}& \{\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}, \mathit{void}\} \\
+\text{FIRST}(ArgsLlamada) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}, \lambda\} \\
+\text{FIRST}(Cuerpo) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \lambda\} \\
+\text{FIRST}(CuerpoIf) ={}& \{\mathit{opbra}, \mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\}
+\end{align*}
+
+\subsubsection{Cálculo de Conjuntos FOLLOW}
+
+El conjunto $\text{FOLLOW}(A)$ contiene todos los terminales que pueden aparecer inmediatamente después de $A$ en alguna derivación.
+
+\vspace{0.3em}
+\textbf{Conjuntos FOLLOW principales:}
+\begin{align*}
+\text{FOLLOW}(S) ={}& \{\mathit{eof}\} \\
+\text{FOLLOW}(Cuerpo) ={}& \{\mathit{clbra}\} \\
+\text{FOLLOW}(LS) ={}& \{\mathit{semicolon}\} \\
+\text{FOLLOW}(Args) ={}& \{\mathit{clpar}\} \\
+\text{FOLLOW}(ArgsLlamada) ={}& \{\mathit{clpar}\} \\
+\text{FOLLOW}(LC) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}, \mathit{clbra}\} \\
+\text{FOLLOW}(LF) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}\} \\
+\text{FOLLOW}(CuerpoIf) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}, \mathit{clbra}\} \\
+\text{FOLLOW}(Expresion) ={}& \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}, \mathit{minorthan}, \mathit{sum}\}
+\end{align*}
+
+\subsubsection{Verificación de la Propiedad LL(1)}
+
+Debemos verificar que para cada no terminal con producciones alternativas, los conjuntos FIRST son disjuntos, y para producciones con $\lambda$, se cumple que $\text{FIRST}(\alpha) \cap \text{FOLLOW}(A) = \emptyset$.
+
+\vspace{0.3em}
+\textbf{Caso 1: No terminal $S$}
+
+\begin{center}
+\begin{minipage}{0.85\textwidth}
+\begin{align*}
+S \rightarrow{}& LC~S ~|~ LF~S ~|~ \mathit{eof} \\
+\text{FIRST}(LC~S) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
+\text{FIRST}(LF~S) ={}& \{\mathit{function}\} \\
+\text{FIRST}(\mathit{eof}) ={}& \{\mathit{eof}\} \quad \text{Los tres conjuntos son disjuntos: } \checkmark
+\end{align*}
+\end{minipage}
+\end{center}
+
+
+\textbf{Caso 2: No terminal $LC$}
+\begin{align*}
+LC \rightarrow{}& LS~; ~|~ \mathit{if}~(~\ldots ~|~ \mathit{else}~\ldots \\
+\text{FIRST}(LS~;) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}\} \\
+\text{FIRST}(\mathit{if}\ldots) ={}& \{\mathit{if}\} \\
+\text{FIRST}(\mathit{else}\ldots) ={}& \{\mathit{else}\} \quad \text{Los tres conjuntos son disjuntos: } \checkmark
+\end{align*}
+
+\textbf{Caso 3: No terminal $LS$ (5 producciones)}
+\begin{align*}
+LS \rightarrow{}& \mathit{let}~\ldots ~|~ \mathit{id}~\ldots ~|~ \mathit{read}~\ldots ~|~ \mathit{write}~\ldots ~|~ \mathit{return}~\ldots \\
+\text{FIRST}(\mathit{let}\ldots) ={}& \{\mathit{let}\}, \quad \text{FIRST}(\mathit{id}\ldots) = \{\mathit{id}\}, \quad \text{FIRST}(\mathit{read}\ldots) = \{\mathit{read}\} \\
+\text{FIRST}(\mathit{write}\ldots) ={}& \{\mathit{write}\}, \quad \text{FIRST}(\mathit{return}\ldots) = \{\mathit{return}\} \quad \text{Todos disjuntos: } \checkmark
+\end{align*}
+
+\textbf{Caso 4: No terminal $Cuerpo$ (con $\lambda$)}
+\begin{align*}
+Cuerpo \rightarrow{}& LC~Cuerpo ~|~ \lambda \\
+\text{FIRST}(LC~Cuerpo) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
+\text{FOLLOW}(Cuerpo) ={}& \{\mathit{clbra}\} \quad \text{Verificación: } \text{FIRST}(LC~Cuerpo) \cap \text{FOLLOW}(Cuerpo) = \emptyset \quad \checkmark
+\end{align*}
+
+\textbf{Caso 5: No terminal $ArgsLlamada$ (con $\lambda$)}
+\begin{align*}
+ArgsLlamada \rightarrow{}& Expresion~ArgMoreLlamada ~|~ \lambda \\
+\text{FIRST}(Expresion\ldots) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}\} \\
+\text{FOLLOW}(ArgsLlamada) ={}& \{\mathit{clpar}\} \quad \text{Verificación: } \text{FIRST}(Expresion\ldots) \cap \text{FOLLOW}(ArgsLlamada) = \emptyset \quad \checkmark
+\end{align*}
+
+\textbf{Casos 6 y 7: No terminales $ArgMore$ y $ArgMoreLlamada$ (con $\lambda$)}
+\begin{align*}
+ArgMore \rightarrow{}& ,~Tipo~id~ArgMore ~|~ \lambda \\
+\text{FIRST}(,\ldots) ={}& \{\mathit{comma}\} \quad \text{FOLLOW}(ArgMore) = \{\mathit{clpar}\} \quad \checkmark \\
+ArgMoreLlamada \rightarrow{}& ,~Expresion~ArgMoreLlamada ~|~ \lambda \\
+\text{FIRST}(,\ldots) ={}& \{\mathit{comma}\} \quad \text{FOLLOW}(ArgMoreLlamada) = \{\mathit{clpar}\} \quad \checkmark
+\end{align*}
+
+\textbf{Casos 8 y 9: No terminales $Asignar$ y $ExpReturn$ (con $\lambda$)}
+\begin{align*}
+Asignar \rightarrow{}& =~Expresion ~|~ \lambda \\
+\text{FIRST}(=\ldots) ={}& \{\mathit{eq}\} \quad \text{FOLLOW}(Asignar) = \{\mathit{semicolon}\} \quad \checkmark \\
+ExpReturn \rightarrow{}& Expresion ~|~ \lambda \\
+\text{FIRST}(Expresion) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}\} \\
+\text{FOLLOW}(ExpReturn) ={}& \{\mathit{semicolon}\} \quad \text{Verificación: } \text{FIRST}(Expresion) \cap \{\mathit{semicolon}\} = \emptyset \quad \checkmark
+\end{align*}
+
+\textbf{Caso 10: No terminales de expresiones (con $\lambda$)}
+\begin{align*}
+ExpresionAux \rightarrow{}& \mathit{and}~Expresion ~|~ \lambda \\
+\text{FIRST}(\mathit{and}\ldots) ={}& \{\mathit{and}\} \quad \text{FOLLOW}(ExpresionAux) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}\} \quad \checkmark \\
+Expresion1Aux \rightarrow{}& \mathit{minorthan}~Expresion1 ~|~ \lambda \\
+\text{FIRST}(\mathit{minorthan}\ldots) ={}& \{\mathit{minorthan}\} \quad \text{FOLLOW}(Expresion1Aux) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}\} \quad \checkmark \\
+Expresion2Aux \rightarrow{}& \mathit{sum}~Expresion2 ~|~ \lambda \\
+\text{FIRST}(\mathit{sum}\ldots) ={}& \{\mathit{sum}\} \quad \text{FOLLOW}(Expresion2Aux) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}, \mathit{minorthan}\} \quad \checkmark \\
+Expresion4 \rightarrow{}& (~ArgsLlamada~) ~|~ \lambda \\
+\text{FIRST}((\ldots) ={}& \{\mathit{oppar}\} \quad \text{FOLLOW}(Expresion4) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}, \mathit{minorthan}, \mathit{sum}\} \quad \checkmark
+\end{align*}
+
+\begin{flushright}
+$\square$
+\end{flushright}
+
 \subsection{Tabla LL y Pseudocódigo}
     Se ha hecho un renombrado de los símbolos de la gramática para favorecer su representación.
     \\\\
