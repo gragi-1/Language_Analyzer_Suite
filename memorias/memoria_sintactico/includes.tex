@@ -28,6 +28,10 @@
 %----------------------------------------------------------------------------------------
 %	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
+\usepackage{rotating}
+\usepackage{graphicx} % en el preámbulo
+\usepackage{pdflscape}
+
 \usepackage{ifxetex}
 \usepackage{tikz}
 \usepackage[spanish]{babel}
@@ -57,6 +61,9 @@
 \usepackage{enumerate} % for numbering with [a)] format 
 \usepackage{enumitem}
 
+\usepackage{xcolor} % Elección de color
+\definecolor{linkblue}{RGB}{0, 0, 150}
+
 \ifxetex
 \usepackage{fontspec}
 \setmainfont[Scale=.8]{OpenDyslexic-Regular}
@@ -71,8 +78,8 @@
   bookmarksnumbered=true, bookmarksopen=true, colorlinks,
     citecolor=black,%
     filecolor=black,%
-    linkcolor=black,%
-    urlcolor=black}
+    linkcolor=linkblue,%
+    urlcolor=blue}
 \usepackage[all]{hypcap}
 \fi
 
