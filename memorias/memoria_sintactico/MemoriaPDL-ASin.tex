@@ -251,255 +251,131 @@ Para esta entrega hemos detectado los siguientes casos de error:
 
 \subsubsection{Caso Correcto}
 \begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
-    \item \textbf{Código:}
-    \begin{verbatim} 
-let int a_53f = 3;
-let boolean bb;
-let float fl = 3.5;
-let int c;
-let float fl2;
-c = a_53f + 9;
-fl2 = fl + 3.0;
-let string str = 'Supercalifragilisticoespialidoso';
-    \end{verbatim}
-    \item \textbf{Archivo de Tokens:}\begin{verbatim}
-<LET,>
-<INT,>
-<ID,0>
-<EQ,>
-<INTCONST,3>
-<SEMICOLON,>
-<LET,>
-<BOOLEAN,>
-<ID,1>
-<SEMICOLON,>
-<LET,>
-<FLOAT,>
-<ID,2>
-<EQ,>
-<REALCONST,3.5>
-<SEMICOLON,>
-<LET,>
-<INT,>
-<ID,3>
-<SEMICOLON,>
-<LET,>
-<FLOAT,>
-<ID,4>
-<SEMICOLON,>
-<ID,5>
-<EQ,>
-<ID,6>
-<SUM,>
-<INTCONST,9>
-<SEMICOLON,>
-<ID,7>
-<EQ,>
-<ID,8>
-<SUM,>
-<REALCONST,3.0>
-<SEMICOLON,>
-<LET,>
-<STRING,>
-<ID,9>
-<EQ,>
-<STR,"Supercalifragilisticoespialidoso">
-<SEMICOLON,>
-<EOF,>
-    \end{verbatim}
-    \item \textbf{Archivo de Tabla de Símbolos:}\begin{verbatim}
-CONTENIDOS DE LA TABLA # 1:
-* LEXEMA : 'a_53f'
-  Atributos:
---------- ---------
-* LEXEMA : 'bb'
-  Atributos:
---------- ---------
-* LEXEMA : 'fl'
-  Atributos:
---------- ---------
-* LEXEMA : 'c'
-  Atributos:
---------- ---------
-* LEXEMA : 'fl2'
-  Atributos:
---------- ---------
-* LEXEMA : 'str'
-  Atributos:
---------- ---------
-    \end{verbatim}
-\end{itemize}
+    \item \textbf{Código:}\begin{verbatim} 
+function int calcular(int x, int y) {
+    let int temp = x + y;
+    if (temp < 100)
+        return temp;
+}
 
-\subsubsection{Caso Correcto}
-\begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
-    \item \textbf{Código:}
-    \begin{verbatim} 
-let int s = 2; // Esto es una prueba de comentario 4hjdsh2&&ndj!
-s = s + 3; // Sigue siendo una prueba jdlwn;eldr4,4nc,erioe4nx,(·!N$"()E·/$"N
-let boolean bs = s && 4;
-    \end{verbatim}
-    \item \textbf{Archivo de Tokens:}
-    \begin{verbatim} 
-<LET,>
-<INT,>
-<ID,0>
-<EQ,>
-<INTCONST,2>
-<SEMICOLON,>
-<ID,1>
-<EQ,>
-<ID,2>
-<SUM,>
-<INTCONST,3>
-<SEMICOLON,>
-<LET,>
-<BOOLEAN,>
-<ID,3>
-<EQ,>
-<ID,4>
-<AND,>
-<INTCONST,4>
-<SEMICOLON,>
-<EOF,>
-    \end{verbatim}
-    \item \textbf{Archivo de Tabla de Símbolos:}
-    \begin{verbatim} 
-CONTENIDOS DE LA TABLA # 1:
-* LEXEMA : 's'
-  Atributos:
---------- ---------
-* LEXEMA : 'bs'
-  Atributos:
---------- ---------
-    \end{verbatim}
-\end{itemize}
+let int num1 = 10;
+let int num2 = 20;
+let int resultado = calcular(num1, num2);
+write(resultado);
 
-\newpage
-\subsubsection{Caso Correcto}
-\begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
-    \item \textbf{Código:}
-    \begin{verbatim} 
-function void sql {
-	lt boolean b = true;
-		let int dl = 7;
-	if (b == true) {
-		dl = dl + 2;
-		write('Sí');
-	}
-	else return;
+let boolean condicion = num1 < num2;
+if (condicion) {
+    write('num1 es menor');
 }
     \end{verbatim}
-    \item \textbf{Archivo de Tokens:}
-    \begin{verbatim} 
-<FUNCTION,>
-<VOID,>
-<ID,0>
-<OPBRA,>
-<ID,1>
-<BOOLEAN,>
-<ID,2>
-<EQ,>
-<TRUE,>
-<SEMICOLON,>
-<LET,>
-<INT,>
-<ID,3>
-<EQ,>
-<INTCONST,7>
-<SEMICOLON,>
-<IF,>
-<OPPAR,>
-<ID,4>
-<EQ,>
-<EQ,>
-<TRUE,>
-<CLPAR,>
-<OPBRA,>
-<ID,5>
-<EQ,>
-<ID,6>
-<SUM,>
-<INTCONST,2>
-<SEMICOLON,>
-<WRITE,>
-<OPPAR,>
-<STR,"Sí">
-<CLPAR,>
-<SEMICOLON,>
-<CLBRA,>
-<ELSE,>
-<RETURN,>
-<SEMICOLON,>
-<CLBRA,>
-<EOF,>
+    \item \textbf{Volcado Parse:}\\
+Descendente 2 7 29 30 12 30 18 30 19 10 4 20 30 34 38 41 44 53 55 45 44 53 55 46 43 40 10 5 38 41 44 53 55 46 42 41 44 48 46 43 40 9 4 24 36 38 41 44 53 55 46 43 40 11 1 4 20 30 34 38 41 44 48 46 43 40 1 4 20 30 34 38 41 44 48 46 43 40 1 4 20 30 34 38 41 44 53 54 14 38 41 44 53 55 46 43 40 16 38 41 44 53 55 46 43 40 17 46 43 40 1 4 23 38 41 44 47 38 41 44 53 55 46 43 40 46 43 40 1 4 20 33 34 38 41 44 53 55 46 42 41 44 53 55 46 43 40 1 5 38 41 44 53 55 46 43 40 8 10 4 23 38 41 44 47 38 41 44 50 46 43 40 46 43 40 11 3 
+\\\\
+    \item \textbf{Árbol Sintáctico:}
+\includegraphics[width=0.45\textwidth]{./Correcto1.png} 
+\end{itemize}
+
+\subsubsection{Caso Correcto}
+\begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
+    \item \textbf{Código:}\begin{verbatim} 
+let boolean check;
+check = 10 < 30;
+
+function void print(string mostrar){
+    write mostrar;
+}
+
+if(check)
+    write('Diez es menor que 30');
+else
+    print('Diez es mayor que 30');
     \end{verbatim}
-    \item \textbf{Archivo de Tabla de Símbolos:}
-    \begin{verbatim} 
-CONTENIDOS DE LA TABLA # 1:
-* LEXEMA : 'sql'
-  Atributos:
---------- ---------
-* LEXEMA : 'lt'
-  Atributos:
---------- ---------
-* LEXEMA : 'b'
-  Atributos:
---------- ---------
-* LEXEMA : 'dl'
-  Atributos:
---------- ---------
+    \item \textbf{Volcado Parse:}\\
+Descendente 1 4 20 33 35 1 4 21 26 38 41 44 48 46 42 41 44 48 46 43 40 2 7 28 12 32 19 10 4 23 38 41 44 53 55 46 43 40 11 1 5 38 41 44 53 55 46 43 40 9 4 23 38 41 44 47 38 41 44 50 46 43 40 46 43 40 1 6 9 4 21 25 14 38 41 44 50 46 43 40 17 3 
+\\\\
+    \item \textbf{Árbol Sintáctico:}
+\includegraphics[width=0.7\textwidth]{./Correcto2.png} 
+\end{itemize}
+
+\subsubsection{Caso Correcto}
+\begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
+    \item \textbf{Código:}\begin{verbatim} 
+function boolean comparar(int num1, int num2){
+    return num1 < num2;
+}
+
+write('Mostrando comparación...');
+write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
+
+let string input;
+read input;
+write input;
     \end{verbatim}
+    \item \textbf{Volcado Parse:}\\
+        Descendente: 2 7 29 33 12 30 18 30 19 10 4 24 36 38 41 44 53 55 46 42 41 44 53 55 46 43 40 11 1 4 23 38 41 44 47 38 41 44 50 46 43 40 46 43 40 1 4 23 38 41 44 47 38 41 44 53 54 14 38 41 44 48 45 44 47 38 41 44 48 45 44 48 45 44 48 46 43 40 46 43 40 16 38 41 44 48 45 44 48 45 44 48 45 44 48 45 44 47 38 41 44 48 45 44 48 46 43 40 45 44 48 46 43 40 17 46 43 40 46 43 40 1 4 20 32 35 1 4 22 1 4 23 38 41 44 53 55 46 43 40 3 
+\\\\
+    \item \textbf{Árbol Sintáctico:}
+\includegraphics[width=0.45\textwidth]{./Correcto3.png} 
 \end{itemize}
 
 \newpage
 \subsection{Casos Erróneos}
+
 \subsubsection{Caso Erróneo}
 \begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
-    \item \textbf{Código:}
-    \begin{verbatim} 
-let int _ser = 45;
-let float fl = 564.;
-let boolean bl = true;
-if (bl & false) int = 3;
+    \item \textbf{Código:}\begin{verbatim} 
+function int mulPorCuatro(int num){
+    return num+num+num+num;
+}
+
+let num1;
+write 'Introduce el número a multiplicar por cuatro';
+read num1;
+write(mulPorCuatro(num1));
     \end{verbatim}
-    \item \textbf{Errores:}
-    \begin{verbatim} 
-Carácter ilegal '.' en línea 2 
-Carácter ilegal '&' en línea 4
+    \item \textbf{Error generado:}\\
+Pila actual: ['eof', 'S', 'semicolon', 'Asignar', 'id', 'Tipo']                                                                                                                                
+Token actual: ID, símbolo actual: id                                                                                                                                                           
+¡Error sintáctico! No hay producción para [Tipo, id] (token: LexToken(ID,2,5,71))                                                                                                              
+No se generó parse.txt debido a errores en el análisis  
+\\\\
+\end{itemize}
+
+
+\subsubsection{Caso Erróneo}
+\begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
+    \item \textbf{Código:}\begin{verbatim} 
+function boolean comparar(int num1, int num2){
+    return num1 < num2;
+}
+
+write('Mostrando comparación...');
+write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
+
+let string input;
+read input;
+write input;
     \end{verbatim}
+    \item \textbf{Error generado:}\\
+\\\\
 \end{itemize}
 
 \subsubsection{Caso Erróneo}
 \begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
-    \item \textbf{Código:}
-    \begin{verbatim} 
-let boolean xl3_ = false; / Doremifasollasido
-let int del = 3;
-del += 4;
-if (xl3 == false) write('A'),
-    \end{verbatim}
-    \item \textbf{Error:}
-    \begin{verbatim} 
-    Carácter ilegal '/' en línea 1
-    \end{verbatim}
-\end{itemize}
+    \item \textbf{Código:}\begin{verbatim} 
+function boolean comparar(int num1, int num2){
+    return num1 < num2;
+}
 
-\subsubsection{Caso Erróneo}
-\begin{itemize}[label={-}, itemsep=-1em, topsep=0.0em, parsep=-0.2em]
-    \item \textbf{Código:}
-    \begin{verbatim} 
-let int 3m = 56;
-let float ad&d = 3.4;
-if (ad&d < 3m) write('Error);
-return ad&d;
+write('Mostrando comparación...');
+write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
+
+let string input;
+read input;
+write input;
     \end{verbatim}
-    \item \textbf{Errores:}
-    \begin{verbatim} 
-Carácter ilegal '&' en línea 2
-Carácter ilegal '&' en línea 3
-Carácter ilegal "'" en línea 3
-Carácter ilegal '&' en línea 4
-    \end{verbatim}
+    \item \textbf{Error generado:}\\
+\\\\
 \end{itemize}
 
 \begin{landscape}
