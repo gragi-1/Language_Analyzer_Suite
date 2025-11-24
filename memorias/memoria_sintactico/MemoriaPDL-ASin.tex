@@ -46,52 +46,31 @@ La gramática es la estructura matemática que define el lenguaje a generar, en 
 \\
 Hemos definido las siguientes reglas:
 \begin{enumerate}[leftmargin=*, label=\textbf{\arabic*:}]
-  \item \texttt{S} ::= \texttt{LC S} \;|\; \texttt{LF S} \;|\; \texttt{eof}
-
-  \item \texttt{LC} ::= \texttt{LS semicolon} \;|\; \texttt{if oppar Expresion clpar CuerpoIf} \;|\; \texttt{else CuerpoIf}
-
-  \item \texttt{LF} ::= \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
-
-  \item \texttt{CuerpoIf} ::= \texttt{opbra Cuerpo clbra} \;|\; \texttt{LC}
-
-  \item \texttt{Cuerpo} ::= \texttt{LC Cuerpo} \;|\; $\lambda$
-
-  \item \texttt{Args} ::= \texttt{Tipo id ArgMore} \;|\; \texttt{void}
-
-  \item \texttt{ArgsLlamada} ::= \texttt{Expresion ArgMoreLlamada} \;|\; $\lambda$
-
-  \item \texttt{ArgMoreLlamada} ::= \texttt{comma Expresion ArgMoreLlamada} \;|\; $\lambda$
-
-  \item \texttt{ArgMore} ::= \texttt{comma Tipo id ArgMore} \;|\; $\lambda$
-
-  \item \texttt{LS} ::= \texttt{let Tipo id Asignar} \;|\; \texttt{id IdOpt} \;|\; \texttt{read id} \;|\; \texttt{write Expresion} \;|\; \texttt{return ExpReturn}
-
-  \item \texttt{IdOpt} ::= \texttt{oppar ArgsLlamada clpar} \;|\; \texttt{eq Expresion} \;|\; \texttt{pluseq Expresion}
-
-  \item \texttt{TypeFun} ::= \texttt{void} \;|\; \texttt{Tipo}
-
-  \item \texttt{Tipo} ::= \texttt{int} \;|\; \texttt{float} \;|\; \texttt{string} \;|\; \texttt{boolean}
-
-  \item \texttt{Asignar} ::= \texttt{eq Expresion} \;|\; $\lambda$
-
-  \item \texttt{ExpReturn} ::= \texttt{Expresion} \;|\; $\lambda$
-
-  \item \texttt{Expresion} ::= \texttt{Expresion1 ExpresionAux}
-
-  \item \texttt{ExpresionAux} ::= \texttt{and Expresion} \;|\; $\lambda$
-
-  \item \texttt{Expresion1} ::= \texttt{Expresion2 Expresion1Aux}
-
-  \item \texttt{Expresion1Aux} ::= \texttt{minorthan Expresion1} \;|\; $\lambda$
-
-  \item \texttt{Expresion2} ::= \texttt{Expresion3 Expresion2Aux}
-
-  \item \texttt{Expresion2Aux} ::= \texttt{sum Expresion2} \;|\; $\lambda$
-
-  \item \texttt{Expresion3} ::= \texttt{oppar Expresion clpar} \;|\; \texttt{intconst} \;|\; \texttt{realconst} \;|\; \texttt{string} \;|\; \texttt{true} \;|\; \texttt{false} \;|\; \texttt{id Expresion4}
-
-  \item \texttt{Expresion4} ::= \texttt{oppar ArgsLlamada clpar} \;|\; $\lambda$
+  \item \texttt{S} $\to$ \texttt{LC S | LF S | eof}
+  \item \texttt{LC} $\to$ \texttt{LS semicolon | if oppar Expresion clpar CuerpoIf | else CuerpoIf}
+  \item \texttt{LF} $\to$ \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
+  \item \texttt{CuerpoIf} $\to$ \texttt{opbra Cuerpo clbra | LC}
+  \item \texttt{Cuerpo} $\to$ \texttt{LC Cuerpo |} $\lambda$
+  \item \texttt{Args} $\to$ \texttt{Tipo id ArgMore | void}
+  \item \texttt{ArgsLlamada} $\to$ \texttt{Expresion ArgMoreLlamada |} $\lambda$
+  \item \texttt{ArgMoreLlamada} $\to$ \texttt{comma Expresion ArgMoreLlamada |} $\lambda$
+  \item \texttt{ArgMore} $\to$ \texttt{comma Tipo id ArgMore |} $\lambda$
+  \item \texttt{LS} $\to$ \texttt{let Tipo id Asignar | id IdOpt | read id | write Expresion | return ExpReturn}
+  \item \texttt{IdOpt} $\to$ \texttt{oppar ArgsLlamada clpar | eq Expresion | pluseq Expresion}
+  \item \texttt{TypeFun} $\to$ \texttt{void | Tipo}
+  \item \texttt{Tipo} $\to$ \texttt{int | float | string | boolean}
+  \item \texttt{Asignar} $\to$ \texttt{eq Expresion |} $\lambda$
+  \item \texttt{ExpReturn} $\to$ \texttt{Expresion |} $\lambda$
+  \item \texttt{Expresion} $\to$ \texttt{Expresion1 ExpresionAux}
+  \item \texttt{ExpresionAux} $\to$ \texttt{and Expresion |} $\lambda$
+  \item \texttt{Expresion1} $\to$ \texttt{Expresion2 Expresion1Aux}
+  \item \texttt{Expresion1Aux} $\to$ \texttt{minorthan Expresion1 |} $\lambda$
+  \item \texttt{Expresion2} $\to$ \texttt{Expresion3 Expresion2Aux}
+  \item \texttt{Expresion2Aux} $\to$ \texttt{sum Expresion2 |} $\lambda$
+  \item \texttt{Expresion3} $\to$ \texttt{oppar Expresion clpar | intconst | realconst | string | true | false | id Expresion4}
+  \item \texttt{Expresion4} $\to$ \texttt{oppar ArgsLlamada clpar |} $\lambda$
 \end{enumerate}
+
 \newpage
 \subsection{Acciones Semánticas}
 
