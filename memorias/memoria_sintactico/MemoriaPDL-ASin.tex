@@ -272,7 +272,150 @@ if (condicion) {
 Descendente 2 7 29 30 12 30 18 30 19 10 4 20 30 34 38 41 44 53 55 45 44 53 55 46 43 40 10 5 38 41 44 53 55 46 42 41 44 48 46 43 40 9 4 24 36 38 41 44 53 55 46 43 40 11 1 4 20 30 34 38 41 44 48 46 43 40 1 4 20 30 34 38 41 44 48 46 43 40 1 4 20 30 34 38 41 44 53 54 14 38 41 44 53 55 46 43 40 16 38 41 44 53 55 46 43 40 17 46 43 40 1 4 23 38 41 44 47 38 41 44 53 55 46 43 40 46 43 40 1 4 20 33 34 38 41 44 53 55 46 42 41 44 53 55 46 43 40 1 5 38 41 44 53 55 46 43 40 8 10 4 23 38 41 44 47 38 41 44 50 46 43 40 46 43 40 11 3 
 \\\\
     \item \textbf{Árbol Sintáctico:}
-\includegraphics[width=0.45\textwidth]{./Correcto1.png} 
+\begin{verbatim}
+S (2)
+  LF (7)
+    function
+    TypeFun (29)
+      Tipo (30)
+        int
+    id
+    oppar
+    Args (12)
+      Tipo (30)
+        int
+      id
+      ArgMore (18)
+        comma
+        Tipo (30)
+          int
+        id
+        ArgMore (19)
+          lambda
+    clpar
+    opbra
+    Cuerpo (10)
+      LC (4)
+        LS (20)
+          let
+          Tipo (30)
+            int
+          id
+          Asignar (34)
+            eq
+            Expresion (38)
+              Expresion1 (41)
+                Expresion2 (44)
+                  Expresion3 (53)
+                    id
+                  Expresion2Aux (45)
+                    sum
+                    Expresion2 (44)
+                      Expresion3 (53)
+                        id
+                      Expresion2Aux (46)
+                        lambda
+                Expresion1Aux (43)
+                  lambda
+              ExpresionAux (40)
+                lambda
+        semicolon
+      LC (5)
+        if
+        oppar
+        Expresion (38)
+          Expresion1 (41)
+            Expresion2 (44)
+              Expresion3 (53)
+                id
+              Expresion2Aux (46)
+                lambda
+            Expresion1Aux (42)
+              minorthan
+              Expresion1 (41)
+                Expresion2 (44)
+                  Expresion3 (48)
+                    intconst
+                  Expresion2Aux (46)
+                    lambda
+                Expresion1Aux (43)
+                  lambda
+          ExpresionAux (40)
+            lambda
+        clpar
+        CuerpoIf (9)
+          LC (4)
+            LS (24)
+              return
+              ExpReturn (36)
+                Expresion (38)
+                  Expresion1 (41)
+                    Expresion2 (44)
+                      Expresion3 (53)
+                        id
+                      Expresion2Aux (46)
+                        lambda
+                    Expresion1Aux (43)
+                      lambda
+                  ExpresionAux (40)
+                    lambda
+            semicolon
+      Cuerpo (11)
+        lambda
+    clbra
+  S (1)
+    LC (4)
+      LS (20)
+        let
+        Tipo (30)
+          int
+        id
+        Asignar (34)
+          eq
+          Expresion (38)
+            Expresion1 (41)
+              Expresion2 (44)
+                Expresion3 (48)
+                  intconst
+                Expresion2Aux (46)
+                  lambda
+              Expresion1Aux (43)
+                lambda
+            ExpresionAux (40)
+              lambda
+      semicolon
+    S (1)
+      LC (4)
+        LS (23)
+          write
+          Expresion (38)
+            Expresion1 (41)
+              Expresion2 (44)
+                Expresion3 (47)
+                  oppar
+                  Expresion (38)
+                    Expresion1 (41)
+                      Expresion2 (44)
+                        Expresion3 (50)
+                          string
+                        Expresion2Aux (46)
+                          lambda
+                      Expresion1Aux (43)
+                        lambda
+                    ExpresionAux (40)
+                      lambda
+                  clpar
+                Expresion2Aux (46)
+                  lambda
+              Expresion1Aux (43)
+                lambda
+            ExpresionAux (40)
+              lambda
+        semicolon
+      S (3)
+        eof
+  eof
+\end{verbatim}
 \end{itemize}
 
 \subsubsection{Caso Correcto}
@@ -294,7 +437,153 @@ else
 Descendente 1 4 20 33 35 1 4 21 26 38 41 44 48 46 42 41 44 48 46 43 40 2 7 28 12 32 19 10 4 23 38 41 44 53 55 46 43 40 11 1 5 38 41 44 53 55 46 43 40 9 4 23 38 41 44 47 38 41 44 50 46 43 40 46 43 40 1 6 9 4 21 25 14 38 41 44 50 46 43 40 17 3 
 \\\\
     \item \textbf{Árbol Sintáctico:}
-\includegraphics[width=0.7\textwidth]{./Correcto2.png} 
+\begin{verbatim}
+S (1)
+  LC (4)
+    LS (20)
+      let
+      Tipo (33)
+        boolean
+      id
+      Asignar (35)
+        lambda
+    semicolon
+  S (1)
+    LC (4)
+      LS (21)
+        id
+        IdOpt (26)
+          eq
+          Expresion (38)
+            Expresion1 (41)
+              Expresion2 (44)
+                Expresion3 (48)
+                  intconst
+                Expresion2Aux (46)
+                  lambda
+              Expresion1Aux (42)
+                minorthan
+                Expresion1 (41)
+                  Expresion2 (44)
+                    Expresion3 (48)
+                      intconst
+                    Expresion2Aux (46)
+                      lambda
+                  Expresion1Aux (43)
+                    lambda
+              ExpresionAux (40)
+                lambda
+        semicolon
+    S (2)
+      LF (7)
+        function
+        TypeFun (28)
+          void
+        id
+        oppar
+        Args (12)
+          Tipo (32)
+            string
+          id
+          ArgMore (19)
+            lambda
+        clpar
+        opbra
+        Cuerpo (10)
+          LC (4)
+            LS (23)
+              write
+              Expresion (38)
+                Expresion1 (41)
+                  Expresion2 (44)
+                    Expresion3 (53)
+                      id
+                    Expresion4 (55)
+                      lambda
+                  Expresion2Aux (46)
+                    lambda
+                Expresion1Aux (43)
+                  lambda
+              ExpresionAux (40)
+                lambda
+            semicolon
+          Cuerpo (11)
+            lambda
+        clbra
+      S (1)
+        LC (5)
+          if
+          oppar
+          Expresion (38)
+            Expresion1 (41)
+              Expresion2 (44)
+                Expresion3 (53)
+                  id
+                Expresion4 (55)
+                  lambda
+              Expresion2Aux (46)
+                lambda
+            Expresion1Aux (43)
+              lambda
+          ExpresionAux (40)
+            lambda
+          clpar
+          CuerpoIf (9)
+            LC (4)
+              LS (23)
+                write
+                Expresion (38)
+                  Expresion1 (41)
+                    Expresion2 (44)
+                      Expresion3 (47)
+                        oppar
+                        Expresion (38)
+                          Expresion1 (41)
+                            Expresion2 (44)
+                              Expresion3 (50)
+                                string
+                              Expresion2Aux (46)
+                                lambda
+                            Expresion1Aux (43)
+                              lambda
+                          ExpresionAux (40)
+                            lambda
+                        clpar
+                      Expresion2Aux (46)
+                        lambda
+                  Expresion1Aux (43)
+                    lambda
+                ExpresionAux (40)
+                  lambda
+              semicolon
+        S (1)
+          LC (6)
+            else
+            CuerpoIf (9)
+              LC (4)
+                LS (21)
+                  id
+                  IdOpt (25)
+                    oppar
+                    ArgsLlamada (14)
+                      Expresion (38)
+                        Expresion1 (41)
+                          Expresion2 (44)
+                            Expresion3 (50)
+                              string
+                            Expresion2Aux (46)
+                              lambda
+                          Expresion1Aux (43)
+                            lambda
+                        ExpresionAux (40)
+                          lambda
+                      ArgMoreLlamada (17)
+                        lambda
+                    clpar
+                semicolon
+          S (3)
+            eof
+\end{verbatim}
 \end{itemize}
 
 \subsubsection{Caso Correcto}
@@ -315,7 +604,271 @@ write input;
         Descendente: 2 7 29 33 12 30 18 30 19 10 4 24 36 38 41 44 53 55 46 42 41 44 53 55 46 43 40 11 1 4 23 38 41 44 47 38 41 44 50 46 43 40 46 43 40 1 4 23 38 41 44 47 38 41 44 53 54 14 38 41 44 48 45 44 47 38 41 44 48 45 44 48 45 44 48 46 43 40 46 43 40 16 38 41 44 48 45 44 48 45 44 48 45 44 48 45 44 47 38 41 44 48 45 44 48 46 43 40 45 44 48 46 43 40 17 46 43 40 46 43 40 1 4 20 32 35 1 4 22 1 4 23 38 41 44 53 55 46 43 40 3 
 \\\\
     \item \textbf{Árbol Sintáctico:}
-\includegraphics[width=0.45\textwidth]{./Correcto3.png} 
+\begin{verbatim}
+S (2)
+  LF (7)
+    function
+    TypeFun (29)
+      Tipo (33)
+        boolean
+    id
+    oppar
+    Args (12)
+      Tipo (30)
+        int
+      id
+      ArgMore (18)
+        comma
+        Tipo (30)
+          int
+        id
+        ArgMore (19)
+          lambda
+    clpar
+    opbra
+    Cuerpo (10)
+      LC (4)
+        LS (24)
+          return
+          ExpReturn (36)
+            Expresion (38)
+              Expresion1 (41)
+                Expresion2 (44)
+                  Expresion3 (53)
+                    id
+                  Expresion4 (55)
+                    lambda
+                Expresion2Aux (46)
+                  lambda
+              Expresion1Aux (42)
+                minorthan
+                Expresion1 (41)
+                  Expresion2 (44)
+                    Expresion3 (53)
+                      id
+                    Expresion4 (55)
+                      lambda
+                  Expresion2Aux (46)
+                    lambda
+                Expresion1Aux (43)
+                  lambda
+            ExpresionAux (40)
+              lambda
+        semicolon
+      Cuerpo (11)
+        lambda
+    clbra
+  S (1)
+    LC (4)
+      LS (23)
+        write
+        Expresion (38)
+          Expresion1 (41)
+            Expresion2 (44)
+              Expresion3 (47)
+                oppar
+                Expresion (38)
+                  Expresion1 (41)
+                    Expresion2 (44)
+                      Expresion3 (50)
+                        string
+                      Expresion2Aux (46)
+                        lambda
+                    Expresion1Aux (43)
+                      lambda
+                  ExpresionAux (40)
+                    lambda
+                clpar
+              Expresion2Aux (46)
+                lambda
+            Expresion1Aux (43)
+              lambda
+          ExpresionAux (40)
+            lambda
+      semicolon
+    S (1)
+      LC (4)
+        LS (23)
+          write
+          Expresion (38)
+            Expresion1 (41)
+              Expresion2 (44)
+                Expresion3 (47)
+                  oppar
+                  Expresion (38)
+                    Expresion1 (41)
+                      Expresion2 (44)
+                        Expresion3 (53)
+                          id
+                        Expresion4 (54)
+                          oppar
+                          ArgsLlamada (14)
+                            Expresion (38)
+                              Expresion1 (41)
+                                Expresion2 (44)
+                                  Expresion3 (48)
+                                    intconst
+                                  Expresion2Aux (45)
+                                    sum
+                                    Expresion2 (44)
+                                      Expresion3 (47)
+                                        oppar
+                                        Expresion (38)
+                                          Expresion1 (41)
+                                            Expresion2 (44)
+                                              Expresion3 (48)
+                                                intconst
+                                              Expresion2Aux (45)
+                                                sum
+                                                Expresion2 (44)
+                                                  Expresion3 (48)
+                                                    intconst
+                                                  Expresion2Aux (45)
+                                                    sum
+                                                    Expresion2 (44)
+                                                      Expresion3 (48)
+                                                        intconst
+                                                      Expresion2Aux (46)
+                                                        lambda
+                                                    Expresion1Aux (43)
+                                                      lambda
+                                                  ExpresionAux (40)
+                                                    lambda
+                                                clpar
+                                              Expresion2Aux (46)
+                                                lambda
+                                          Expresion1Aux (43)
+                                            lambda
+                                        ExpresionAux (40)
+                                          lambda
+                                      clpar
+                                    Expresion2Aux (46)
+                                      lambda
+                                Expresion1Aux (43)
+                                  lambda
+                            ExpresionAux (40)
+                              lambda
+                            ArgMoreLlamada (16)
+                              comma
+                              Expresion (38)
+                                Expresion1 (41)
+                                  Expresion2 (44)
+                                    Expresion3 (48)
+                                      intconst
+                                    Expresion2Aux (45)
+                                      sum
+                                      Expresion2 (44)
+                                        Expresion3 (48)
+                                          intconst
+                                        Expresion2Aux (45)
+                                          sum
+                                          Expresion2 (44)
+                                            Expresion3 (48)
+                                              intconst
+                                            Expresion2Aux (45)
+                                              sum
+                                              Expresion2 (44)
+                                                Expresion3 (48)
+                                                  intconst
+                                                Expresion2Aux (45)
+                                                  sum
+                                                  Expresion2 (44)
+                                                    Expresion3 (47)
+                                                      oppar
+                                                      Expresion (38)
+                                                        Expresion1 (41)
+                                                          Expresion2 (44)
+                                                            Expresion3 (48)
+                                                              intconst
+                                                            Expresion2Aux (45)
+                                                              sum
+                                                              Expresion2 (44)
+                                                                Expresion3 (48)
+                                                                  intconst
+                                                                Expresion2Aux (46)
+                                                                  lambda
+                                                            Expresion1Aux (43)
+                                                              lambda
+                                                          ExpresionAux (40)
+                                                            lambda
+                                                        clpar
+                                                      Expresion2Aux (45)
+                                                        sum
+                                                        Expresion2 (44)
+                                                          Expresion3 (48)
+                                                            intconst
+                                                          Expresion2Aux (46)
+                                                            lambda
+                                                        Expresion1Aux (43)
+                                                          lambda
+                                                      ExpresionAux (40)
+                                                        lambda
+                                                Expresion1Aux (43)
+                                                  lambda
+                                              ExpresionAux (40)
+                                                lambda
+                                          Expresion1Aux (43)
+                                            lambda
+                                        ExpresionAux (40)
+                                          lambda
+                                    Expresion1Aux (43)
+                                      lambda
+                                ExpresionAux (40)
+                                  lambda
+                            ArgMoreLlamada (17)
+                              lambda
+                          clpar
+                      Expresion2Aux (46)
+                        lambda
+                    Expresion1Aux (43)
+                      lambda
+                  ExpresionAux (40)
+                    lambda
+                clpar
+              Expresion2Aux (46)
+                lambda
+            Expresion1Aux (43)
+              lambda
+          ExpresionAux (40)
+            lambda
+        semicolon
+      S (1)
+        LC (4)
+          LS (20)
+            let
+            Tipo (32)
+              string
+            id
+            Asignar (35)
+              lambda
+          semicolon
+        S (1)
+          LC (4)
+            LS (22)
+              read
+              id
+            semicolon
+          S (1)
+            LC (4)
+              LS (23)
+                write
+                Expresion (38)
+                  Expresion1 (41)
+                    Expresion2 (44)
+                      Expresion3 (53)
+                        id
+                      Expresion4 (55)
+                        lambda
+                    Expresion2Aux (46)
+                      lambda
+                  Expresion1Aux (43)
+                    lambda
+              ExpresionAux (40)
+                lambda
+              semicolon
+            S (3)
+              eof
+\end{verbatim}
 \end{itemize}
 
 \newpage
