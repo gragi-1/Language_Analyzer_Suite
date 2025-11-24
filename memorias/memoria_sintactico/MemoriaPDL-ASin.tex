@@ -28,8 +28,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% table of content
 %If a table of content is needed, simply uncomment the following lines
-\tableofcontents
-\newpage
+%\tableofcontents
+%\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Main document
 %\section*{Note:}
@@ -37,15 +37,14 @@
 
 \section{Analizador Sintáctico}
 
-Durante el desarrollo del Analizador Sintáctico hemos descrito una serie de objetos y estructuras matemáticas indispensables para que su diseño, desarrollo y función final cumplan con las expectativas de un Procesador de Lenguajes.
+Durante el desarrollo del Analizador Sintáctico hemos descrito una gramática y desarrollado un programa que, junto al analizador léxico, es capaz de reconocer y analizar correctamente el lenguaje planteado para el desarrollo de la práctica.
 
 \subsection{Gramática}
 
-La gramática es la estructura matemática que define el lenguaje a generar, en nuestros caso es para una versión reducida de JS. Definir la gramática es una forma de estructurar por tanto el lenguaje y asegurarnos de que vamos a generar solo lo que queremos.
-\\
-\\
-Hemos definido las siguientes reglas:
-\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*:}]
+La gramática planteada para el desarrollo de Analizador Sintáctico es de tipo 2 segun la jerarquía de Chomsky, es decir, una gramática libre de contexto. Además cumple con las propiedadees necesarias para ser LL(1), lo que nos permite desarrollar un analizador sintáctico predictivo.
+\subsubsection{Descripción de la Gramática}
+Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
+\begin{enumerate}[label=\textbf{\arabic*:}]
   \item \texttt{S} $\to$ \texttt{LC S | LF S | eof}
   \item \texttt{LC} $\to$ \texttt{LS semicolon | if oppar Expresion clpar CuerpoIf | else CuerpoIf}
   \item \texttt{LF} $\to$ \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
@@ -71,54 +70,265 @@ Hemos definido las siguientes reglas:
   \item \texttt{Expresion4} $\to$ \texttt{oppar ArgsLlamada clpar |} $\lambda$
 \end{enumerate}
 
-\newpage
-\subsection{Acciones Semánticas}
+\subsubsection{Demostración de que la gramática es LL(1)}
 
-Las acciones semánticas son una serie de acciones que se realizan entre las transiciones del autómata que permiten realizar diferentes funciones como por ejemplo ir generando un string para cuando detectamos una cadena.
-\\
-\\
-Las acciones semánticas que hemos definido para nuestro proyecto son:
-\begin{itemize}[label={-}, itemsep=0.0em, topsep=0.5em]
-    \item 0:0 Leer
-    \item 0:18 Leer, gentoken($<$COMMA, $>$)
-    \item 0:19 Leer, gentoken($<$SEMICOLON, $>$)
-    \item 0:20 Leer, gentoken($<$OPPAR, $>$)
-    \item 0:21 Leer, gentoken($<$CLPAR, $>$)
-    \item 0:22 Leer, gentoken($<$OPBRA, $>$)
-    \item 0:23 Leer, gentoken($<$CLBRA, $>$)
-    \item 0:1 Leer
-    \item 1:6 gentoken($<$SUM, $>$)
-    \item 1:24 Leer, gentoken($<$EQ, $>$)
-    \item 0:2 Leer
-    \item 2:7 Leer, gentoken($<$AND, $>$)
-    \item 0:3 Leer, $str=''$
-    \item 3:3 Leer, $str=str + c$
-    \item 3:8 Leer, gentoken($<$STRING, str$>$)
-    \item 0:4 Leer, $num=d$
-    \item 4:4 Leer, $num = num*10 + d$
-    \item 4:10 gentoken($<$INTCONST, num$>$) 
-    \item 4:9 Leer, $cont=1$
-    \item 9:11 Leer, $num = num*10 + d$, $cont++$
-    \item 11:11 Leer, $num = num*10 + d$, $cont++$
-    \item 11:12 $num = num*10^{-cont}$, gentoken($<$REALCONST, num$>$)
-    \item 0:14 Leer
-    \item 0:15 Leer
-    \item 15:15 Leer
-    \item 15:0 Leer
-    \item 0:5 Leer, $id=c$
-    \item 5:5 Leer, $id=id + c$
-    \item 5:13
-    \vspace{-0.2cm}
-    \begin{verbatim} 
-    if(id in palabrasReservadas)
-        posTS = insertTS(id)
-        gentoken(<toUpper(id), posTS>)
-    else
-        posTS = insertTS(id)
-        gentoken(<ID, posTS>)
-    \end{verbatim}
-\end{itemize}
+\subsubsection{Tabla LL y Pseudocódigo}
+En esta sección se describe la tabla en un formato propio (una tabla normal en LaTeX no cabe) que fue generada siguiendo el pseudocódigo descrito en los apuntes de la asignatura. 
 
+El formato es de la siguiente forma: \textbf{M[Fila, Columna] = Producción} \\\\
+M[S, let] = LC S
+
+M[S, read] = LC S
+
+M[S, id] = LC S
+
+M[S, else] = LC S
+
+M[S, if] = LC S
+
+M[S, write] = LC S
+
+M[S, function] = LF S
+
+M[S, return] = LC S
+
+M[S, eof] = eof
+\\\\
+M[LC, return] = LS semicolon
+
+M[LC, let] = LS semicolon
+
+M[LC, read] = LS semicolon
+
+M[LC, id] = LS semicolon
+
+M[LC, write] = LS semicolon
+
+M[LC, if] = if oppar Expresion clpar CuerpoIf
+
+M[LC, else] = else CuerpoIf
+\\\\
+M[LF, function] = function TypeFun id oppar Args clpar opbra Cuerpo clbra
+\\\\
+M[CuerpoIf, opbra] = opbra Cuerpo clbra
+
+M[CuerpoIf, return] = LC
+
+M[CuerpoIf, let] = LC
+
+M[CuerpoIf, read] = LC
+
+M[CuerpoIf, id] = LC
+
+M[CuerpoIf, else] = LC
+
+M[CuerpoIf, if] = LC
+
+M[CuerpoIf, write] = LC
+\\\\
+M[Cuerpo, return] = LC Cuerpo
+
+M[Cuerpo, let] = LC Cuerpo
+
+M[Cuerpo, read] = LC Cuerpo
+
+M[Cuerpo, id] = LC Cuerpo
+
+M[Cuerpo, else] = LC Cuerpo
+
+M[Cuerpo, if] = LC Cuerpo
+
+M[Cuerpo, write] = LC Cuerpo
+
+M[Cuerpo, clbra] = lambda
+\\\\
+M[Args, int] = Tipo id ArgMore
+
+M[Args, float] = Tipo id ArgMore
+
+M[Args, boolean] = Tipo id ArgMore
+
+M[Args, string] = Tipo id ArgMore
+
+M[Args, void] = void
+\\\\
+M[ArgsLlamada, true] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, string] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, id] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, intconst] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, oppar] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, false] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, realconst] = Expresion ArgMoreLlamada
+
+M[ArgsLlamada, clpar] = lambda
+\\\\
+M[ArgMoreLlamada, comma] = comma Expresion ArgMoreLlamada
+
+M[ArgMoreLlamada, clpar] = lambda
+\\\\
+M[ArgMore, comma] = comma Tipo id ArgMore
+
+M[ArgMore, clpar] = lambda
+\\\\
+M[LS, let] = let Tipo id Asignar
+
+M[LS, id] = id IdOpt
+
+M[LS, read] = read id
+
+M[LS, write] = write Expresion
+
+M[LS, return] = return ExpReturn
+\\\\
+M[IdOpt, oppar] = oppar ArgsLlamada clpar
+
+M[IdOpt, eq] = eq Expresion
+
+M[IdOpt, pluseq] = pluseq Expresion
+\\\\
+M[TypeFun, void] = void
+
+M[TypeFun, int] = Tipo
+
+M[TypeFun, float] = Tipo
+
+M[TypeFun, boolean] = Tipo
+
+M[TypeFun, string] = Tipo
+\\\\
+M[Tipo, int] = int
+
+M[Tipo, float] = float
+
+M[Tipo, string] = string
+
+M[Tipo, boolean] = boolean
+\\\\
+M[Asignar, eq] = eq Expresion
+
+M[Asignar, semicolon] = lambda
+\\\\
+M[ExpReturn, true] = Expresion
+
+M[ExpReturn, string] = Expresion
+
+M[ExpReturn, id] = Expresion
+
+M[ExpReturn, intconst] = Expresion
+
+M[ExpReturn, oppar] = Expresion
+
+M[ExpReturn, false] = Expresion
+
+M[ExpReturn, realconst] = Expresion
+
+M[ExpReturn, semicolon] = lambda
+\\\\
+M[Expresion, true] = Expresion1 ExpresionAux
+
+M[Expresion, string] = Expresion1 ExpresionAux
+
+M[Expresion, id] = Expresion1 ExpresionAux
+
+M[Expresion, intconst] = Expresion1 ExpresionAux
+
+M[Expresion, oppar] = Expresion1 ExpresionAux
+
+M[Expresion, false] = Expresion1 ExpresionAux
+
+M[Expresion, realconst] = Expresion1 ExpresionAux
+\\\\
+M[ExpresionAux, and] = and Expresion
+
+M[ExpresionAux, semicolon] = lambda
+
+M[ExpresionAux, clpar] = lambda
+
+M[ExpresionAux, comma] = lambda
+\\\\
+M[Expresion1, true] = Expresion2 Expresion1Aux
+
+M[Expresion1, string] = Expresion2 Expresion1Aux
+
+M[Expresion1, id] = Expresion2 Expresion1Aux
+
+M[Expresion1, intconst] = Expresion2 Expresion1Aux
+
+M[Expresion1, oppar] = Expresion2 Expresion1Aux
+
+M[Expresion1, false] = Expresion2 Expresion1Aux
+
+M[Expresion1, realconst] = Expresion2 Expresion1Aux
+\\\\
+M[Expresion1Aux, minorthan] = minorthan Expresion1
+
+M[Expresion1Aux, and] = lambda
+
+M[Expresion1Aux, semicolon] = lambda
+
+M[Expresion1Aux, clpar] = lambda
+
+M[Expresion1Aux, comma] = lambda
+\\\\
+M[Expresion2, true] = Expresion3 Expresion2Aux
+
+M[Expresion2, string] = Expresion3 Expresion2Aux
+
+M[Expresion2, id] = Expresion3 Expresion2Aux
+
+M[Expresion2, intconst] = Expresion3 Expresion2Aux
+
+M[Expresion2, oppar] = Expresion3 Expresion2Aux
+
+M[Expresion2, false] = Expresion3 Expresion2Aux
+
+M[Expresion2, realconst] = Expresion3 Expresion2Aux
+\\\\
+M[Expresion2Aux, sum] = sum Expresion2
+
+M[Expresion2Aux, and] = lambda
+
+M[Expresion2Aux, clpar] = lambda
+
+M[Expresion2Aux, semicolon] = lambda
+
+M[Expresion2Aux, comma] = lambda
+
+M[Expresion2Aux, minorthan] = lambda
+\\\\
+M[Expresion3, oppar] = oppar Expresion clpar
+
+M[Expresion3, intconst] = intconst
+
+M[Expresion3, realconst] = realconst
+
+M[Expresion3, string] = string
+
+M[Expresion3, true] = true
+
+M[Expresion3, false] = false
+
+M[Expresion3, id] = id Expresion4
+\\\\
+M[Expresion4, oppar] = oppar ArgsLlamada clpar
+
+M[Expresion4, and] = lambda
+
+M[Expresion4, sum] = lambda
+
+M[Expresion4, clpar] = lambda
+
+M[Expresion4, comma] = lambda
+
+M[Expresion4, semicolon] = lambda
+
+M[Expresion4, minorthan] = lambda
 
 \subsection{Errores}
 
@@ -138,17 +348,6 @@ Hemos detectado los siguientes casos capaces de generar errores:
     \item \textbf{Real demasiado grande:} Al declarar un real mayor que 117549436.
     \item \textbf{Cadena demasiado grande:} Al declarar una cadena de más de 64 caracteres.
 \end{itemize}
-
-\newpage
-\section{Tabla de Símbolos}
-
-La tabla de símbolos es una estructura de datos que contiene información adicional sobre los tokens cuyo atributo es su posición dentro de ella.
-\\
-\\
-El diseño elegido es una pila de diccionarios en la cual cada diccionario contiene la información extra del token (actualmente vacía) y que, al ser insertados, se devuelve la posición que han recibido dentro de ella, para posteriormente generar el token correctamente.
-\\
-\\
-En nuestro caso se asigna la posición dentro de la tabla de forma lineal, el primer elemento recibe la primera posición y la enésima inserción recibe la enésima posición.
 
 \newpage
 \section{Anexo}
