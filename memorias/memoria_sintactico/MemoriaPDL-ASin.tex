@@ -28,8 +28,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% table of content
 %If a table of content is needed, simply uncomment the following lines
-%\tableofcontents
-%\newpage
+\tableofcontents
+\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Main document
 %\section*{Note:}
@@ -73,262 +73,31 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
 \subsubsection{Demostración de que la gramática es LL(1)}
 
 \subsubsection{Tabla LL y Pseudocódigo}
-En esta sección se describe la tabla en un formato propio (una tabla normal en LaTeX no cabe) que fue generada siguiendo el pseudocódigo descrito en los apuntes de la asignatura. 
-
-El formato es de la siguiente forma: \textbf{M[Fila, Columna] = Producción} \\\\
-M[S, let] = LC S
-
-M[S, read] = LC S
-
-M[S, id] = LC S
-
-M[S, else] = LC S
-
-M[S, if] = LC S
-
-M[S, write] = LC S
-
-M[S, function] = LF S
-
-M[S, return] = LC S
-
-M[S, eof] = eof
-\\\\
-M[LC, return] = LS semicolon
-
-M[LC, let] = LS semicolon
-
-M[LC, read] = LS semicolon
-
-M[LC, id] = LS semicolon
-
-M[LC, write] = LS semicolon
-
-M[LC, if] = if oppar Expresion clpar CuerpoIf
-
-M[LC, else] = else CuerpoIf
-\\\\
-M[LF, function] = function TypeFun id oppar Args clpar opbra Cuerpo clbra
-\\\\
-M[CuerpoIf, opbra] = opbra Cuerpo clbra
-
-M[CuerpoIf, return] = LC
-
-M[CuerpoIf, let] = LC
-
-M[CuerpoIf, read] = LC
-
-M[CuerpoIf, id] = LC
-
-M[CuerpoIf, else] = LC
-
-M[CuerpoIf, if] = LC
-
-M[CuerpoIf, write] = LC
-\\\\
-M[Cuerpo, return] = LC Cuerpo
-
-M[Cuerpo, let] = LC Cuerpo
-
-M[Cuerpo, read] = LC Cuerpo
-
-M[Cuerpo, id] = LC Cuerpo
-
-M[Cuerpo, else] = LC Cuerpo
-
-M[Cuerpo, if] = LC Cuerpo
-
-M[Cuerpo, write] = LC Cuerpo
-
-M[Cuerpo, clbra] = lambda
-\\\\
-M[Args, int] = Tipo id ArgMore
-
-M[Args, float] = Tipo id ArgMore
-
-M[Args, boolean] = Tipo id ArgMore
-
-M[Args, string] = Tipo id ArgMore
-
-M[Args, void] = void
-\\\\
-M[ArgsLlamada, true] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, string] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, id] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, intconst] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, oppar] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, false] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, realconst] = Expresion ArgMoreLlamada
-
-M[ArgsLlamada, clpar] = lambda
-\\\\
-M[ArgMoreLlamada, comma] = comma Expresion ArgMoreLlamada
-
-M[ArgMoreLlamada, clpar] = lambda
-\\\\
-M[ArgMore, comma] = comma Tipo id ArgMore
-
-M[ArgMore, clpar] = lambda
-\\\\
-M[LS, let] = let Tipo id Asignar
-
-M[LS, id] = id IdOpt
-
-M[LS, read] = read id
-
-M[LS, write] = write Expresion
-
-M[LS, return] = return ExpReturn
-\\\\
-M[IdOpt, oppar] = oppar ArgsLlamada clpar
-
-M[IdOpt, eq] = eq Expresion
-
-M[IdOpt, pluseq] = pluseq Expresion
-\\\\
-M[TypeFun, void] = void
-
-M[TypeFun, int] = Tipo
-
-M[TypeFun, float] = Tipo
-
-M[TypeFun, boolean] = Tipo
-
-M[TypeFun, string] = Tipo
-\\\\
-M[Tipo, int] = int
-
-M[Tipo, float] = float
-
-M[Tipo, string] = string
-
-M[Tipo, boolean] = boolean
-\\\\
-M[Asignar, eq] = eq Expresion
-
-M[Asignar, semicolon] = lambda
-\\\\
-M[ExpReturn, true] = Expresion
-
-M[ExpReturn, string] = Expresion
-
-M[ExpReturn, id] = Expresion
-
-M[ExpReturn, intconst] = Expresion
-
-M[ExpReturn, oppar] = Expresion
-
-M[ExpReturn, false] = Expresion
-
-M[ExpReturn, realconst] = Expresion
-
-M[ExpReturn, semicolon] = lambda
-\\\\
-M[Expresion, true] = Expresion1 ExpresionAux
-
-M[Expresion, string] = Expresion1 ExpresionAux
-
-M[Expresion, id] = Expresion1 ExpresionAux
-
-M[Expresion, intconst] = Expresion1 ExpresionAux
-
-M[Expresion, oppar] = Expresion1 ExpresionAux
-
-M[Expresion, false] = Expresion1 ExpresionAux
-
-M[Expresion, realconst] = Expresion1 ExpresionAux
-\\\\
-M[ExpresionAux, and] = and Expresion
-
-M[ExpresionAux, semicolon] = lambda
-
-M[ExpresionAux, clpar] = lambda
-
-M[ExpresionAux, comma] = lambda
-\\\\
-M[Expresion1, true] = Expresion2 Expresion1Aux
-
-M[Expresion1, string] = Expresion2 Expresion1Aux
-
-M[Expresion1, id] = Expresion2 Expresion1Aux
-
-M[Expresion1, intconst] = Expresion2 Expresion1Aux
-
-M[Expresion1, oppar] = Expresion2 Expresion1Aux
-
-M[Expresion1, false] = Expresion2 Expresion1Aux
-
-M[Expresion1, realconst] = Expresion2 Expresion1Aux
-\\\\
-M[Expresion1Aux, minorthan] = minorthan Expresion1
-
-M[Expresion1Aux, and] = lambda
-
-M[Expresion1Aux, semicolon] = lambda
-
-M[Expresion1Aux, clpar] = lambda
-
-M[Expresion1Aux, comma] = lambda
-\\\\
-M[Expresion2, true] = Expresion3 Expresion2Aux
-
-M[Expresion2, string] = Expresion3 Expresion2Aux
-
-M[Expresion2, id] = Expresion3 Expresion2Aux
-
-M[Expresion2, intconst] = Expresion3 Expresion2Aux
-
-M[Expresion2, oppar] = Expresion3 Expresion2Aux
-
-M[Expresion2, false] = Expresion3 Expresion2Aux
-
-M[Expresion2, realconst] = Expresion3 Expresion2Aux
-\\\\
-M[Expresion2Aux, sum] = sum Expresion2
-
-M[Expresion2Aux, and] = lambda
-
-M[Expresion2Aux, clpar] = lambda
-
-M[Expresion2Aux, semicolon] = lambda
-
-M[Expresion2Aux, comma] = lambda
-
-M[Expresion2Aux, minorthan] = lambda
-\\\\
-M[Expresion3, oppar] = oppar Expresion clpar
-
-M[Expresion3, intconst] = intconst
-
-M[Expresion3, realconst] = realconst
-
-M[Expresion3, string] = string
-
-M[Expresion3, true] = true
-
-M[Expresion3, false] = false
-
-M[Expresion3, id] = id Expresion4
-\\\\
-M[Expresion4, oppar] = oppar ArgsLlamada clpar
-
-M[Expresion4, and] = lambda
-
-M[Expresion4, sum] = lambda
-
-M[Expresion4, clpar] = lambda
-
-M[Expresion4, comma] = lambda
-
-M[Expresion4, semicolon] = lambda
-
-M[Expresion4, minorthan] = lambda
+    Se ha hecho un renombrado de los símbolos de la gramática para favorecer su representación.
+    \\\\
+    CuerpoIf $\to$ CI \\
+    Cuerpo $\to$ CU \\
+    Args $\to$ AR \\
+    ArgsLlamada $\to$ AL \\
+    ArgMore $\to$ AM \\
+    ArgMoreLlamada $\to$ AML \\
+    IdOpt $\to$ IO \\
+    TypeFun $\to$ TF \\
+    Tipo $\to$ TI \\
+    Asignar $\to$ AS \\
+    ExpReturn $\to$ ER \\
+    Expresion $\to$ EX \\
+    ExpresionAux $\to$ EA \\
+    Expresion1 $\to$ E1 \\
+    Expresion1Aux $\to$ E1A \\
+    Expresion2 $\to$ E2 \\
+    Expresion2Aux $\to$ E2A \\
+    Expresion3 $\to$ E3 \\
+    Expresion4 $\to$ E4 \\
+
+    La tabla por gestión de espacio esta representada en la página \hyperref[sec:tabla]{\pageref*{sec:tabla}} dentro del Anexo.
+
+\newpage
 
 \subsection{Errores}
 
@@ -607,6 +376,45 @@ Carácter ilegal '&' en línea 4
     \end{verbatim}
 \end{itemize}
 
+\begin{landscape}
+    \thispagestyle{empty}
+    \subsection*{\centering Tabla LL1}
+    \vfill
+    \begin{table}[h!]
+        \centering
+        \noindent\hspace*{-0.207\textwidth}
+        \resizebox{1.725\textwidth}{0.25\textheight}{%
+            \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline
+                               & function                             & return           & write           & read      & if                     & else          & true                     & false                    & let                 & id                       & void & int             & float           & string                   & boolean         & intconst                 & realconst                & pluseq       & eq          & comma                      & semicolon               & oppar                    & clpar  & opbra      & clbra  & sum            & and           & $<$            & eof \\ \hline
+                S              & LC S                                 & LC S             & LC S            & LC S      & LC S                   &               &                          &                          & LC S                & LC S                     &      &                 &                 &                          &                 &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      & eof \\ \hline
+                LC             &                                      & LS ;             & LS ;            & LS ;      & if(EX) CI & else CI &                          &                          & LS ;                & LS ;                     &      &                 &                 &                          &                 &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      &     \\ \hline
+                LF             & function TF id (AR)\{CU\} &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      &     \\ \hline
+                CI       &                                      & LC               & LC              & LC        & LC                     & LC            &                          &                          & LC                  & LC                       &      &                 &                 &                          &                 &                          &                          &              &             &                            &                         &                          &        & \{CU\} &        &                &               &                      &     \\ \hline
+                CU         &                                      & LC CU        & LC CU       & LC CU & LC CU              & LC CU     &                          &                          & LC CU           & LC CU                &      &                 &                 &                          &                 &                          &                          &              &             &                            &                         &                          &        &            & $\lambda$ &                &               &                      &     \\ \hline
+                AR           &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      & TI id AM & TI id AM & TI id AM          & TI id AM &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      &     \\ \hline
+                AL    &                                      &                  &                 &           &                        &               & EX AML & EX AML &                     & EX AML &      &                 &                 & EX AML &                 & EX AML & EX AML &              &             &                            &                         & EX AML & $\lambda$ &            &        &                &               &                      &     \\ \hline
+                AML &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             & , EX AML &                         &                          & $\lambda$ &            &        &                &               &                      &     \\ \hline
+                AM        &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             & , TIpo id AM          &                         &                          & $\lambda$ &            &        &                &               &                      &     \\ \hline
+                LS             &                                      & return ER & write EX & read id   &                        &               &                          &                          & let TI id AS & id IO                 &      &                 &                 &                          &                 &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      &     \\ \hline
+                IO          &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          & += EX & = EX &                            &                         & (AL)            &        &            &        &                &               &                      &     \\ \hline
+                TF        &                                      &                  &                 &           &                        &               &                          &                          &                     &                          & void & TI            & TI            & TI                     & TI            &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      &     \\ \hline
+                TI           &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      & int             & float           & string                   & boolean         &                          &                          &              &             &                            &                         &                          &        &            &        &                &               &                      &     \\ \hline
+                AS        &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              & = EX &                            & $\lambda$                  &                          &        &            &        &                &               &                      &     \\ \hline
+                ER      &                                      &                  &                 &           &                        &               & EX                & EX                &                     & EX                &      &                 &                 & EX                &                 & EX                & EX                &              &             &                            & $\lambda$                  & EX                &        &            &        &                &               &                      &     \\ \hline
+                EX      &                                      &                  &                 &           &                        &               & E1 EA  & E1 EA  &                     &                          &      &                 &                 & E1 EA  &                 & E1 EA  & E1 EA  &              &             &                            & E1 EA & E1 EA  &        &            &        &                &               &                      &     \\ \hline
+                EA   &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             & $\lambda$                     & $\lambda$                  &                          & $\lambda$ &            &        &                & and EX &                      &     \\ \hline
+                E1     &                                      &                  &                 &           &                        &               & E2 E1A & E2 E1A &                     & E2 E1A &      &                 &                 & E2 E1A &                 & E2 E1A & E2 E1A &              &             &                            &                         & E2 E1A &        &            &        &                &               &                      &     \\ \hline
+                E1A  &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             & $\lambda$                     & $\lambda$                  &                          & $\lambda$ &            &        &                & $\lambda$        & $<$ E1 &     \\ \hline
+                E2     &                                      &                  &                 &           &                        &               & E3 E2A & E3 E2A &                     & E3 E2A &      &                 &                 & E3 E2A &                 & E3 E2A & E3 E2A &              &             &                            &                         & E3 E2A &        &            &        &                &               &                      &     \\ \hline
+                E2A  &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             & $\lambda$                     & $\lambda$                  &                          & $\lambda$ &            &        & sum E2 & $\lambda$        & $\lambda$               &     \\ \hline
+                E3     &                                      &                  &                 &           &                        &               & true                     & false                    &                     & id E4            &      &                 &                 & string                   &                 & intconst                 & realconst                &              &             &                            &                         & (EX)              &        &            &        &                &               &                      &     \\ \hline
+                E4     &                                      &                  &                 &           &                        &               &                          &                          &                     &                          &      &                 &                 &                          &                 &                          &                          &              &             & $\lambda$                     & $\lambda$                  & (AL)            & $\lambda$ &            &        & $\lambda$         & $\lambda$        & $\lambda$               &     \\ \hline
+            \end{tabular}%
+            \label{sec:tabla}
+            }
+    \end{table}
+    \vfill
+\end{landscape}
 
 \begin{figure}[h!]
 \centering
