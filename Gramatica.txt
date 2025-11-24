@@ -1,4 +1,4 @@
-Terminales = { boolean else float function if int let read return string void write true false id intconst realconst pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan eof }
+Terminales = { function return write read if else true false let id void int float string boolean intconst realconst pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan eof }
 
 NoTerminales = { S LC LF CuerpoIf ElseOpt Cuerpo Args ArgsLlamada ArgMore ArgMoreLlamada LS IdOpt TypeFun Tipo Asignar ExpReturn Expresion ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion4 }
 
