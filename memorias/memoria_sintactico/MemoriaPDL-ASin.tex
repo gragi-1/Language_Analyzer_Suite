@@ -416,6 +416,7 @@ S (2)
         eof
   eof
 \end{verbatim}
+\includegraphics[width=\linewidth]{./Correcto1.png} 
 \end{itemize}
 
 \subsubsection{Caso Correcto}
@@ -887,10 +888,7 @@ read num1;
 write(mulPorCuatro(num1));
     \end{verbatim}
     \item \textbf{Error generado:}\\
-Pila actual: ['eof', 'S', 'semicolon', 'Asignar', 'id', 'Tipo']                                                                                                                                
-Token actual: ID, símbolo actual: id                                                                                                                                                           
-¡Error sintáctico! No hay producción para [Tipo, id] (token: LexToken(ID,2,5,71))                                                                                                              
-No se generó parse.txt debido a errores en el análisis  
+        ¡Error sintáctico! No hay producción para [Tipo, id], se esperaba un tipo en la línea 5.
 \\\\
 \end{itemize}
 
@@ -898,36 +896,34 @@ No se generó parse.txt debido a errores en el análisis
 \subsubsection{Caso Erróneo}
 \begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
     \item \textbf{Código:}\begin{verbatim} 
-function boolean comparar(int num1, int num2){
-    return num1 < num2;
-}
+let string saludo = 'Buenas! Qué tal?'
 
-write('Mostrando comparación...');
-write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
-
-let string input;
-read input;
-write input;
+write saludo;
+write ('responde al saludo:');
+let string respuesta;
+read respuesta;
+write respuesta;
     \end{verbatim}
     \item \textbf{Error generado:}\\
+    ¡Error sintáctico! No hay producción para [Expresion2Aux, write], sentencia mal terminada cerca de la línea 3.
 \\\\
 \end{itemize}
 
 \subsubsection{Caso Erróneo}
 \begin{itemize}[label={-}, itemsep=-1em, topsep=0.5em, parsep=-0.2em]
     \item \textbf{Código:}\begin{verbatim} 
-function boolean comparar(int num1, int num2){
-    return num1 < num2;
+function void muestraSuma(num1, num2){
+    return write(num1 + num2);
 }
 
-write('Mostrando comparación...');
-write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
-
-let string input;
-read input;
-write input;
+let boolean cond = true;
+let numero1 = 10;
+let numero2 = 20;
+if(true)
+    numero1 += numero2;
     \end{verbatim}
     \item \textbf{Error generado:}\\
+¡Error sintáctico! No hay producción para [Args, id], función mal declarada en línea 1. 
 \\\\
 \end{itemize}
 
