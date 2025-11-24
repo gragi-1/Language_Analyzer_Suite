@@ -205,6 +205,69 @@ $\square$
 \end{flushright}
 
 \subsection{Tabla LL y Pseudocódigo}
+
+    El Pseudocódigo del analizador sintáctico predictivo es el siguiente:
+
+    \begin{lstlisting}[]
+ALGORITMO ConstruirTablaLL1()
+ENTRADA: Gramatica con conjuntos FIRST y FOLLOW calculados
+SALIDA: Tabla LL(1) M[A, a]
+
+INICIO
+  // Paso 1: Inicializar tabla vacia
+  PARA CADA no terminal A EN Gramatica
+    PARA CADA terminal a EN Terminales UNION {eof}
+      M[A, a] := vacio  // M[A, a] = (produccion, codigo_error)
+    FIN PARA
+  FIN PARA
+  
+  // Paso 2: Llenar tabla para cada produccion
+  PARA CADA produccion p: A -> X1 X2 ... Xn
+    CALCULAR FIRST(X1 X2 ... Xn)
+    
+    // Paso 2.1: Llenar con FIRST
+    PARA CADA terminal a EN FIRST(X1 X2 ... Xn)
+      SI M[A, a] != vacio ENTONCES
+        ERROR("Conflicto en tabla: entrada M[A, a] ya ocupada")
+        RETORNAR falso
+      FIN SI
+      M[A, a] := p  // Guardar numero de produccion
+    FIN PARA
+    
+    // Paso 2.2: Si lambda EN FIRST(X1 X2 ... Xn)
+    SI lambda EN FIRST(X1 X2 ... Xn) ENTONCES
+      PARA CADA terminal b EN FOLLOW(A)
+        SI M[A, b] != vacio ENTONCES
+          ERROR("Conflicto en tabla: entrada M[A, b] ya ocupada")
+          RETORNAR falso
+        FIN SI
+        M[A, b] := p  // Guardar numero de produccion
+      FIN PARA
+      
+      // Paso 2.3: Si eof EN FOLLOW(A)
+      SI eof EN FOLLOW(A) ENTONCES
+        SI M[A, eof] != vacio ENTONCES
+          ERROR("Conflicto en tabla: entrada M[A, eof] ya ocupada")
+          RETORNAR falso
+        FIN SI
+        M[A, eof] := p
+      FIN SI
+    FIN SI
+  FIN PARA
+  
+  // Paso 3: Marcar entradas de error
+  PARA CADA no terminal A
+    PARA CADA terminal a
+      SI M[A, a] = vacio ENTONCES
+        M[A, a] := ERROR  // Marcar como error sintactico
+      FIN SI
+    FIN PARA
+  FIN PARA
+  
+  RETORNAR verdadero  // Tabla construida exitosamente
+FIN
+\end{lstlisting}
+
     Se ha hecho un renombrado de los símbolos de la gramática para favorecer su representación.
     \\\\
     CuerpoIf $\to$ CI \\
