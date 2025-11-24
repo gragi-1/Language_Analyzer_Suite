@@ -42,7 +42,7 @@ Durante el desarrollo del Analizador Sintáctico hemos descrito una gramática y
 \subsection{Gramática}
 
 La gramática planteada para el desarrollo de Analizador Sintáctico es de tipo 2 segun la jerarquía de Chomsky, es decir, una gramática libre de contexto. Además cumple con las propiedadees necesarias para ser LL(1), lo que nos permite desarrollar un analizador sintáctico predictivo.
-\subsubsection{Descripción de la Gramática}
+\\\\
 Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
 \begin{enumerate}[label=\textbf{\arabic*:}]
   \item \texttt{S} $\to$ \texttt{LC S | LF S | eof}
@@ -70,9 +70,9 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
   \item \texttt{Expresion4} $\to$ \texttt{oppar ArgsLlamada clpar |} $\lambda$
 \end{enumerate}
 
-\subsubsection{Demostración de que la gramática es LL(1)}
+\subsection{Demostración de que la gramática es LL(1)}
 
-\subsubsection{Tabla LL y Pseudocódigo}
+\subsection{Tabla LL y Pseudocódigo}
     Se ha hecho un renombrado de los símbolos de la gramática para favorecer su representación.
     \\\\
     CuerpoIf $\to$ CI \\
