@@ -452,51 +452,51 @@ def token_type_to_grammar_symbol(token):
 def handle_syntactic_error(no_terminal, terminal, token):
     print(f"\nEncontrado error sintáctico en la línea {token.lineno}")
 
-    if no_terminal == 'S' and terminal not in ['return', 'let', 'else', 'write', 'id', 'if', 'read', 'function', 'eof']:
+    if no_terminal == 'S':
         print(f"    - Se esperaba el inicio de una sentencia o función, pero se encontró '{terminal}'")
-    elif no_terminal == 'LC' and terminal not in ['return', 'let', 'write', 'id', 'read', 'if', 'else']:
+    elif no_terminal == 'LC':
         print(f"    - Se esperaba una sentencia dentro del cuerpo, pero se encontró '{terminal}'")
-    elif no_terminal == 'LF' and terminal != 'function':
+    elif no_terminal == 'LF':
         print(f"    - Se esperaba la palabra clave 'function' para definir una función, pero se encontró '{terminal}'")
-    elif no_terminal == 'CuerpoIf' and terminal not in ['opbra', 'return', 'let', 'else', 'write', 'id', 'if', 'read']:
+    elif no_terminal == 'CuerpoIf':
         print(f"    - Se esperaba el cuerpo de un 'if', pero se encontró '{terminal}'")
-    elif no_terminal == 'Cuerpo' and terminal not in ['return', 'let', 'else', 'write', 'id', 'if', 'read', 'clbra']:
+    elif no_terminal == 'Cuerpo':
         print(f"    - Se esperaba una sentencia o el cierre del cuerpo, pero se encontró '{terminal}'")
-    elif no_terminal == 'Args' and terminal not in ['int', 'float', 'string', 'boolean', 'void']:
+    elif no_terminal == 'Args':
         print(f"    - Se esperaba un tipo de argumento o el cierre de paréntesis, pero se encontró '{terminal}'")
-    elif no_terminal == 'ArgsLlamada' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst', 'clpar']:
+    elif no_terminal == 'ArgsLlamada':
         print(f"    - Se esperaba un argumento para la llamada o el cierre de paréntesis, pero se encontró '{terminal}'")
-    elif no_terminal == 'ArgMoreLlamada' and terminal not in ['comma', 'clpar']:
+    elif no_terminal == 'ArgMoreLlamada':
         print(f"    - Se esperaba una coma para más argumentos o el cierre de paréntesis, pero se encontró '{terminal}'")
-    elif no_terminal == 'ArgMore' and terminal not in ['comma', 'clpar']:
+    elif no_terminal == 'ArgMore':
         print(f"    - Se esperaba una coma para más argumentos o el cierre de paréntesis, pero se encontró '{terminal}'")
-    elif no_terminal == 'LS' and terminal not in ['let', 'id', 'read', 'write', 'return']:
+    elif no_terminal == 'LS':
         print(f"    - Se esperaba el inicio de una sentencia, pero se encontró '{terminal}'")
-    elif no_terminal == 'IdOpt' and terminal not in ['oppar', 'eq', 'pluseq']:
+    elif no_terminal == 'IdOpt':
         print(f"    - Se esperaba una asignación o llamada de función, pero se encontró '{terminal}'")
-    elif no_terminal == 'TypeFun' and terminal not in ['void', 'int', 'float', 'string', 'boolean']:
+    elif no_terminal == 'TypeFun':
         print(f"    - Se esperaba un tipo de función, pero se encontró '{terminal}'")
-    elif no_terminal == 'Tipo' and terminal not in ['int', 'float', 'string', 'boolean']:
+    elif no_terminal == 'Tipo':
         print(f"    - Se esperaba un tipo de dato, pero se encontró '{terminal}'")
-    elif no_terminal == 'Asignar' and terminal not in ['eq', 'semicolon']:
+    elif no_terminal == 'Asignar':
         print(f"    - Se esperaba un operador de asignación, pero se encontró '{terminal}'")
-    elif no_terminal == 'ExpReturn' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst', 'semicolon']:
+    elif no_terminal == 'ExpReturn':
         print(f"    - Se esperaba una expresión o el fin de sentencia, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+    elif no_terminal == 'Expresion':
         print(f"    - Se esperaba el inicio de una expresión, pero se encontró '{terminal}'")
-    elif no_terminal == 'ExpresionAux' and terminal not in ['and', 'clpar', 'comma', 'semicolon']:
+    elif no_terminal == 'ExpresionAux':
         print(f"    - Se esperaba un operador lógico o el fin de expresión, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion1' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+    elif no_terminal == 'Expresion1':
         print(f"    - Se esperaba el inicio de una expresión aritmética, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion1Aux' and terminal not in ['minorthan', 'clpar', 'comma', 'semicolon', 'and']:
+    elif no_terminal == 'Expresion1Aux':
         print(f"    - Se esperaba un operador relacional o el fin de expresión, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion2' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+    elif no_terminal == 'Expresion2':
         print(f"    - Se esperaba el inicio de una expresión de término, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion2Aux' and terminal not in ['sum', 'and', 'minorthan', 'clpar', 'comma', 'semicolon']:
+    elif no_terminal == 'Expresion2Aux':
         print(f"    - Se esperaba un operador de suma o el fin de expresión, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion3' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+    elif no_terminal == 'Expresion3':
         print(f"    - Se esperaba el inicio de un factor, pero se encontró '{terminal}'")
-    elif no_terminal == 'Expresion4' and terminal not in ['oppar', 'and', 'minorthan', 'sum', 'clpar', 'comma', 'semicolon']:
+    elif no_terminal == 'Expresion4':
         print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
 
 def parse():
