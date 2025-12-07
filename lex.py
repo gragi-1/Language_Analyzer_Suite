@@ -45,7 +45,7 @@ reserved.update({
 })
 
 tokens = [
-        "REALCONST", "INTCONST", "ID",
+        "REALCONST", "INTCONST", "ID", "STR"
         ] + noattr + list(reserved.values())
 
 t_PLUSEQ     = r'\+='
@@ -86,7 +86,7 @@ def t_INTCONST(t):
         return None
     return t
 
-def t_STRING(t):
+def t_STR(t):
     r'\'([^\\\n]|(\\.))*?\''
     try:
         t.value = t.value[1:-1]
@@ -98,7 +98,6 @@ def t_STRING(t):
         return None
     return t
 
-#TODO: añadir token para palabra reservada string distinto al usado para cadenas
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     lower = t.value.lower()
@@ -112,11 +111,14 @@ def t_ID(t):
     return t
 
 def t_COMMENT(t):
-    r'//.*'
+    r'//[^\n]*'
     pass
 
+last_newline = 0
 def t_newline(t):
     r'\n+'
+    global last_newline 
+    last_newline = len(t.value)
     t.lexer.lineno += len(t.value)
 
 def t_error(t):
@@ -136,7 +138,7 @@ tok_gcounter = -1
 symbol_table = {}
 symbol_table_stack = [{}]
 
-#TODO: completar funcionalidad tabla de símbolos
+# TODO: completar funcionalidad tabla de símbolos
 def add_symbol(name, type=None, value=None):
     global tok_gcounter
     if name not in symbol_table_stack[-1]:
@@ -173,6 +175,7 @@ token_pointer = 0
 id_types = {}
 production_sequence = []  # Para almacenar la secuencia de producciones aplicadas
 
+# TODO: cambiar funcionalidad por funcionalidad basada en token a token
 def first_pass_analyze(tokens_list):
     global id_types
     i = 0
@@ -412,6 +415,7 @@ def build_parsing_table():
 def token_type_to_grammar_symbol(token):
     mapping = {
         'BOOLEAN': 'boolean',
+        'STRING': 'string',
         'ELSE': 'else',
         'FLOAT': 'float',
         'FUNCTION': 'function',
@@ -426,7 +430,7 @@ def token_type_to_grammar_symbol(token):
         'TRUE': 'true',
         'REALCONST': 'floatconst',
         'INTCONST': 'intconst',
-        'STR': 'string',
+        'STR': 'str',
         'PLUSEQ': 'pluseq',
         'EQ': 'eq',
         'COMMA': 'comma',
@@ -449,7 +453,10 @@ def token_type_to_grammar_symbol(token):
     
     return token.type.lower()
 
+# TODO: usar last_newline para mejorar mensajes de error
 def handle_syntactic_error(no_terminal, terminal, token):
+    global last_newline
+    print(f"NVMN: {last_newline}")
     print(f"\nEncontrado error sintáctico en la línea {token.lineno}")
 
     if no_terminal == 'S':
@@ -499,6 +506,7 @@ def handle_syntactic_error(no_terminal, terminal, token):
     elif no_terminal == 'Expresion4':
         print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
 
+# TODO: cambiar funcionalidad con lista por funcionalidad token a token
 def parse():
     global stack, token_pointer, production_sequence
 
@@ -569,6 +577,8 @@ def main():
     with open(args.file, 'r') as f:
         content = f.read()
 
+    #TODO: existe lexer.token() que devuelve un token a la vez
+    #usar para poder llevar un buen conteo de líneas y mejorar mensajes de error
     lexer.input(content)
 
     global input_tokens
