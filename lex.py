@@ -98,6 +98,7 @@ def t_STRING(t):
         return None
     return t
 
+#TODO: añadir token para palabra reservada string distinto al usado para cadenas
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
     lower = t.value.lower()
@@ -135,6 +136,7 @@ tok_gcounter = -1
 symbol_table = {}
 symbol_table_stack = [{}]
 
+#TODO: completar funcionalidad tabla de símbolos
 def add_symbol(name, type=None, value=None):
     global tok_gcounter
     if name not in symbol_table_stack[-1]:
@@ -447,6 +449,56 @@ def token_type_to_grammar_symbol(token):
     
     return token.type.lower()
 
+def handle_syntactic_error(no_terminal, terminal, token):
+    print(f"\nEncontrado error sintáctico en la línea {token.lineno}")
+
+    if no_terminal == 'S' and terminal not in ['return', 'let', 'else', 'write', 'id', 'if', 'read', 'function', 'eof']:
+        print(f"    - Se esperaba el inicio de una sentencia o función, pero se encontró '{terminal}'")
+    elif no_terminal == 'LC' and terminal not in ['return', 'let', 'write', 'id', 'read', 'if', 'else']:
+        print(f"    - Se esperaba una sentencia dentro del cuerpo, pero se encontró '{terminal}'")
+    elif no_terminal == 'LF' and terminal != 'function':
+        print(f"    - Se esperaba la palabra clave 'function' para definir una función, pero se encontró '{terminal}'")
+    elif no_terminal == 'CuerpoIf' and terminal not in ['opbra', 'return', 'let', 'else', 'write', 'id', 'if', 'read']:
+        print(f"    - Se esperaba el cuerpo de un 'if', pero se encontró '{terminal}'")
+    elif no_terminal == 'Cuerpo' and terminal not in ['return', 'let', 'else', 'write', 'id', 'if', 'read', 'clbra']:
+        print(f"    - Se esperaba una sentencia o el cierre del cuerpo, pero se encontró '{terminal}'")
+    elif no_terminal == 'Args' and terminal not in ['int', 'float', 'string', 'boolean', 'void']:
+        print(f"    - Se esperaba un tipo de argumento o el cierre de paréntesis, pero se encontró '{terminal}'")
+    elif no_terminal == 'ArgsLlamada' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst', 'clpar']:
+        print(f"    - Se esperaba un argumento para la llamada o el cierre de paréntesis, pero se encontró '{terminal}'")
+    elif no_terminal == 'ArgMoreLlamada' and terminal not in ['comma', 'clpar']:
+        print(f"    - Se esperaba una coma para más argumentos o el cierre de paréntesis, pero se encontró '{terminal}'")
+    elif no_terminal == 'ArgMore' and terminal not in ['comma', 'clpar']:
+        print(f"    - Se esperaba una coma para más argumentos o el cierre de paréntesis, pero se encontró '{terminal}'")
+    elif no_terminal == 'LS' and terminal not in ['let', 'id', 'read', 'write', 'return']:
+        print(f"    - Se esperaba el inicio de una sentencia, pero se encontró '{terminal}'")
+    elif no_terminal == 'IdOpt' and terminal not in ['oppar', 'eq', 'pluseq']:
+        print(f"    - Se esperaba una asignación o llamada de función, pero se encontró '{terminal}'")
+    elif no_terminal == 'TypeFun' and terminal not in ['void', 'int', 'float', 'string', 'boolean']:
+        print(f"    - Se esperaba un tipo de función, pero se encontró '{terminal}'")
+    elif no_terminal == 'Tipo' and terminal not in ['int', 'float', 'string', 'boolean']:
+        print(f"    - Se esperaba un tipo de dato, pero se encontró '{terminal}'")
+    elif no_terminal == 'Asignar' and terminal not in ['eq', 'semicolon']:
+        print(f"    - Se esperaba un operador de asignación, pero se encontró '{terminal}'")
+    elif no_terminal == 'ExpReturn' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst', 'semicolon']:
+        print(f"    - Se esperaba una expresión o el fin de sentencia, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+        print(f"    - Se esperaba el inicio de una expresión, pero se encontró '{terminal}'")
+    elif no_terminal == 'ExpresionAux' and terminal not in ['and', 'clpar', 'comma', 'semicolon']:
+        print(f"    - Se esperaba un operador lógico o el fin de expresión, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion1' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+        print(f"    - Se esperaba el inicio de una expresión aritmética, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion1Aux' and terminal not in ['minorthan', 'clpar', 'comma', 'semicolon', 'and']:
+        print(f"    - Se esperaba un operador relacional o el fin de expresión, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion2' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+        print(f"    - Se esperaba el inicio de una expresión de término, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion2Aux' and terminal not in ['sum', 'and', 'minorthan', 'clpar', 'comma', 'semicolon']:
+        print(f"    - Se esperaba un operador de suma o el fin de expresión, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion3' and terminal not in ['string', 'oppar', 'false', 'id', 'intconst', 'true', 'realconst']:
+        print(f"    - Se esperaba el inicio de un factor, pero se encontró '{terminal}'")
+    elif no_terminal == 'Expresion4' and terminal not in ['oppar', 'and', 'minorthan', 'sum', 'clpar', 'comma', 'semicolon']:
+        print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
+
 def parse():
     global stack, token_pointer, production_sequence
 
@@ -473,7 +525,7 @@ def parse():
                 stack.pop()
                 token_pointer += 1
             else:
-                print(f"¡Error sintáctico! Esperaba '{top}' pero encontró '{current_symbol}' al procesar token: {current_token}")
+                handle_syntactic_error(top, current_symbol, current_token)
                 return False
         elif top in grammar['non_terminals']:
             if current_symbol in parsing_table.get(top, {}):
@@ -490,7 +542,7 @@ def parse():
                     for symbol in reversed(production):
                         stack.append(symbol)
             else:
-                print(f"¡Error sintáctico! No hay producción para [{top}, {current_symbol}] (token: {current_token})")
+                handle_syntactic_error(top, current_symbol, current_token)
                 return False
         else:
             print(f"Error: Símbolo desconocido {top}")
