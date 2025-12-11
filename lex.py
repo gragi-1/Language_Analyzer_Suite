@@ -170,36 +170,8 @@ def exit_scope():
 grammar = {}
 parsing_table = {}
 stack = []
-input_tokens = []
-token_pointer = 0
-id_types = {}
 production_sequence = []  # Para almacenar la secuencia de producciones aplicadas
-
-# TODO: cambiar funcionalidad por funcionalidad basada en token a token
-def first_pass_analyze(tokens_list):
-    global id_types
-    i = 0
-    while i < len(tokens_list):
-        tok = tokens_list[i]
-        
-        if tok.type == 'FUNCTION' and i + 2 < len(tokens_list):
-            if tokens_list[i+1].type in ['INT', 'FLOAT', 'STRING', 'BOOLEAN', 'VOID']:
-                func_id = tokens_list[i+2].value
-                id_types[func_id] = 'id'
-                i += 3
-                continue
-        
-        if tok.type == 'LET' and i + 2 < len(tokens_list):
-            var_id = tokens_list[i+2].value
-            id_types[var_id] = 'id'
-            i += 3
-            continue
-        
-        if tok.type in ['INT', 'FLOAT', 'BOOLEAN', 'STRING'] and i + 1 < len(tokens_list):
-            if tokens_list[i+1].type == 'ID':
-                var_id = tokens_list[i+1].value
-                id_types[var_id] = 'id'
-        i += 1
+current_token = None      # Token actual del lexer
 
 def load_grammar(filename):
     global grammar
@@ -449,7 +421,7 @@ def token_type_to_grammar_symbol(token):
         return mapping[token.type]
     
     if token.type == 'ID':
-        return id_types.get(token.value, 'id')
+        return 'id'
     
     return token.type.lower()
 
@@ -506,45 +478,56 @@ def handle_syntactic_error(no_terminal, terminal, token):
     elif no_terminal == 'Expresion4':
         print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
 
+current_token = None
+
+def init_lexer_for_parser(code):
+    global current_token
+    lexer.input(code)
+    current_token = lexer.token()
+    if current_token is None:
+        class EOFToken:
+            type = 'EOF'
+            value = None
+            lineno = 0
+        current_token = EOFToken()
+
+def advance_token():
+    global current_token
+    tok = lexer.token()
+    if tok is None:
+        class EOFToken:
+            type = 'EOF'
+            value = None
+            lineno = 0
+        tok = EOFToken()
+    current_token = tok
+
 # TODO: cambiar funcionalidad con lista por funcionalidad token a token
 def parse():
-    global stack, token_pointer, production_sequence
+    global stack, production_sequence, current_token
 
     stack = ['eof', grammar['axiom']]
-    token_pointer = 0
     production_sequence = []
 
     while stack:
         top = stack[-1]
-
-        if token_pointer < len(input_tokens):
-            current_token = input_tokens[token_pointer]
-            current_symbol = token_type_to_grammar_symbol(current_token)
-        else:
-            current_symbol = 'eof'
-
-        print("\n---- Paso de parsing ----")
-        print(f"Pila actual: {stack}")
-        print(f"Token actual: {current_token.type if token_pointer < len(input_tokens) else 'EOF'}, símbolo actual: {current_symbol}")
+        current_symbol = token_type_to_grammar_symbol(current_token)
 
         if top in grammar['terminals'] or top == 'eof':
             if top == current_symbol:
-                print(f"Reconocido terminal: {top}, avanzando al siguiente token.")
                 stack.pop()
-                token_pointer += 1
+                advance_token()
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
                 return False
+
         elif top in grammar['non_terminals']:
-            if current_symbol in parsing_table.get(top, {}):
-                production = parsing_table[top][current_symbol]
+            rules_for_top = parsing_table.get(top, {})
+            if current_symbol in rules_for_top:
+                production = rules_for_top[current_symbol]
                 production_key = (top, tuple(production))
-                print(f"Aplicando producción: {top} -> {' '.join(production)} para símbolo terminal '{current_symbol}'")
                 if production_key in grammar['production_numbers']:
                     production_sequence.append(grammar['production_numbers'][production_key])
-                else:
-                    print(f"Advertencia: No se encontró número para la producción {production_key}")
-
                 stack.pop()
                 if production and production[0] != 'lambda':
                     for symbol in reversed(production):
@@ -556,13 +539,8 @@ def parse():
             print(f"Error: Símbolo desconocido {top}")
             return False
 
-    if token_pointer >= len(input_tokens):
-        print("\nAnálisis completado exitosamente")
-        print(f"Secuencia de producciones usadas: {production_sequence}")
-        return True
-    else:
-        print("Error: Quedan tokens sin procesar")
-        return False
+    return token_type_to_grammar_symbol(current_token) == 'eof'
+
 
 
 ######    FIN SECCIÓN DE ANALIZADOR SINTÁCTICO    ######
@@ -581,13 +559,10 @@ def main():
     #usar para poder llevar un buen conteo de líneas y mejorar mensajes de error
     lexer.input(content)
 
-    global input_tokens
     input_tokens = []
 
     for tok in lexer:
         input_tokens.append(tok)
-    
-    first_pass_analyze(input_tokens)
 
     with open('lexed.txt', 'w', encoding="utf-8") as f:
         for tok in input_tokens:
@@ -608,6 +583,7 @@ def main():
                 f_sym.write("--------- ---------\n")
             f_sym.write("\n")
     
+    init_lexer_for_parser(content)
     load_grammar('Gramatica.txt')
     build_parsing_table()
     
