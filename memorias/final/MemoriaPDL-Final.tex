@@ -296,14 +296,20 @@ Las acciones semánticas que hemos definido para nuestro proyecto son:
     \item 2:7 Leer, gentoken($<$AND, $>$)
     \item 0:3 Leer, $str=''$
     \item 3:3 Leer, $str=str + c$
-    \item 3:8 Leer, gentoken($<$STRING, str$>$)
+    \item 3:8 Leer
+        \subitem if (len(str) $>$ 64) error('Cadena demasiado larga')
+        \subitem else gentoken($<$STRING, str$>$)
     \item 0:4 Leer, $num=d$
     \item 4:4 Leer, $num = num*10 + d$
-    \item 4:10 gentoken($<$INTCONST, num$>$) 
+    \item 4:10  
+        \subitem if (num $>$ 32767) error('Entero demasiado grande')
+        \subitem else gentoken($<$INTCONST, num$>$)
     \item 4:9 Leer, $cont=1$
     \item 9:11 Leer, $num = num*10 + d$, $cont++$
     \item 11:11 Leer, $num = num*10 + d$, $cont++$
-    \item 11:12 $num = num*10^{-cont}$, gentoken($<$REALCONST, num$>$)
+    \item 11:12 $num = num*10^{-cont}$
+        \subitem if (num $>$ 117549436) error('Real demasiado grande')
+        \subitem else gentoken($<$REALCONST, num$>$)
     \item 0:14 Leer
     \item 0:15 Leer
     \item 15:15 Leer
@@ -311,15 +317,14 @@ Las acciones semánticas que hemos definido para nuestro proyecto son:
     \item 0:5 Leer, $id=c$
     \item 5:5 Leer, $id=id + c$
     \item 5:13
+        \subitem if (id in palabrasReservadas)
+            gentoken($<$toUpper(id), $>$)
+        \subitem else \{
+            \subsubitem if( not inTS(id) ) 
+                posTS = insertTS(id)
+            \subsubitem gentoken($<$ID, posTS$>$)
+        \subitem \}
     \vspace{-0.2cm}
-    \begin{verbatim} 
-    if(id in palabrasReservadas)
-        posTS = insertTS(id)
-        gentoken(<toUpper(id), posTS>)
-    else
-        posTS = insertTS(id)
-        gentoken(<ID, posTS>)
-    \end{verbatim}
 \end{itemize}
 
 
@@ -626,6 +631,13 @@ Para esta entrega hemos detectado los siguientes casos de error:
     \item \textbf{Sentencia else mal declarada:} Cuando una sentencia else no es correcta, igual que con el if.
     \item \textbf{Expresión mal delcarada:} Cuando la declaración de una expresión de cualquier tipo no es correcta, por ejemplo: (1+2*3 o num1 $<$ ().
 \end{itemize}
+
+\newpage
+\begin{figure}
+\centering
+\includegraphics[width=0.45\textwidth]{../figures/goose.png} 
+\caption{Barnacla canadiense intencional.}
+\end{figure}
 
 \end{document}
 %%% Local Variables: 
