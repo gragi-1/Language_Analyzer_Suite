@@ -138,9 +138,11 @@ tok_gcounter = -1
 symbol_table = {}
 symbol_table_stack = [{}]
 
-# TODO: completar funcionalidad tabla de símbolos
+symbols_file = None  # Fichero para volcar la tabla de símbolos en tiempo real
+
 def add_symbol(name, type=None, value=None):
-    global tok_gcounter
+    global tok_gcounter, symbols_file
+
     if name not in symbol_table_stack[-1]:
         tok_gcounter += 1
         symbol_table_stack[-1][name] = {
@@ -148,6 +150,13 @@ def add_symbol(name, type=None, value=None):
             'value': value,
             'position': tok_gcounter
         }
+
+        # ESCRIBIR EN symbols.txt EN EL MOMENTO (dinámicamente), con tu formato
+        if symbols_file is not None:
+            symbols_file.write(f"* LEXEMA : '{name}'\n")
+            symbols_file.write("  Atributos:\n")
+            symbols_file.write("  --------- ---------\n\n")
+
         return tok_gcounter
     else:
         return symbol_table_stack[-1][name]['position']
@@ -479,20 +488,17 @@ def handle_syntactic_error(no_terminal, terminal, token):
         print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
 
 current_token = None
+lexed_file = None
 
 def init_lexer_for_parser(code):
     global current_token
     lexer.input(code)
-    current_token = lexer.token()
-    if current_token is None:
-        class EOFToken:
-            type = 'EOF'
-            value = None
-            lineno = 0
-        current_token = EOFToken()
+    # Primer token: se escribe en lexed y luego se pasa al parser
+    current_token = get_next_token()
 
-def advance_token():
-    global current_token
+def get_next_token():
+    global lexed_file
+
     tok = lexer.token()
     if tok is None:
         class EOFToken:
@@ -500,9 +506,23 @@ def advance_token():
             value = None
             lineno = 0
         tok = EOFToken()
-    current_token = tok
 
-# TODO: cambiar funcionalidad con lista por funcionalidad token a token
+    # ESCRIBIR EN lexed.txt
+    if lexed_file is not None:
+        if tok.type in noattr:
+            lexed_file.write(f'<{tok.type},>\n')
+        elif tok.type == 'STR':
+            lexed_file.write(f'<{tok.type},\"{getattr(tok, "value", "")}\">\n')
+        else:
+            lexed_file.write(f'<{tok.type},{getattr(tok, "value", "")}>\n')
+
+    # 2) DEVOLVER AL SINTÁCTICO
+    return tok
+
+def advance_token():
+    global current_token
+    current_token = get_next_token()
+
 def parse():
     global stack, production_sequence, current_token
 
@@ -541,13 +561,10 @@ def parse():
 
     return token_type_to_grammar_symbol(current_token) == 'eof'
 
-
-
 ######    FIN SECCIÓN DE ANALIZADOR SINTÁCTICO    ######
 
 def main():
     tok_counter = 0
-
     parser = argparse.ArgumentParser()
     parser.add_argument("file")
     args = parser.parse_args()
@@ -555,40 +572,28 @@ def main():
     with open(args.file, 'r') as f:
         content = f.read()
 
-    #TODO: existe lexer.token() que devuelve un token a la vez
-    #usar para poder llevar un buen conteo de líneas y mejorar mensajes de error
-    lexer.input(content)
+    global lexed_file, symbols_file
 
-    input_tokens = []
+    # Abrimos AMBOS ficheros al inicio
+    with open('lexed.txt', 'w', encoding="utf-8") as lf, \
+         open('symbols.txt', 'w', encoding='utf-8') as sf:
+        
+        lexed_file = lf
+        symbols_file = sf
 
-    for tok in lexer:
-        input_tokens.append(tok)
+        # Escribir cabecera en symbols.txt
+        sf.write("CONTENIDOS DE LA TABLA:\n\n")
 
-    with open('lexed.txt', 'w', encoding="utf-8") as f:
-        for tok in input_tokens:
-            if tok.type in noattr:
-                f.write(f'<{tok.type},>\n')
-            elif tok.type == 'STR':
-                f.write(f'<{tok.type},\"{tok.value}\">\n')
-            else:
-                f.write(f'<{tok.type},{tok.value}>\n')
-        f.write(f'<EOF,>')
+        load_grammar('Gramatica.txt')
+        build_parsing_table()
 
-    with open('symbols.txt', 'w', encoding='utf-8') as f_sym:
-        for i, scope in enumerate(symbol_table_stack):
-            f_sym.write(f"CONTENIDOS DE LA TABLA # {i+1}:\n")
-            for j, (name, info) in enumerate(scope.items()):
-                f_sym.write(f"* LEXEMA : '{name}'\n")
-                f_sym.write("  Atributos:\n")
-                f_sym.write("--------- ---------\n")
-            f_sym.write("\n")
-    
-    init_lexer_for_parser(content)
-    load_grammar('Gramatica.txt')
-    build_parsing_table()
-    
-    if parse():
-        # Generar el fichero de parse en el formato requerido
+        # Inicializamos lexer (ya escribe dinámicamente en lexed.txt y symbols.txt)
+        init_lexer_for_parser(content)
+
+        ok = parse()
+
+    # Generar parse.txt
+    if ok:
         with open('parse.txt', 'w') as f:
             f.write("Descendente ")
             for production_num in production_sequence:
