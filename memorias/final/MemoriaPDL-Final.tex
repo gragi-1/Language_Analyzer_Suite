@@ -371,7 +371,8 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
 
 \begin{enumerate}[label=\textbf{\arabic*:}]
   \item \texttt{S} $\to$ \texttt{LC S | LF S | eof}
-  \item \texttt{LC} $\to$ \texttt{LS semicolon | if oppar Expresion clpar CuerpoIf | else CuerpoIf}
+  \item \texttt{LC} $\to$ \texttt{LS semicolon | if oppar Expresion clpar CuerpoIf LE}
+  \item \texttt{LE} $\to$ \texttt{else CuerpoIf |} $\lambda$
   \item \texttt{LF} $\to$ \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
   \item \texttt{CuerpoIf} $\to$ \texttt{opbra Cuerpo clbra | LC}
   \item \texttt{Cuerpo} $\to$ \texttt{LC Cuerpo |} $\lambda$
@@ -397,13 +398,12 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
 
 \subsection{Demostración de que la gramática es LL(1)}
 
-
 Para demostrar que una gramática es LL(1), debemos verificar que cumple las siguientes propiedades:
 
 \begin{enumerate}[itemsep=0.2em, topsep=0.5em]
     \item No existe recursividad por la izquierda.
     \item Está factorizada por la izquierda.
-    \item Para cada no terminal $A$ con producciones alternativas $A \rightarrow \alpha_1 ~|~ \alpha_2 ~|~ \ldots ~|~ \alpha_n$, los conjuntos FIRST($\alpha_{i}$) son disjuntos.
+    \item Para cada no terminal $A$ con producciones alternativas $A \rightarrow \alpha_1 ~|~ \alpha_2 ~|~ \ldots ~|~ \alpha_n$, los conjuntos FIRST($\alpha_{i}$) son disjuntos entre sí.
     \item Para cada producción con $\lambda$: $A \rightarrow \alpha ~|~ \lambda$, se cumple que $\text{FIRST}(\alpha) \cap \text{FOLLOW}(A) = \emptyset$.
 \end{enumerate}
 
@@ -461,7 +461,7 @@ Debemos verificar que para cada no terminal con producciones alternativas, los c
 S \rightarrow{}& LC~S ~|~ LF~S ~|~ \mathit{eof} \\
 \text{FIRST}(LC~S) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
 \text{FIRST}(LF~S) ={}& \{\mathit{function}\} \\
-\text{FIRST}(\mathit{eof}) ={}& \{\mathit{eof}\} \quad \text{Los tres conjuntos son disjuntos: } \checkmark
+\text{FIRST}(\mathit{eof}) ={}& \{\mathit{eof}\} \quad \text{Los tres conjuntos son disjuntos dos a dos: } \checkmark
 \end{align*}
 \end{minipage}
 \end{center}
@@ -472,14 +472,14 @@ S \rightarrow{}& LC~S ~|~ LF~S ~|~ \mathit{eof} \\
 LC \rightarrow{}& LS~; ~|~ \mathit{if}~(~\ldots ~|~ \mathit{else}~\ldots \\
 \text{FIRST}(LS~;) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}\} \\
 \text{FIRST}(\mathit{if}\ldots) ={}& \{\mathit{if}\} \\
-\text{FIRST}(\mathit{else}\ldots) ={}& \{\mathit{else}\} \quad \text{Los tres conjuntos son disjuntos: } \checkmark
+\text{FIRST}(\mathit{else}\ldots) ={}& \{\mathit{else}\} \quad \text{Los tres conjuntos son disjuntos dos a dos: } \checkmark
 \end{align*}
 
 \textbf{Caso 3: No terminal $LS$ (5 producciones)}
 \begin{align*}
 LS \rightarrow{}& \mathit{let}~\ldots ~|~ \mathit{id}~\ldots ~|~ \mathit{read}~\ldots ~|~ \mathit{write}~\ldots ~|~ \mathit{return}~\ldots \\
 \text{FIRST}(\mathit{let}\ldots) ={}& \{\mathit{let}\}, \quad \text{FIRST}(\mathit{id}\ldots) = \{\mathit{id}\}, \quad \text{FIRST}(\mathit{read}\ldots) = \{\mathit{read}\} \\
-\text{FIRST}(\mathit{write}\ldots) ={}& \{\mathit{write}\}, \quad \text{FIRST}(\mathit{return}\ldots) = \{\mathit{return}\} \quad \text{Todos disjuntos: } \checkmark
+\text{FIRST}(\mathit{write}\ldots) ={}& \{\mathit{write}\}, \quad \text{FIRST}(\mathit{return}\ldots) = \{\mathit{return}\} \quad \text{Todos disjuntos dos a dos: } \checkmark
 \end{align*}
 
 \textbf{Caso 4: No terminal $Cuerpo$ (con $\lambda$)}
