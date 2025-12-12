@@ -1,6 +1,6 @@
 Terminales = { function return write read if else true false let id void int float string boolean intconst realconst str pluseq eq comma semicolon oppar clpar opbra clbra sum and minorthan eof }
 
-NoTerminales = { S LC LF CuerpoIf Cuerpo Args ArgsLlamada ArgMore ArgMoreLlamada LS IdOpt TypeFun Tipo Asignar ExpReturn Expresion ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion4 }
+NoTerminales = { S LC LF LE CuerpoIf Cuerpo Args ArgsLlamada ArgMore ArgMoreLlamada LS IdOpt TypeFun Tipo Asignar ExpReturn Expresion ExpresionAux Expresion1 Expresion1Aux Expresion2 Expresion2Aux Expresion3 Expresion4 }
 
 Axioma = S
 
@@ -10,8 +10,10 @@ S -> LF S
 S -> eof
 
 LC -> LS semicolon
-LC -> if oppar Expresion clpar CuerpoIf 
-LC -> else CuerpoIf
+LC -> if oppar Expresion clpar CuerpoIf LE
+
+LE -> else CuerpoIf
+LE -> lambda
 
 LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
 
