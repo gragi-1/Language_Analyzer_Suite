@@ -118,6 +118,7 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
+# TODO: mejorar manejo de errores léxicos
 def t_error(t):
     print(f"Carácter ilegal {t.value[0]!r} en línea {t.lineno}")
     t.lexer.skip(1)
@@ -158,10 +159,11 @@ def add_symbol(name, type=None, value=None):
     else:
         return symbol_table_stack[-1][name]['position']
 
-def get_symbol(name):
+def get_symbol(value):
     for scope in reversed(symbol_table_stack):
-        if name in scope:
-            return scope[name]
+        for tok in scope.values():
+            if tok['position'] == value:
+                return tok
     return None
 
 def enter_scope():
@@ -434,63 +436,88 @@ def token_type_to_grammar_symbol(token):
 def handle_syntactic_error(no_terminal, terminal, token):
     global prev_token
 
+    # Tratamiento de la línea donde se comete el error
     prev_lineno = getattr(prev_token, 'lineno', 1)
 
-    print(f"\nDEBUG: token.lineno = {token.lineno}, prev_token.lineno = {prev_lineno}")
-
     line = token.lineno
+    changed = False;
 
     if token.lineno > prev_lineno:
         line = prev_lineno
+        changed = True;
 
-    print(f"\nEncontrado error sintáctico en la línea {line}:")
+    # Tratamiento del símbolo a mostrar
+    token_info = get_symbol(token.value)
+
+    if token_info is None:
+        showID = terminal
+    else:
+        showID = token_info['value']
+
+    # Mensajes de error específicos por no terminal
+    print(f"\nMyJS Syntactic Error: en la línea {line}", end=' ')
 
     if no_terminal == 'S':
-        print(f"    - Se esperaba el inicio de una sentencia o función, pero se encontró '{terminal}'")
+        print(f"se esperaba el inicio de una sentencia o función, pero se encontró '{showID}'")
     elif no_terminal == 'LC':
-        print(f"    - Se esperaba una sentencia dentro del cuerpo, pero se encontró '{terminal}'")
+        print(f"se esperaba el inicio de una sentencia, pero se encontró '{showID}'")
     elif no_terminal == 'LF':
-        print(f"    - Se esperaba la palabra clave 'function' para definir una función, pero se encontró '{terminal}'")
+        print(f"se esperaba 'function', pero se encontró '{showID}'")
     elif no_terminal == 'CuerpoIf':
-        print(f"    - Se esperaba el cuerpo de un 'if', pero se encontró '{terminal}'")
+        print(f"se esperaba el inicio de una sentencia o un '{{', pero se encontró '{showID}'")
     elif no_terminal == 'Cuerpo':
-        print(f"    - Se esperaba una sentencia o el cierre del cuerpo, pero se encontró '{terminal}'")
+        print(f"se esperaba el inicio de una sentencia o un '}}', pero se encontró '{showID}'")
     elif no_terminal == 'Args':
-        print(f"    - Se esperaba un tipo de argumento o el cierre de paréntesis, pero se encontró '{terminal}'")
+        print(f"se esperaba un tipo de dato o falta ')', se encontró '{showID}'")
     elif no_terminal == 'ArgsLlamada':
-        print(f"    - Se esperaba un argumento para la llamada o el cierre de paréntesis, pero se encontró '{terminal}'")
+        print(f"hay un argumento no válido o falta ')', se encontró '{showID}'")
     elif no_terminal == 'ArgMoreLlamada':
-        print(f"    - Se esperaba una coma para más argumentos o el cierre de paréntesis, pero se encontró '{terminal}'")
+        print(f"se esperaba ',' para llamar más argumentos o falta ')', se encontró '{showID}'")
     elif no_terminal == 'ArgMore':
-        print(f"    - Se esperaba una coma para más argumentos o el cierre de paréntesis, pero se encontró '{terminal}'")
+        print(f"se esperaba ',' para llamar más argumentos o falta ')', se encontró '{showID}'")
     elif no_terminal == 'LS':
-        print(f"    - Se esperaba el inicio de una sentencia, pero se encontró '{terminal}'")
+        print(f"se esperaba la llamada a una función o una declaración, pero se encontró '{showID}'")
     elif no_terminal == 'IdOpt':
-        print(f"    - Se esperaba una asignación o llamada de función, pero se encontró '{terminal}'")
+        print(f"se esperaba '=' o una llamada de función, pero se encontró '{showID}'")
     elif no_terminal == 'TypeFun':
-        print(f"    - Se esperaba un tipo de función, pero se encontró '{terminal}'")
+        print(f"se esperaba un tipo de función, pero se encontró '{showID}'")
     elif no_terminal == 'Tipo':
-        print(f"    - Se esperaba un tipo de dato, pero se encontró '{terminal}'")
+        print(f"se esperaba un tipo de dato, pero se encontró '{showID}'")
     elif no_terminal == 'Asignar':
-        print(f"    - Se esperaba un operador de asignación, pero se encontró '{terminal}'")
+        print(f"se esperaba '=' , pero se encontró '{showID}'")
     elif no_terminal == 'ExpReturn':
-        print(f"    - Se esperaba una expresión o el fin de sentencia, pero se encontró '{terminal}'")
+        if changed:
+            print(f"se esperaba ';'")
+        else:
+            print(f"hay una expresión no válida después del return, se encontró '{showID}'")
     elif no_terminal == 'Expresion':
-        print(f"    - Se esperaba el inicio de una expresión, pero se encontró '{terminal}'")
+        print(f"hay una expresión mal declarada, se encontró '{showID}'")
     elif no_terminal == 'ExpresionAux':
-        print(f"    - Se esperaba un operador lógico o el fin de expresión, pero se encontró '{terminal}'")
+        if changed:
+            print(f"se esperaba ';'")
+        else:
+            print(f"se esperaba un operador, pero se encontró '{showID}'")
     elif no_terminal == 'Expresion1':
-        print(f"    - Se esperaba el inicio de una expresión aritmética, pero se encontró '{terminal}'")
+        print(f"hay una expresión mal declarada, se encontró '{showID}'")
     elif no_terminal == 'Expresion1Aux':
-        print(f"    - Se esperaba un operador relacional o el fin de expresión, pero se encontró '{terminal}'")
+        if changed:
+            print(f"se esperaba ';'")
+        else:
+            print(f"se esperaba un operador, pero se encontró '{showID}'")
     elif no_terminal == 'Expresion2':
-        print(f"    - Se esperaba el inicio de una expresión de término, pero se encontró '{terminal}'")
+        print(f"hay una expresión mal declarada, se encontró '{showID}'")
     elif no_terminal == 'Expresion2Aux':
-        print(f"    - Se esperaba un operador de suma o el fin de expresión, pero se encontró '{terminal}'")
+        if changed:
+            print(f"se esperaba ';'")
+        else:
+            print(f"se esperaba un operador, pero se encontró '{showID}'")
     elif no_terminal == 'Expresion3':
-        print(f"    - Se esperaba el inicio de un factor, pero se encontró '{terminal}'")
+        print(f"hay una expresión no válida, se encontró '{showID}'")
     elif no_terminal == 'Expresion4':
-        print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
+        if changed:
+            print(f"se esperaba ';'")
+        else:
+            print(f"hay una función mal llamada o falta ')', pero se encontró '{showID}'")
 
 current_token = None
 prev_token = None
