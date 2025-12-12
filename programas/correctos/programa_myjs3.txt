@@ -1,0 +1,10 @@
+function boolean comparar(int num1, int num2){
+    return num1 < num2;
+}
+
+write('Mostrando comparación...');
+write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
+
+let string input;
+read input;
+write input;

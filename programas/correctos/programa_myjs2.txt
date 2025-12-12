@@ -1,0 +1,11 @@
+let boolean check;
+check = 10 < 30;
+
+function void print(string mostrar){
+    write mostrar;
+}
+
+if(check)
+    write('Diez es menor que 30');
+else
+    print('Diez es mayor que 30');

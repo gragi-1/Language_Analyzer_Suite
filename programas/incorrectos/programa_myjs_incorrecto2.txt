@@ -1,0 +1,11 @@
+let string saludo = 'Buenas! Qué tal?'
+
+
+
+write saludo;
+write ('responde al saludo:');
+let string respuesta;
+read respuesta;
+write respuesta;
+
+
