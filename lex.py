@@ -114,11 +114,8 @@ def t_COMMENT(t):
     r'//[^\n]*'
     pass
 
-last_newline = 0
 def t_newline(t):
     r'\n+'
-    global last_newline 
-    last_newline = len(t.value)
     t.lexer.lineno += len(t.value)
 
 def t_error(t):
@@ -434,11 +431,19 @@ def token_type_to_grammar_symbol(token):
     
     return token.type.lower()
 
-# TODO: usar last_newline para mejorar mensajes de error
 def handle_syntactic_error(no_terminal, terminal, token):
-    global last_newline
-    print(f"NVMN: {last_newline}")
-    print(f"\nEncontrado error sintáctico en la línea {token.lineno}")
+    global prev_token
+
+    prev_lineno = getattr(prev_token, 'lineno', 1)
+
+    print(f"\nDEBUG: token.lineno = {token.lineno}, prev_token.lineno = {prev_lineno}")
+
+    line = token.lineno
+
+    if token.lineno > prev_lineno:
+        line = prev_lineno
+
+    print(f"\nEncontrado error sintáctico en la línea {line}:")
 
     if no_terminal == 'S':
         print(f"    - Se esperaba el inicio de una sentencia o función, pero se encontró '{terminal}'")
@@ -488,12 +493,14 @@ def handle_syntactic_error(no_terminal, terminal, token):
         print(f"    - Se esperaba una llamada de función o el fin de factor, pero se encontró '{terminal}'")
 
 current_token = None
+prev_token = None
 lexed_file = None
 
 def init_lexer_for_parser(code):
-    global current_token
+    global current_token, prev_token
     lexer.input(code)
     # Primer token: se escribe en lexed y luego se pasa al parser
+    prev_token = current_token
     current_token = get_next_token()
 
 def get_next_token():
@@ -520,7 +527,8 @@ def get_next_token():
     return tok
 
 def advance_token():
-    global current_token
+    global current_token, prev_token
+    prev_token = current_token
     current_token = get_next_token()
 
 def parse():
