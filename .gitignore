@@ -9,13 +9,16 @@
 *.thm
 *.brf
 *.pdf
-*.txt
 missfont.log
 includes.log
 /__pycache__
 /Ejemplos
 *.pdf
 !Gramatica.txt
+
+# Gestión de archivos .txt
+lexed.txt
+symbols.txt
+parse.txt
+PIdG18.txt
 !programa_myjs.txt
-!Gramatica_Legible.txt
-!Gramatica_LL1_Final.txt
