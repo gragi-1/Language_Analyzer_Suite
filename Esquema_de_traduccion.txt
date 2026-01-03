@@ -36,14 +36,25 @@ ArgMore -> comma Tipo id ArgMore
 ArgMore -> lambda
 
 LS -> let Tipo id Asignar
-LS -> id IdOpt
-LS -> read id
-LS -> write Expresion
-LS -> return ExpReturn
+LS -> id IdOpt { LS.tipo := if EstaEnTS(id.pos) = false then 
+                                AgregarTipo(id.pos, int)
+                                AgregarDesplazamiento(id.pos, despG)
+                                despG := despG + 2
+                                if IdOpt.tipo = int then int else tipo_error
+                            else 
+                                if BuscaTipoTS(id.pos) = IdOpt.tipo then t
+                                else if IdOpt.igualacion = tipo_ok then BuscaTipoTS(id.pos)
+                                else tipo_error}
+LS -> read id {LS.tipo := tipo_ok}
+LS -> write Expresion {LS.tipo := if Expresion.tipo = int then tipo_ok
+                       else if Expresion.tipo = float then tipo_ok
+                       else if Expresion.tipo = string then tipo_ok
+                       else tipo_error}
+LS -> return ExpReturn {LS.tipo := ExpReturn.tipo}
 
-IdOpt -> oppar ArgsLlamada clpar
-IdOpt -> eq Expresion
-IdOpt -> pluseq Expresion {IdOpt.tipo := if Expresion.tipo = int then int
+IdOpt -> oppar ArgsLlamada clpar {IdOpt.tipo := ArgsLlamada.tipo, IdOpt.igualacion := tipo_ok}
+IdOpt -> eq Expresion {IdOpt.tipo := Expresion.tipo, IdOpt.igualacion := tipo_error}
+IdOpt -> pluseq Expresion {IdOpt.igualacion := tipo_ok, IdOpt.tipo := if Expresion.tipo = int then int
 						   else if Expresion.tipo = float then float
 						   else tipo_error}
 
