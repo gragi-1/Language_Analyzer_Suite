@@ -440,11 +440,11 @@ def handle_syntactic_error(no_terminal, terminal, token):
     prev_lineno = getattr(prev_token, 'lineno', 1)
 
     line = token.lineno
-    changed = False;
+    changed = False
 
     if token.lineno > prev_lineno:
         line = prev_lineno
-        changed = True;
+        changed = True
 
     # Tratamiento del símbolo a mostrar
     token_info = get_symbol(token.value)
