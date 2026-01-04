@@ -5,46 +5,58 @@ NoTerminales = { S LC LF LE CuerpoIf Cuerpo Args ArgsLlamada ArgMore ArgMoreLlam
 Axioma = S
 
 Producciones = {
-S -> LC S 
-S -> LF S
-S -> eof
+S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} LC S {LiberarTabla(TSG)}
+S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} LF S {LiberarTabla(TSG)}
+S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} eof {LiberarTabla(TSG)}
 
-LC -> LS semicolon
-LC -> if oppar Expresion clpar CuerpoIf LE
+LC -> LS semicolon {LC.tipo := if LS.tipo = tipo_error then tipo_error
+							   else tipo_ok}
+LC -> if oppar Expresion clpar CuerpoIf LE {LC.tipo := if Expresion.tipo = boolean then
+													if CuerpoIf.tipo = tipo_ok then LE.tipo
+													else tipo_error
+												  else tipo_error}
 
-LE -> else CuerpoIf
-LE -> lambda
+LE -> else CuerpoIf {LE.tipo := CuerpoIf.tipo}
+LE -> lambda {LE.tipo := tipo_ok}
 
-LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
+LF -> function TypeFun id {TSL := CrearTabla(), despL := 0} oppar Args clpar {AñadeTipo(id.pos, Args.tipo -> TypeFun.tipo), AñadeEtiq(id.pos, NuevaEtiq())} opbra Cuerpo clbra {LiberarTabla(TSL)}
 
-CuerpoIf -> opbra Cuerpo clbra
-CuerpoIf -> LC
+CuerpoIf -> opbra Cuerpo clbra {CuerpoIf.tipo := Cuerpo.tipo}
+CuerpoIf -> LC {CuerpoIf.tipo := LC.tipo}
 
-Cuerpo -> LC Cuerpo
-Cuerpo -> lambda
+Cuerpo -> LC Cuerpo_1 {Cuerpo.tipo := if LC.tipo = tipo_ok then Cuerpo_1.tipo
+									  else tipo_error}
+Cuerpo -> lambda {Cuerpo.tipo := tipo_ok}
 
-Args -> Tipo id ArgMore
-Args -> void
+Args -> Tipo {AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL), despL := despL + Tipo.desp} id ArgMore {Args.tipo := Tipo.tipo x ArgMore.tipo}
+Args -> void {}
 
-ArgsLlamada -> Expresion ArgMoreLlamada
-ArgsLlamada -> lambda
+ArgsLlamada -> Expresion ArgMoreLlamada {ArgsLlamada.tipo := if Expresion.tipo = tipo_error then tipo_error
+																else if ArgMoreLlamada.tipo = tipo_error then tipo_error
+																else Expresion.tipo x ArgMoreLlamada.tipo}
+ArgsLlamada -> lambda {}
 
-ArgMoreLlamada -> comma Expresion ArgMoreLlamada
-ArgMoreLlamada -> lambda
+ArgMoreLlamada -> comma Expresion ArgMoreLlamada_1 {ArgMoreLlamada.tipo := if Expresion.tipo = tipo_error then tipo_error
+																		   else if ArgMoreLlamada_1.tipo = tipo_error then tipo_error
+																		   else Expresion.tipo x ArgMoreLlamada_1.tipo}
+ArgMoreLlamada -> lambda {}
 
-ArgMore -> comma Tipo id ArgMore
-ArgMore -> lambda
+ArgMore -> comma Tipo {AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL), despL := despL + Tipo.desp} id ArgMore_1 {ArgMore.tipo := Tipo.tipo x ArgMore_1.tipo} // Solo para el EdT (ArgMore_1)
+ArgMore -> lambda {}
 
-LS -> let Tipo id Asignar
-LS -> id IdOpt { LS.tipo := if EstaEnTS(id.pos) = false then 
-                                AgregarTipo(id.pos, int)
-                                AgregarDesplazamiento(id.pos, despG)
-                                despG := despG + 2
-                                if IdOpt.tipo = int then int else tipo_error
-                            else 
-                                if BuscaTipoTS(id.pos) = IdOpt.tipo then t
-                                else if IdOpt.igualacion = tipo_ok then BuscaTipoTS(id.pos)
-                                else tipo_error}
+LS -> let Tipo {AgregarTipo(id.pos, Tipo.tipo) if TSL = nulo then AgregarDesplazamiento(id.pos, despG), despG := despG + Tipo.desp
+												else AgregarDesplazamiento(id.pos, despL), despL := despL + Tipo.desp} id Asignar {LS.tipo := if Asignar.igualacion = tipo_error then
+																																				 if Asignar.tipo = Tipo.tipo then Tipo.tipo
+																																				 else tipo_error
+																																			  else Tipo.tipo}
+LS -> id IdOpt {LS.tipo := if EstaEnTS(id.pos) = false then AgregarTipo(id.pos, int), AgregarDesplazamiento(id.pos, despG), despG := despG + 2
+                            	if IdOpt.tipo = int then int
+								else tipo_error
+                            else if BuscaTipoTS(id.pos) = IdOpt.tipo then IdOpt.tipo
+                            else if IdOpt.igualacion = tipo_ok then
+								if BuscaTipoTS(id.pos) = IdOpt.tipo -> t then t
+								else tipo_error
+                            else tipo_error}
 LS -> read id {LS.tipo := tipo_ok}
 LS -> write Expresion {LS.tipo := if Expresion.tipo = int then tipo_ok
                        else if Expresion.tipo = float then tipo_ok
@@ -61,10 +73,10 @@ IdOpt -> pluseq Expresion {IdOpt.igualacion := tipo_ok, IdOpt.tipo := if Expresi
 TypeFun -> void {TypeFun.tipo := void}
 TypeFun -> Tipo {TypeFun.tipo := Tipo.tipo}
 
-Tipo -> int {Tipo.tipo := int}
-Tipo -> float {Tipo.tipo := float}
-Tipo -> string {Tipo.tipo := string}
-Tipo -> boolean {Tipo.tipo := boolean}
+Tipo -> int {Tipo.tipo := int, Tipo.desp := 2}
+Tipo -> float {Tipo.tipo := float, Tipo.desp := 4}
+Tipo -> string {Tipo.tipo := string, Tipo.desp := strlen} // TODO: Implementar longitud en Código
+Tipo -> boolean {Tipo.tipo := boolean, Tipo.desp := 1}
 
 Asignar -> eq Expresion {Asignar.tipo := Expresion.tipo, Asignar.igualacion := tipo_error}
 Asignar -> lambda {Asignar.tipo := void, Asignar.igualacion := tipo_ok}
