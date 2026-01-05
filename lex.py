@@ -1,8 +1,31 @@
 import ply.lex as lex
 import ply.yacc as yacc
 import argparse
+import sys
 
 ######    SECCIÓN DE ANALIZADOR LÉXICO    ######
+
+# Errores léxicos acumulados: se registran durante el scan y se reportan al final.
+lex_errors = []
+
+def lex_error(lineno, msg):
+    """Registra un error léxico."""
+    lex_errors.append((lineno, msg))
+
+def has_lex_errors():
+    """Retorna True si hay errores léxicos."""
+    return len(lex_errors) > 0
+
+def print_lex_errors():
+    """Imprime todos los errores léxicos acumulados."""
+    for lineno, msg in lex_errors:
+        print(f"MyJS Lex Error: (línea {lineno}): {msg}")
+
+def clear_lex_errors():
+    """Limpia la lista de errores léxicos."""
+    global lex_errors
+    lex_errors = []
+
 noattr = [
         "PLUSEQ",
         "EQ",
@@ -35,7 +58,7 @@ reserved = {
         "true":     "TRUE"
         }
 
-# Grammar-specific reserved words used by the parser
+        # Palabras reservadas "meta" (solo para poder tokenizar/leer la gramática con este lexer).
 reserved.update({
     "terminales": "PETERMINALES",
     "noterminales": "PENO_TERMINALES",
@@ -67,10 +90,12 @@ def t_REALCONST(t):
     try:
         t.value = float(t.value)
     except ValueError:
-        print("Real number value error: ", t.value)
+        lex_error(t.lineno, f"Valor de número real inválido: {t.value}")
+        t.lexer.skip(len(str(t.value)))
+        return None
     
     if t.value > 117549436.0:
-        print(f"Real fuera de rango {t.value!r} en línea {t.lineno}")
+        lex_error(t.lineno, f"Número real fuera de rango: {t.value}")
         return None
     return t
 
@@ -79,22 +104,25 @@ def t_INTCONST(t):
     try:
         t.value = int(t.value)
     except ValueError:
-        print("Integer number value error:", t.value)
+        lex_error(t.lineno, f"Valor de entero inválido: {t.value}")
+        t.lexer.skip(len(str(t.value)))
+        return None
 
     if t.value > 32767:
-        print(f"Entero fuera de rango {t.value!r} en línea {t.lineno}")
+        lex_error(t.lineno, f"Entero fuera de rango (máx 32767): {t.value}")
         return None
     return t
 
 def t_STR(t):
     r'\'([^\\\n]|(\\.))*?\''
     try:
-        t.value = t.value[1:-1]
+        t.value = t.value[1:-1]  # Quitar comillas
     except ValueError:
-        print("String value error: ", t.value)
+        lex_error(t.lineno, f"Cadena mal formada: {t.value}")
+        return None
 
     if len(t.value) > 64:
-        print(f"Cadena demasiado larga {t.value!r} en línea {t.lineno}")
+        lex_error(t.lineno, f"Cadena demasiado larga (máx 64 caracteres): '{t.value[:20]}...'")
         return None
     return t
 
@@ -107,6 +135,7 @@ def t_ID(t):
     else:
         t.type = "ID"
         name = t.value
+        # El parser trabaja con id.pos: guardamos el lexema en la TS y propagamos su posición.
         t.value = add_symbol(name, t.type, t.value)
     return t
 
@@ -118,21 +147,24 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-# TODO: mejorar manejo de errores léxicos
 def t_error(t):
-    print(f"Carácter ilegal {t.value[0]!r} en línea {t.lineno}")
+    """Manejo de caracteres ilegales."""
+    lex_error(t.lineno, f"Carácter ilegal: '{t.value[0]}'")
     t.lexer.skip(1)
 
 def t_eof(t):
     return None
 
-lexer = lex.lex(debug=True)
+# Crear el lexer sin modo debug
+lexer = lex.lex(debug=False)
 
 ######    FIN SECCIÓN DE ANALIZADOR LÉXICO    ######
 
 ######    SECCIÓN DE TABLA DE SÍMBOLOS    ######
 tok_gcounter = -1
 
+# Tabla de símbolos por scopes. Cada scope es un dict: lexema -> atributos.
+# La posición (id.pos) es global e incremental, y se usa como "handle" entre fases.
 symbol_table = {}
 symbol_table_stack = [{}]
 
@@ -145,16 +177,12 @@ def add_symbol(name, type=None, value=None):
         tok_gcounter += 1
         symbol_table_stack[-1][name] = {
             'type': type,
+            # 'value' aquí NO es un valor en tiempo de ejecución: es el lexema original.
             'value': value,
-            'position': tok_gcounter
+            'position': tok_gcounter,
+            'displacement': None,  # Desplazamiento en memoria
+            'lexeme': name         # Guardar el lexema para referencia
         }
-
-        # ESCRIBIR EN symbols.txt EN EL MOMENTO (dinámicamente), con tu formato
-        if symbols_file is not None:
-            symbols_file.write(f"* LEXEMA : '{name}'\n")
-            symbols_file.write("  Atributos:\n")
-            symbols_file.write("  --------- ---------\n\n")
-
         return tok_gcounter
     else:
         return symbol_table_stack[-1][name]['position']
@@ -165,6 +193,53 @@ def get_symbol(value):
             if tok['position'] == value:
                 return tok
     return None
+
+def get_symbol_by_name(name):
+    """Busca un símbolo por nombre en todos los scopes."""
+    for scope in reversed(symbol_table_stack):
+        if name in scope:
+            return scope[name]
+    return None
+
+def set_symbol_displacement(pos, disp):
+    """Establece el desplazamiento de un símbolo."""
+    sym = get_symbol(pos)
+    if sym:
+        sym['displacement'] = disp
+
+def get_symbol_displacement(pos):
+    """Obtiene el desplazamiento de un símbolo."""
+    sym = get_symbol(pos)
+    if sym:
+        return sym.get('displacement')
+    return None
+
+def write_symbol_table_to_file(file_handle):
+    """Escribe la tabla de símbolos completa al archivo."""
+    file_handle.write("CONTENIDOS DE LA TABLA:\n\n")
+    
+    # Recopilar todos los símbolos de todos los scopes
+    all_symbols = {}
+    for scope in symbol_table_stack:
+        for name, sym in scope.items():
+            if sym['position'] not in all_symbols:
+                all_symbols[sym['position']] = (name, sym)
+    
+    # Ordenar por posición y escribir
+    for pos in sorted(all_symbols.keys()):
+        name, sym = all_symbols[pos]
+        file_handle.write(f"* LEXEMA : '{name}'\n")
+        file_handle.write("  Atributos:\n")
+        
+        # Escribir tipo si existe
+        if sym.get('type'):
+            file_handle.write(f"    + tipo: '{sym['type']}'\n")
+        
+        # Escribir desplazamiento si existe
+        if sym.get('displacement') is not None:
+            file_handle.write(f"    + desplazamiento: {sym['displacement']}\n")
+        
+        file_handle.write("  --------- ---------\n\n")
 
 def enter_scope():
     symbol_table_stack.append({})
@@ -180,6 +255,582 @@ parsing_table = {}
 stack = []
 production_sequence = []  # Para almacenar la secuencia de producciones aplicadas
 current_token = None      # Token actual del lexer
+
+###### SECCIÓN DE ANÁLISIS SEMÁNTICO ######
+
+# Constantes de Tipos
+T_INT = 'int'
+T_FLOAT = 'float'
+T_STRING = 'string'
+T_BOOL = 'boolean'
+T_VOID = 'void'
+T_ERROR = 'tipo_error'
+T_OK = 'tipo_ok'
+
+# Estado Global del Semántico
+sem_stack = []        
+last_id_pos = -1      
+current_func_id = -1  # ID de la función que se está declarando
+despG = 0             
+despL = 0             
+in_function = False   
+temp_type = None      
+global_initialized = False  # Bandera para saber si ya se inicializó el scope global      
+
+# Pila de IDs para expresiones (resuelve el problema de ids anidados en llamadas)
+id_stack = []
+
+# Pila de IDs para declaraciones let (preserva el id durante análisis de Asignar)
+decl_id_stack = []      
+
+def get_width(type_str):
+    """Ancho (bytes) de un tipo para cálculo de desplazamientos (despG/despL)."""
+    if type_str == T_INT: return 2
+    if type_str == T_FLOAT: return 4
+    if type_str == T_BOOL: return 1
+    # En el EdT aparece `strlen`; aquí se usa 1 como placeholder (sin generación de código).
+    if type_str == T_STRING: return 1 
+    return 0
+
+def set_symbol_type(pos, type_val):
+    sym = get_symbol(pos)
+    if sym:
+        sym['type'] = type_val
+
+def get_symbol_type(pos):
+    sym = get_symbol(pos)
+    if sym:
+        return sym['type']
+    return None
+
+def get_symbol_name(pos):
+    # Recupera el nombre real (lexema) para errores legibles
+    sym = get_symbol(pos)
+    if sym and 'value' in sym:
+        return str(sym['value'])
+    return f"ID_{pos}"
+
+def sem_error(msg):
+    print(f"MyJS Semantic Error: {msg}")
+
+# --- ACCIONES SEMÁNTICAS ---
+
+def action_init_global():
+    """S -> LC S | LF S | eof: Inicialización del scope global.
+    
+    Per el EdT: if TSG = nulo then TSG := CrearTabla(), despG := 0
+    Solo inicializa si no se ha hecho antes.
+    """
+    global despG, sem_stack, id_stack, decl_id_stack, global_initialized
+    
+    if not global_initialized:
+        despG = 0
+        sem_stack = []
+        id_stack = []
+        decl_id_stack = []
+        global_initialized = True
+
+def action_lc_check():
+    ls_type = sem_stack.pop()
+    res = T_OK if ls_type != T_ERROR else T_ERROR
+    sem_stack.append(res)
+
+def action_lc_if():
+    # Pila: LE, CuerpoIf, Exp (se poppea en orden inverso a como se sintetiza)
+    le_type = sem_stack.pop()
+    cuerpo_type = sem_stack.pop()
+    exp_type = sem_stack.pop()
+    
+    if exp_type == T_BOOL:
+        if cuerpo_type == T_OK:
+            sem_stack.append(le_type)
+        else:
+            sem_stack.append(T_ERROR)
+    else:
+        sem_error(f"La condición 'if' requiere boolean. Recibido: {exp_type}")
+        sem_stack.append(T_ERROR)
+
+def action_le_else():
+    pass 
+
+def action_le_lambda():
+    sem_stack.append(T_OK)
+
+def action_fun_init():
+    global despL, in_function, current_func_id
+    # last_id_pos es el identificador de la función
+    current_func_id = last_id_pos 
+    
+    enter_scope()
+    despL = 0
+    in_function = True
+
+def action_fun_def():
+    # Registra la firma de la función en la Tabla de Símbolos
+    args_type = sem_stack.pop()
+    ret_type = sem_stack.pop()
+    
+    # Construir firma: args -> ret
+    if args_type == T_VOID:
+        sig = f"void -> {ret_type}"
+    else:
+        sig = f"{args_type} -> {ret_type}"
+    
+    # Actualizar símbolo (está en el scope padre/global)
+    sym = get_symbol(current_func_id)
+    if sym:
+        sym['type'] = sig
+    else:
+        # Fallback por si acaso
+        sem_error(f"No se pudo registrar la función {get_symbol_name(current_func_id)}")
+
+def action_fun_end():
+    global in_function
+    exit_scope()
+    in_function = False
+
+def action_cuerpo_lc():
+    c1 = sem_stack.pop()
+    lc = sem_stack.pop()
+    res = c1 if lc == T_OK else T_ERROR
+    sem_stack.append(res)
+
+def action_cuerpo_lambda():
+    sem_stack.append(T_OK)
+
+def action_args_init():
+    global temp_type
+    temp_type = sem_stack[-1] 
+
+def action_args_id():
+    """Args -> Tipo id ArgMore: Acción al procesar 'id' del parámetro.
+    
+    Per el EdT: AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL)
+    """
+    global despL
+    tipo = sem_stack[-1] 
+    set_symbol_type(last_id_pos, tipo)
+    set_symbol_displacement(last_id_pos, despL)
+    despL += get_width(tipo)
+
+def action_args_res():
+    am = sem_stack.pop()
+    t = sem_stack.pop()
+    if am == T_VOID:
+        sem_stack.append(t)
+    else:
+        sem_stack.append(f"{t} x {am}")
+
+def action_args_void():
+    sem_stack.append(T_VOID)
+
+def action_argsl_call():
+    am = sem_stack.pop()
+    e = sem_stack.pop()
+    if e == T_ERROR or am == T_ERROR:
+        sem_stack.append(T_ERROR)
+    elif am == T_VOID:
+        sem_stack.append(e)
+    else:
+        sem_stack.append(f"{e} x {am}")
+
+def action_argsl_lambda():
+    sem_stack.append(T_VOID)
+
+def action_argmore_call():
+    am1 = sem_stack.pop()
+    e = sem_stack.pop()
+    if e == T_ERROR or am1 == T_ERROR:
+        sem_stack.append(T_ERROR)
+    elif am1 == T_VOID:
+        sem_stack.append(e)
+    else:
+        sem_stack.append(f"{e} x {am1}")
+
+def action_argmore_lambda():
+    sem_stack.append(T_VOID)
+
+def action_argmore_tipo():
+    global temp_type
+    temp_type = sem_stack[-1]
+
+def action_argmore_id():
+    """ArgMore -> comma Tipo id ArgMore: Acción al procesar 'id' del parámetro adicional.
+    
+    Per el EdT: AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL)
+    """
+    global despL
+    tipo = sem_stack[-1]
+    set_symbol_type(last_id_pos, tipo)
+    set_symbol_displacement(last_id_pos, despL)
+    despL += get_width(tipo)
+
+def action_argmore_res():
+    am1 = sem_stack.pop()
+    t = sem_stack.pop()
+    if am1 == T_VOID:
+        sem_stack.append(t)
+    else:
+        sem_stack.append(f"{t} x {am1}")
+
+def action_ls_let_pre():
+    pass 
+
+def action_ls_let_id():
+    """LS -> let Tipo id Asignar: Acción al procesar 'id'.
+    
+    Guarda el id en decl_id_stack para preservarlo durante el análisis de Asignar.
+    Per el EdT: AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(...)
+    """
+    global despG, despL, decl_id_stack
+    tipo = sem_stack[-1] 
+    set_symbol_type(last_id_pos, tipo)
+    w = get_width(tipo)
+    
+    # Asignar desplazamiento según el scope
+    if in_function:
+        set_symbol_displacement(last_id_pos, despL)
+        despL += w
+    else:
+        set_symbol_displacement(last_id_pos, despG)
+        despG += w
+    
+    # Guardar el id para usarlo en action_ls_let_res
+    decl_id_stack.append(last_id_pos)
+
+def action_ls_let_res():
+    """LS -> let Tipo id Asignar: Acción final (después de Asignar).
+    
+    Per el EdT:
+    LS.tipo := if Asignar.igualacion = tipo_error then
+                   if Asignar.tipo = Tipo.tipo then Tipo.tipo
+                   else tipo_error
+               else Tipo.tipo
+    """
+    global decl_id_stack
+    asign = sem_stack.pop()
+    tipo = sem_stack.pop()
+    
+    # Recuperar el id correcto de la pila
+    if decl_id_stack:
+        decl_id = decl_id_stack.pop()
+    else:
+        decl_id = last_id_pos  # Fallback
+    name = get_symbol_name(decl_id)
+    
+    if asign == T_ERROR:
+        sem_stack.append(T_ERROR)
+    elif asign == T_VOID: 
+        # Sin asignación (Asignar -> lambda)
+        sem_stack.append(tipo)
+    elif asign == tipo:
+        sem_stack.append(tipo)
+    elif tipo == T_FLOAT and asign == T_INT:
+        # Coerción implícita int -> float
+        sem_stack.append(tipo)
+    else:
+        sem_error(f"Asignación incorrecta en 'let {name}'. Esperado {tipo}, recibido {asign}")
+        sem_stack.append(T_ERROR)
+
+def action_ls_id_pre():
+    sym_type = get_symbol_type(last_id_pos)
+    if sym_type is None:
+        global despG
+        set_symbol_type(last_id_pos, T_INT)
+        despG += 2
+
+def action_ls_id_res():
+    idopt = sem_stack.pop()
+    sym_type = get_symbol_type(last_id_pos)
+    name = get_symbol_name(last_id_pos)
+
+    if idopt == T_ERROR:
+        sem_stack.append(T_ERROR)
+    elif idopt == T_OK: 
+        sem_stack.append(T_OK)
+    else:
+        # Validación de asignación o retorno función
+        if sym_type and "->" in str(sym_type):
+             # Es llamada, IdOpt es el retorno
+             sem_stack.append(idopt)
+        elif sym_type == idopt:
+             sem_stack.append(sym_type)
+        elif sym_type == T_FLOAT and idopt == T_INT:
+             sem_stack.append(sym_type)
+        else:
+             sem_error(f"Asignación incorrecta a '{name}'. Variable es {sym_type}, valor es {idopt}")
+             sem_stack.append(T_ERROR)
+
+def action_ls_read():
+    sem_stack.append(T_OK)
+
+def action_ls_write():
+    t = sem_stack.pop()
+    if t in [T_INT, T_FLOAT, T_STRING, T_BOOL]:
+        sem_stack.append(T_OK)
+    else:
+        sem_error(f"write() no soporta el tipo {t}")
+        sem_stack.append(T_ERROR)
+
+def action_ls_return():
+    t = sem_stack.pop()
+    sem_stack.append(t) 
+
+def action_idopt_call():
+    # Validación simple de llamada (firma vs argumentos)
+    args_llamada = sem_stack.pop()
+    sym_type = get_symbol_type(last_id_pos)
+    name = get_symbol_name(last_id_pos)
+    
+    if not sym_type:
+        sem_error(f"Función no declarada: {name}")
+        sem_stack.append(T_ERROR)
+    elif "->" not in str(sym_type):
+        sem_error(f"'{name}' no es una función (es {sym_type})")
+        sem_stack.append(T_ERROR)
+    else:
+        parts = str(sym_type).split("->")
+        ret_type = parts[1].strip()
+        sem_stack.append(ret_type)
+
+def action_idopt_eq():
+    pass 
+
+def action_idopt_pluseq():
+    t = sem_stack.pop()
+    if t in [T_INT, T_FLOAT]:
+        sem_stack.append(t)
+    else:
+        sem_error("Operador += requiere tipo numérico")
+        sem_stack.append(T_ERROR)
+
+# Tipos Primitivos
+def action_type_int(): sem_stack.append(T_INT)
+def action_type_float(): sem_stack.append(T_FLOAT)
+def action_type_string(): sem_stack.append(T_STRING)
+def action_type_bool(): sem_stack.append(T_BOOL)
+def action_type_void(): sem_stack.append(T_VOID)
+def action_type_inherit(): pass 
+
+def action_asign_eq():
+    pass 
+
+def action_asign_lambda():
+    sem_stack.append(T_VOID)
+
+def action_ret_exp():
+    pass 
+
+def action_ret_lambda():
+    sem_stack.append(T_VOID)
+
+def action_exp_logic():
+    aux = sem_stack.pop()
+    e1 = sem_stack.pop()
+    if aux == T_VOID: sem_stack.append(e1)
+    elif aux == T_BOOL and e1 == T_BOOL: sem_stack.append(T_BOOL)
+    elif aux == e1: sem_stack.append(T_BOOL)
+    else: 
+        sem_stack.append(T_ERROR)
+
+def action_expaux_and():
+    t = sem_stack.pop()
+    if t == T_BOOL: sem_stack.append(T_BOOL)
+    else: sem_stack.append(T_ERROR)
+
+def action_expaux_lambda():
+    sem_stack.append(T_VOID)
+
+def action_exp1_rel():
+    aux = sem_stack.pop()
+    e2 = sem_stack.pop()
+    if aux == T_VOID: sem_stack.append(e2)
+    elif aux == T_BOOL: sem_stack.append(T_BOOL) 
+    else: sem_stack.append(T_ERROR)
+
+def action_exp1aux_min():
+    t = sem_stack.pop()
+    if t in [T_INT, T_FLOAT]: 
+        sem_stack.append(T_BOOL) 
+    else: 
+        sem_error(f"Operador < requiere numéricos. Recibido: {t}")
+        sem_stack.append(T_ERROR)
+
+def action_exp1aux_lambda():
+    sem_stack.append(T_VOID)
+
+def action_exp2_arit():
+    aux = sem_stack.pop()
+    e3 = sem_stack.pop()
+    if aux == T_VOID: sem_stack.append(e3)
+    elif aux == e3: sem_stack.append(e3)
+    elif (e3 == T_FLOAT and aux == T_INT) or (e3 == T_INT and aux == T_FLOAT):
+        sem_stack.append(T_FLOAT) 
+    else: sem_stack.append(T_ERROR)
+
+def action_exp2aux_sum():
+    t = sem_stack.pop()
+    if t in [T_INT, T_FLOAT]: sem_stack.append(t)
+    else: sem_stack.append(T_ERROR)
+
+def action_exp2aux_lambda():
+    sem_stack.append(T_VOID)
+
+def action_exp3_par():
+    pass 
+
+def action_exp3_id_pre():
+    global id_stack
+    id_stack.append(last_id_pos)
+
+def action_exp3_id():
+    global id_stack
+    
+    e4 = sem_stack.pop()
+    
+    # Recuperar el id correcto de la pila (el que empujamos en action_exp3_id_pre)
+    if id_stack:
+        id_pos = id_stack.pop()
+    else:
+        id_pos = last_id_pos  # Fallback (no debería ocurrir)
+    
+    sym_type = get_symbol_type(id_pos)
+    name = get_symbol_name(id_pos)
+    
+    if sym_type is None:
+        sem_error(f"Variable '{name}' no declarada")
+        sem_stack.append(T_ERROR)
+        return
+
+    # Caso 1: Expresion4 -> lambda (e4 == T_VOID): id usado como variable
+    if e4 == T_VOID:
+        if "->" in str(sym_type):
+             sem_error(f"Uso de función '{name}' sin paréntesis")
+             sem_stack.append(T_ERROR)
+        else:
+             sem_stack.append(sym_type)
+    # Caso 2: Expresion4 -> oppar ArgsLlamada clpar: id usado como llamada a función
+    elif isinstance(e4, tuple) and e4[0] == "CALL":
+        args_tipo = e4[1]  # Tipos de los argumentos pasados
+        
+        if "->" not in str(sym_type):
+            sem_error(f"'{name}' no es una función (es {sym_type})")
+            sem_stack.append(T_ERROR)
+        else:
+            # sym_type tiene formato: "args_esperados -> ret_type"
+            parts = str(sym_type).split("->")
+            expected_args = parts[0].strip()
+            ret_type = parts[1].strip()
+            
+            # Validar que los argumentos pasados coincidan con los esperados
+            if args_tipo == expected_args:
+                # Coincidencia exacta de tipos
+                sem_stack.append(ret_type)
+            elif args_tipo == T_VOID and expected_args == "":
+                # Llamada sin argumentos a función sin parámetros
+                sem_stack.append(ret_type)
+            else:
+                # Error: tipos de argumentos no coinciden
+                sem_error(f"Llamada a '{name}': argumentos incompatibles. Esperado ({expected_args}), recibido ({args_tipo})")
+                sem_stack.append(T_ERROR)
+    else:
+        # Fallback inesperado
+        sem_error(f"Estado inesperado en expresión con '{name}'")
+        sem_stack.append(T_ERROR)
+
+def action_exp4_call():
+    # ArgsLlamada.tipo ya está en la pila, solo marcamos que es una llamada
+    # Reemplazamos el tipo de ArgsLlamada con un marcador de llamada + los args
+    args_tipo = sem_stack.pop()
+    sem_stack.append(("CALL", args_tipo))
+
+def action_exp4_lambda():
+    # Expresion4 -> lambda (id usado como variable, no como llamada)
+    sem_stack.append(T_VOID)
+
+# --- MAPEO COMPLETO DE REGLAS ---
+
+SEMANTIC_RULES = {
+    ('S', ('LC', 'S')): [(0, action_init_global)],
+    ('S', ('LF', 'S')): [(0, action_init_global)],
+    ('S', ('eof',)): [(0, action_init_global)],
+    
+    ('LC', ('LS', 'semicolon')): [(2, action_lc_check)],
+    ('LC', ('if', 'oppar', 'Expresion', 'clpar', 'CuerpoIf', 'LE')): [(6, action_lc_if)],
+    
+    ('LE', ('else', 'CuerpoIf')): [(2, action_le_else)],
+    ('LE', ('lambda',)): [(1, action_le_lambda)],
+    
+    ('LF', ('function', 'TypeFun', 'id', 'oppar', 'Args', 'clpar', 'opbra', 'Cuerpo', 'clbra')): 
+        [(3, action_fun_init), (6, action_fun_def), (9, action_fun_end)],
+    
+    ('Cuerpo', ('LC', 'Cuerpo')): [(2, action_cuerpo_lc)],
+    ('Cuerpo', ('lambda',)): [(1, action_cuerpo_lambda)],
+    
+    ('Args', ('Tipo', 'id', 'ArgMore')): [(1, action_args_init), (2, action_args_id), (3, action_args_res)],
+    ('Args', ('void',)): [(1, action_args_void)],
+    
+    ('ArgMore', ('comma', 'Tipo', 'id', 'ArgMore')): [(2, action_argmore_tipo), (3, action_argmore_id), (4, action_argmore_res)],
+    ('ArgMore', ('lambda',)): [(1, action_argmore_lambda)],
+    
+    ('ArgsLlamada', ('Expresion', 'ArgMoreLlamada')): [(2, action_argsl_call)],
+    ('ArgsLlamada', ('lambda',)): [(1, action_argsl_lambda)],
+    
+    ('ArgMoreLlamada', ('comma', 'Expresion', 'ArgMoreLlamada')): [(3, action_argmore_call)],
+    ('ArgMoreLlamada', ('lambda',)): [(1, action_argmore_lambda)],
+    
+    ('LS', ('let', 'Tipo', 'id', 'Asignar')): [(2, action_ls_let_pre), (3, action_ls_let_id), (4, action_ls_let_res)],
+    ('LS', ('id', 'IdOpt')): [(1, action_ls_id_pre), (2, action_ls_id_res)],
+    ('LS', ('read', 'id')): [(2, action_ls_read)],
+    ('LS', ('write', 'Expresion')): [(2, action_ls_write)],
+    ('LS', ('return', 'ExpReturn')): [(2, action_ls_return)],
+    
+    ('IdOpt', ('oppar', 'ArgsLlamada', 'clpar')): [(3, action_idopt_call)],
+    ('IdOpt', ('eq', 'Expresion')): [(2, action_idopt_eq)],
+    ('IdOpt', ('pluseq', 'Expresion')): [(2, action_idopt_pluseq)],
+    
+    ('TypeFun', ('void',)): [(1, action_type_void)],
+    ('TypeFun', ('Tipo',)): [(1, action_type_inherit)],
+    
+    ('Tipo', ('int',)): [(1, action_type_int)],
+    ('Tipo', ('float',)): [(1, action_type_float)],
+    ('Tipo', ('string',)): [(1, action_type_string)],
+    ('Tipo', ('boolean',)): [(1, action_type_bool)],
+    
+    ('Asignar', ('eq', 'Expresion')): [(2, action_asign_eq)],
+    ('Asignar', ('lambda',)): [(1, action_asign_lambda)],
+    
+    ('ExpReturn', ('Expresion',)): [(1, action_ret_exp)],
+    ('ExpReturn', ('lambda',)): [(1, action_ret_lambda)],
+    
+    ('Expresion', ('Expresion1', 'ExpresionAux')): [(2, action_exp_logic)],
+    
+    ('ExpresionAux', ('and', 'Expresion')): [(2, action_expaux_and)],
+    ('ExpresionAux', ('lambda',)): [(1, action_expaux_lambda)],
+    
+    ('Expresion1', ('Expresion2', 'Expresion1Aux')): [(2, action_exp1_rel)],
+    
+    ('Expresion1Aux', ('minorthan', 'Expresion1')): [(2, action_exp1aux_min)],
+    ('Expresion1Aux', ('lambda',)): [(1, action_exp1aux_lambda)],
+    
+    ('Expresion2', ('Expresion3', 'Expresion2Aux')): [(2, action_exp2_arit)],
+    
+    ('Expresion2Aux', ('sum', 'Expresion2')): [(2, action_exp2aux_sum)],
+    ('Expresion2Aux', ('lambda',)): [(1, action_exp2aux_lambda)],
+    
+    ('Expresion3', ('oppar', 'Expresion', 'clpar')): [(3, action_exp3_par)],
+    ('Expresion3', ('intconst',)): [(1, action_type_int)],
+    ('Expresion3', ('realconst',)): [(1, action_type_float)],
+    ('Expresion3', ('str',)): [(1, action_type_string)],
+    ('Expresion3', ('true',)): [(1, action_type_bool)],
+    ('Expresion3', ('false',)): [(1, action_type_bool)],
+    ('Expresion3', ('id', 'Expresion4')): [(1, action_exp3_id_pre), (2, action_exp3_id)],
+    
+    ('Expresion4', ('oppar', 'ArgsLlamada', 'clpar')): [(3, action_exp4_call)],
+    ('Expresion4', ('lambda',)): [(1, action_exp4_lambda)],
+}
+
+###### FIN SECCIÓN DE ANÁLISIS SEMÁNTICO ######
 
 def load_grammar(filename):
     global grammar
@@ -341,6 +992,7 @@ def compute_follow(first):
     return follow
 
 def build_parsing_table():
+    """Construye la tabla de análisis sintáctico LL(1)."""
     global parsing_table
     
     first = compute_first()
@@ -348,51 +1000,40 @@ def build_parsing_table():
     
     parsing_table = {}
     
-    print("Construyendo tabla de análisis sintáctico...")
     for nt in grammar['non_terminals']:
         parsing_table[nt] = {}
-        print(f"Procesando no terminal: {nt}")
         for production in grammar['productions'].get(nt, []):
             first_of_production = set()
             
-            print(f"  Producción: {nt} -> {' '.join(production) if production else 'lambda'}")
             if not production or production[0] == 'lambda':
                 first_of_production.add('lambda')
             else:
                 for symbol in production:
-                    print(f"    Analizando símbolo: {symbol}")
                     if symbol in grammar['terminals']:
-                        print(f"      Es terminal, añadiendo a FIRST de la producción: {symbol}")
                         first_of_production.add(symbol)
                         break
                     elif symbol in grammar['non_terminals']:
-                        print(f"      Es no terminal, añadiendo FIRST({symbol}) a FIRST de la producción")
                         for f in first[symbol]:
-                            print(f"        Añadiendo {f} a FIRST de la producción")
                             if f != 'lambda':
                                 first_of_production.add(f)
                         if 'lambda' not in first[symbol]:
                             break
                     else:
-                        print(f"    Todos los símbolos son anulables, añadiendo 'lambda' a FIRST de la producción")
                         first_of_production.add('lambda')
             
             for terminal in first_of_production:
-                print(f"    Añadiendo a la tabla de análisis: M[{nt}, {terminal}] = {' '.join(production) if production else 'lambda'}")
                 if terminal != 'lambda':
                     parsing_table[nt][terminal] = production
             
             if 'lambda' in first_of_production:
                 for terminal in follow[nt]:
-                    print(f"    Producción es anulable, añadiendo a la tabla de análisis: M[{nt}, {terminal}] = {' '.join(production) if production else 'lambda'}")
-                    parsing_table[nt][terminal] = production
-
-    print("Parsing Table:")
-    for nt, rules in parsing_table.items():
-        for term, prod in rules.items():
-            print(f"M[{nt}, {term}] = {' '.join(prod)}")
+                    # Importante LL(1): al propagar por FOLLOW en anulables, no se debe
+                    # sobrescribir una entrada ya ocupada por una producción no-lambda.
+                    if terminal not in parsing_table[nt]:
+                        parsing_table[nt][terminal] = production
 
 def token_type_to_grammar_symbol(token):
+    """Mapea `token.type` (PLY) al nombre de terminal usado por la gramática LL(1)."""
     mapping = {
         'BOOLEAN': 'boolean',
         'STRING': 'string',
@@ -455,7 +1096,7 @@ def handle_syntactic_error(no_terminal, terminal, token):
         showID = token_info['value']
 
     # Mensajes de error específicos por no terminal
-    print(f"\nMyJS Syntactic Error: en la línea {line}", end=' ')
+    print(f"MyJS Syntactic Error: En la línea {line}", end=' ')
 
     if no_terminal == 'S':
         print(f"se esperaba el inicio de una sentencia o función, pero se encontró '{showID}'")
@@ -526,7 +1167,7 @@ lexed_file = None
 def init_lexer_for_parser(code):
     global current_token, prev_token
     lexer.input(code)
-    # Primer token: se escribe en lexed y luego se pasa al parser
+    # Primer token: se escribe en `lexed.txt` y queda listo como lookahead del parser.
     prev_token = current_token
     current_token = get_next_token()
 
@@ -541,7 +1182,7 @@ def get_next_token():
             lineno = 0
         tok = EOFToken()
 
-    # ESCRIBIR EN lexed.txt
+    # Volcado de tokens para inspección externa (formato de la práctica).
     if lexed_file is not None:
         if tok.type in noattr:
             lexed_file.write(f'<{tok.type},>\n')
@@ -559,34 +1200,102 @@ def advance_token():
     current_token = get_next_token()
 
 def parse():
-    global stack, production_sequence, current_token
+    """Ejecuta el análisis LL(1) con pila.
+
+    La pila mezcla símbolos de gramática (terminales/no terminales) y callbacks Python.
+    Las callbacks implementan el EdT: consumen/produces atributos vía `sem_stack`.
+    """
+    global stack, production_sequence, current_token, last_id_pos, global_initialized
 
     stack = ['eof', grammar['axiom']]
     production_sequence = []
+    
+    # Resetear estado global para nueva ejecución
+    global_initialized = False
+    
+    # Inicialización forzada del semántico
+    action_init_global()
 
     while stack:
         top = stack[-1]
+        
+        # 1. Ejecutar Acción Semántica (Si hay una función en el tope)
+        if callable(top):
+            top()
+            stack.pop()
+            continue
+            
         current_symbol = token_type_to_grammar_symbol(current_token)
 
+        # 2. Match de terminal: consume el lookahead si coincide.
         if top in grammar['terminals'] or top == 'eof':
             if top == current_symbol:
+                # Capturar id.pos para las acciones semánticas asociadas al identificador.
+                if top == 'id':
+                    last_id_pos = current_token.value # Guardar posición TS
+                
                 stack.pop()
-                advance_token()
+                # EOF es un terminal “sentinela”: se consume en la pila pero no se avanza
+                # el lexer, para evitar lecturas repetidas de EOF y duplicados en `lexed.txt`.
+                if top != 'eof':
+                    advance_token()
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
                 return False
-
+        
+        # 3. Expandir No Terminal
         elif top in grammar['non_terminals']:
             rules_for_top = parsing_table.get(top, {})
+            
             if current_symbol in rules_for_top:
                 production = rules_for_top[current_symbol]
                 production_key = (top, tuple(production))
+                
                 if production_key in grammar['production_numbers']:
                     production_sequence.append(grammar['production_numbers'][production_key])
+                
                 stack.pop()
+                
+                # Inyección de símbolos + acciones en la pila.
+                # Convención: las acciones vienen indexadas por “posición” dentro de la
+                # producción para poder ejecutarlas en el punto exacto del EdT.
                 if production and production[0] != 'lambda':
-                    for symbol in reversed(production):
-                        stack.append(symbol)
+                    actions = SEMANTIC_RULES.get(production_key, [])
+                    # Necesitamos empujar en orden inverso: C, B, A
+                    # E intercalar acciones.
+                    # Producción: A (1) B (2) C (3)
+                    
+                    items_to_push = []
+                    
+                    # Recorrer símbolos de derecha a izquierda (len..1)
+                    for i in range(len(production), 0, -1):
+                        # Acciones después del símbolo i
+                        for idx, act in actions:
+                            if idx == i: items_to_push.append(act)
+                        
+                        items_to_push.append(production[i-1])
+                    
+                    # Acciones antes del primer símbolo (0)
+                    for idx, act in actions:
+                        if idx == 0: items_to_push.append(act)
+                        
+                    # Empujar todo a la pila (como append añade al final, y stack es LIFO,
+                    # el último append es el tope. items_to_push[0] debe ser lo más profundo.
+                    # Pero hemos construido items_to_push en orden inverso (C, B, A).
+                    # Ejemplo: A, B. items = [Act2, B, Act1, A, Act0].
+                    # Al hacer append en ese orden: stack... Act2, B, Act1, A, Act0(tope).
+                    # Correcto.
+                    
+                    for item in items_to_push:
+                        stack.append(item)
+                        
+                else:
+                    # Caso Lambda
+                    actions = SEMANTIC_RULES.get(production_key, [])
+                    # Solo acciones índice 1 (o 0/1, lambda cuenta como 1 posición abstracta)
+                    for idx, act in actions:
+                        stack.append(act)
+                        
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
                 return False
@@ -599,43 +1308,84 @@ def parse():
 ######    FIN SECCIÓN DE ANALIZADOR SINTÁCTICO    ######
 
 def main():
-    tok_counter = 0
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file")
+    """Función principal del analizador."""
+    parser = argparse.ArgumentParser(
+        description='Analizador Léxico, Sintáctico y Semántico para MyJS',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("file", help="Archivo fuente MyJS a analizar")
     args = parser.parse_args()
 
-    with open(args.file, 'r') as f:
-        content = f.read()
+    # Verificar que el archivo existe
+    try:
+        with open(args.file, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except FileNotFoundError:
+        print(f"Error: No se encontró el archivo '{args.file}'")
+        sys.exit(1)
+    except IOError as e:
+        print(f"Error al leer el archivo: {e}")
+        sys.exit(1)
+
+    # Verificar que existe el archivo de gramática
+    try:
+        with open('Gramatica.txt', 'r') as f:
+            pass
+    except FileNotFoundError:
+        print("Error: No se encontró el archivo 'Gramatica.txt'")
+        sys.exit(1)
 
     global lexed_file, symbols_file
+    
+    # Limpiar errores de ejecuciones anteriores
+    clear_lex_errors()
 
-    # Abrimos AMBOS ficheros al inicio
-    with open('lexed.txt', 'w', encoding="utf-8") as lf, \
-         open('symbols.txt', 'w', encoding='utf-8') as sf:
-        
-        lexed_file = lf
-        symbols_file = sf
+    # `lexed.txt` se genera durante el análisis (streaming). La TS se vuelca al final.
+    try:
+        with open('lexed.txt', 'w', encoding="utf-8") as lf:
+            lexed_file = lf
+            symbols_file = None
 
-        # Escribir cabecera en symbols.txt
-        sf.write("CONTENIDOS DE LA TABLA:\n\n")
+            load_grammar('Gramatica.txt')
+            build_parsing_table()
 
-        load_grammar('Gramatica.txt')
-        build_parsing_table()
+            # Inicializar lexer (lookahead listo) y ejecutar parser+semántico.
+            init_lexer_for_parser(content)
 
-        # Inicializamos lexer (ya escribe dinámicamente en lexed.txt y symbols.txt)
-        init_lexer_for_parser(content)
+            # Ejecutar análisis sintáctico y semántico
+            ok = parse()
 
-        ok = parse()
+    except IOError as e:
+        print(f"Error al escribir archivos de salida: {e}")
+        sys.exit(1)
+
+    # Reportar errores léxicos acumulados (si existen).
+    if has_lex_errors():
+        print_lex_errors()
+
+    # Escribir tabla de símbolos al final con todos los atributos
+    try:
+        with open('symbols.txt', 'w', encoding='utf-8') as sf:
+            write_symbol_table_to_file(sf)
+    except IOError as e:
+        print(f"Error al escribir tabla de símbolos: {e}")
 
     # Generar parse.txt
-    if ok:
-        with open('parse.txt', 'w') as f:
-            f.write("Descendente ")
-            for production_num in production_sequence:
-                f.write(f"{production_num} ")
-        print("Fichero parse.txt generado exitosamente")
+    if ok and not has_lex_errors():
+        try:
+            with open('parse.txt', 'w') as f:
+                f.write("Descendente ")
+                for production_num in production_sequence:
+                    f.write(f"{production_num} ")
+            print("Análisis completado exitosamente.")
+            print("Archivos generados: lexed.txt, symbols.txt, parse.txt")
+        except IOError as e:
+            print(f"Error al escribir parse.txt: {e}")
+            sys.exit(1)
     else:
-        print("No se generó parse.txt debido a errores en el análisis")
+        print("\nAnálisis finalizado con errores.")
+        print("Archivos generados: lexed.txt, symbols.txt")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

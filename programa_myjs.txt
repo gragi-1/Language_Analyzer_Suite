@@ -6,6 +6,7 @@ function int calcular(int x, int y) {
 
 let int num1 = 10;
 let int num2 = 20;
+let boolean pepe = true;
 let int resultado = calcular(num1, num2);
 write(resultado);
 
