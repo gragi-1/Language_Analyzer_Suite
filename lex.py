@@ -171,21 +171,33 @@ symbol_table_stack = [{}]
 symbols_file = None  # Fichero para volcar la tabla de símbolos en tiempo real
 
 def add_symbol(name, type=None, value=None):
+    """Agrega o reutiliza un símbolo en la Tabla de Símbolos.
+    
+    Comportamiento:
+    - Si el símbolo existe en cualquier scope visible → reutilizar su posición
+    - Si no existe en ningún scope → crear nuevo en scope actual
+    
+    Esto asegura que las referencias a identificadores ya declarados
+    (ej: llamadas a funciones) obtengan la misma posición que la declaración.
+    """
     global tok_gcounter, symbols_file
 
-    if name not in symbol_table_stack[-1]:
-        tok_gcounter += 1
-        symbol_table_stack[-1][name] = {
-            'type': type,
-            # 'value' aquí NO es un valor en tiempo de ejecución: es el lexema original.
-            'value': value,
-            'position': tok_gcounter,
-            'displacement': None,  # Desplazamiento en memoria
-            'lexeme': name         # Guardar el lexema para referencia
-        }
-        return tok_gcounter
-    else:
-        return symbol_table_stack[-1][name]['position']
+    # Buscar en TODOS los scopes (de más interno a más externo)
+    for scope in reversed(symbol_table_stack):
+        if name in scope:
+            return scope[name]['position']
+    
+    # No existe en ningún scope: crear nuevo
+    tok_gcounter += 1
+    symbol_table_stack[-1][name] = {
+        'type': type,
+        # 'value' aquí NO es un valor en tiempo de ejecución: es el lexema original.
+        'value': value,
+        'position': tok_gcounter,
+        'displacement': None,  # Desplazamiento en memoria
+        'lexeme': name         # Guardar el lexema para referencia
+    }
+    return tok_gcounter
 
 def get_symbol(value):
     for scope in reversed(symbol_table_stack):
@@ -281,15 +293,24 @@ global_initialized = False  # Bandera para saber si ya se inicializó el scope g
 id_stack = []
 
 # Pila de IDs para declaraciones let (preserva el id durante análisis de Asignar)
-decl_id_stack = []      
+decl_id_stack = []
+
+# Pila de IDs para LS -> id IdOpt (preserva el id durante análisis de IdOpt)
+ls_id_stack = []      
 
 def get_width(type_str):
-    """Ancho (bytes) de un tipo para cálculo de desplazamientos (despG/despL)."""
+    """Ancho (bytes) de un tipo para cálculo de desplazamientos (despG/despL).
+    
+    Per el EdT:
+    - int: 2 bytes
+    - float: 4 bytes  
+    - boolean: 1 byte
+    - string: 64 bytes (tamaño máximo permitido por el lexer)
+    """
     if type_str == T_INT: return 2
     if type_str == T_FLOAT: return 4
     if type_str == T_BOOL: return 1
-    # En el EdT aparece `strlen`; aquí se usa 1 como placeholder (sin generación de código).
-    if type_str == T_STRING: return 1 
+    if type_str == T_STRING: return 64  # Tamaño máximo de cadena en MyJS
     return 0
 
 def set_symbol_type(pos, type_val):
@@ -533,21 +554,51 @@ def action_ls_let_res():
         sem_stack.append(T_ERROR)
 
 def action_ls_id_pre():
+    """LS -> id IdOpt: Acción PRE al procesar 'id'.
+    
+    Per el EdT: Guardar id.pos para usarlo en IdOpt (que puede modificar last_id_pos).
+    Si el id no existe en TS, se asigna tipo int por defecto (declaración implícita).
+    """
+    global despG, ls_id_stack
+    
+    # CRÍTICO: Guardar el id ANTES de que IdOpt lo sobrescriba con otros identificadores
+    ls_id_stack.append(last_id_pos)
+    
     sym_type = get_symbol_type(last_id_pos)
     if sym_type is None:
-        global despG
+        # Declaración implícita de variable no declarada (comportamiento EdT)
         set_symbol_type(last_id_pos, T_INT)
+        set_symbol_displacement(last_id_pos, despG)
         despG += 2
 
 def action_ls_id_res():
+    """LS -> id IdOpt: Acción final (después de IdOpt).
+    
+    Per el EdT: Recuperar el id original de ls_id_stack (no usar last_id_pos).
+    """
+    global ls_id_stack
+    
     idopt = sem_stack.pop()
-    sym_type = get_symbol_type(last_id_pos)
-    name = get_symbol_name(last_id_pos)
+    
+    # CRÍTICO: Recuperar el id correcto de la pila (NO usar last_id_pos)
+    if ls_id_stack:
+        id_pos = ls_id_stack.pop()
+    else:
+        id_pos = last_id_pos  # Fallback (no debería ocurrir)
+    
+    sym_type = get_symbol_type(id_pos)
+    name = get_symbol_name(id_pos)
 
     if idopt == T_ERROR:
         sem_stack.append(T_ERROR)
     elif idopt == T_OK: 
-        sem_stack.append(T_OK)
+        # Llamada a función con retorno void - verificar que es función
+        if sym_type and "->" in str(sym_type):
+            parts = str(sym_type).split("->")
+            ret_type = parts[1].strip()
+            sem_stack.append(T_OK if ret_type == T_VOID else ret_type)
+        else:
+            sem_stack.append(T_OK)
     else:
         # Validación de asignación o retorno función
         if sym_type and "->" in str(sym_type):
@@ -565,8 +616,18 @@ def action_ls_read():
     sem_stack.append(T_OK)
 
 def action_ls_write():
+    """LS -> write Expresion
+    
+    Per el EdT:
+    LS.tipo := if Expresion.tipo = int then tipo_ok
+               else if Expresion.tipo = float then tipo_ok
+               else if Expresion.tipo = string then tipo_ok
+               else tipo_error
+    
+    Nota: boolean NO está permitido según el EdT.
+    """
     t = sem_stack.pop()
-    if t in [T_INT, T_FLOAT, T_STRING, T_BOOL]:
+    if t in [T_INT, T_FLOAT, T_STRING]:
         sem_stack.append(T_OK)
     else:
         sem_error(f"write() no soporta el tipo {t}")
@@ -577,10 +638,24 @@ def action_ls_return():
     sem_stack.append(t) 
 
 def action_idopt_call():
-    # Validación simple de llamada (firma vs argumentos)
+    """IdOpt -> oppar ArgsLlamada clpar: Llamada a función.
+    
+    Per el EdT: IdOpt.tipo := ArgsLlamada.tipo, IdOpt.igualacion := tipo_ok
+    CRÍTICO: Usar ls_id_stack[-1] (NO last_id_pos) para obtener el id de la función.
+    """
+    global ls_id_stack
+    
     args_llamada = sem_stack.pop()
-    sym_type = get_symbol_type(last_id_pos)
-    name = get_symbol_name(last_id_pos)
+    
+    # CRÍTICO: El id de la función está en ls_id_stack (NO en last_id_pos)
+    # last_id_pos ahora contiene el último argumento procesado
+    if ls_id_stack:
+        func_id = ls_id_stack[-1]  # Peek (no pop, lo hace action_ls_id_res)
+    else:
+        func_id = last_id_pos  # Fallback
+    
+    sym_type = get_symbol_type(func_id)
+    name = get_symbol_name(func_id)
     
     if not sym_type:
         sem_error(f"Función no declarada: {name}")
@@ -591,7 +666,8 @@ def action_idopt_call():
     else:
         parts = str(sym_type).split("->")
         ret_type = parts[1].strip()
-        sem_stack.append(ret_type)
+        # Empujar T_OK como marcador de igualacion (llamada válida)
+        sem_stack.append(T_OK)
 
 def action_idopt_eq():
     pass 
@@ -684,7 +760,17 @@ def action_exp3_id_pre():
     id_stack.append(last_id_pos)
 
 def action_exp3_id():
-    global id_stack
+    """Expresion3 -> id Expresion4: Evalúa un identificador en una expresión.
+    
+    Per el EdT:
+    Expresion3.tipo := if BuscaTipoTS(id.pos) := Expresion4.tipo -> t then t
+                       else if BuscaTipoTS(id.pos) := s -> t then tipo_error
+                       else BuscaTipoTS(id.pos)
+    
+    REGLA MyJS: Si la variable no ha sido declarada (tipo == 'ID'), se declara
+    implícitamente como int global.
+    """
+    global id_stack, despG
     
     e4 = sem_stack.pop()
     
@@ -697,10 +783,14 @@ def action_exp3_id():
     sym_type = get_symbol_type(id_pos)
     name = get_symbol_name(id_pos)
     
-    if sym_type is None:
-        sem_error(f"Variable '{name}' no declarada")
-        sem_stack.append(T_ERROR)
-        return
+    # REGLA MyJS: Si sym_type == 'ID', la variable no fue declarada formalmente.
+    # Se declara implícitamente como int global.
+    if sym_type is None or sym_type == 'ID':
+        # Declaración implícita: variable global de tipo int
+        set_symbol_type(id_pos, T_INT)
+        set_symbol_displacement(id_pos, despG)
+        despG += get_width(T_INT)
+        sym_type = T_INT  # Actualizar para el resto de la lógica
 
     # Caso 1: Expresion4 -> lambda (e4 == T_VOID): id usado como variable
     if e4 == T_VOID:
