@@ -51,12 +51,11 @@ LS -> let Tipo {AgregarTipo(id.pos, Tipo.tipo) if TSL = nulo then AgregarDesplaz
 																																			  else Tipo.tipo}
 LS -> id IdOpt {LS.tipo := if EstaEnTS(id.pos) = false then AgregarTipo(id.pos, int), AgregarDesplazamiento(id.pos, despG), despG := despG + 2
                             	if IdOpt.tipo = int then int
-								else tipo_error
-                            else if BuscaTipoTS(id.pos) = IdOpt.tipo then IdOpt.tipo
-                            else if IdOpt.igualacion = tipo_ok then
-								if BuscaTipoTS(id.pos) = IdOpt.tipo -> t then t
-								else tipo_error
-                            else tipo_error}
+                                else if BuscaTipoTS(id.pos) = IdOpt.tipo then IdOpt.tipo
+                                else if IdOpt.igualacion = tipo_ok then
+                                    if BuscaTipoTS(id.pos) = IdOpt.tipo -> t then t
+                                    else tipo_error
+                                else tipo_error}
 LS -> read id {LS.tipo := tipo_ok}
 LS -> write Expresion {LS.tipo := if Expresion.tipo = int then tipo_ok
                        else if Expresion.tipo = float then tipo_ok
