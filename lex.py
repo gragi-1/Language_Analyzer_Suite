@@ -1179,6 +1179,7 @@ def handle_syntactic_error(no_terminal, terminal, token):
 
     if line == 0:
         line = prev_lineno  
+        changed = True
 
     # Tratamiento del símbolo a mostrar
     token_info = get_symbol(token.value)
