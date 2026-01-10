@@ -1159,6 +1159,8 @@ def handle_syntactic_error(no_terminal, terminal, token):
             print(f"se esperaba ';'")
         else:
             print(f"hay una función mal llamada o falta ')', pero se encontró '{showID}'")
+    else:
+        print(f"se esperaba '{no_terminal}', pero se encontró '{showID}'")
 
 current_token = None
 prev_token = None
