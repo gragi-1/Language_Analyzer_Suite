@@ -1,0 +1,19 @@
+let string texto;
+function void output  (string msg_)
+{
+	write msg_;
+}
+function void pideTexto  (void)
+{
+	write 'Introduce un texto';
+	read texto;
+}
+
+pideTexto();
+let  string  textoAux;textoAux = texto;
+output
+ (
+ textoAux                                                    
+ )
+ ;
+write num_real;
