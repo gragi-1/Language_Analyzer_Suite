@@ -228,7 +228,7 @@ def get_symbol_displacement(pos):
 
 def write_symbol_table_to_file(file_handle):
     """Escribe la tabla de símbolos completa al archivo."""
-    file_handle.write("CONTENIDOS DE LA TABLA:\n\n")
+    file_handle.write("CONTENIDOS DE LA TABLA #1:\n\n")
     
     # Recopilar todos los símbolos de todos los scopes
     all_symbols = {}
