@@ -242,8 +242,12 @@ def write_single_table(file_handle, table_num, table_name, symbols_dict):
         table_name: Nombre de la tabla (None para global, nombre de función para locales)
         symbols_dict: Diccionario de símbolos a escribir
     """
-    # Formato unificado: CONTENIDOS DE LA TABLA #N:
-    file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num}:\n\n")
+    # Formato: CONTENIDOS DE LA TABLA nombreFuncion #N: (para funciones)
+    #          CONTENIDOS DE LA TABLA #N: (para global)
+    if table_name:
+        file_handle.write(f"CONTENIDOS DE LA TABLA {table_name} #{table_num}:\n\n")
+    else:
+        file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num}:\n\n")
     
     # Ordenar por posición y escribir
     sorted_symbols = sorted(symbols_dict.items(), key=lambda x: x[1]['position'])
