@@ -68,7 +68,7 @@ reserved.update({
 })
 
 tokens = [
-        "REALCONST", "INTCONST", "ID", "STR"
+        "FLOATCONST", "INTCONST", "ID", "STR"
         ] + noattr + list(reserved.values())
 
 t_PLUSEQ     = r'\+='
@@ -85,7 +85,7 @@ t_MINORTHAN  = r'<'
 
 t_ignore = ' \t'
 
-def t_REALCONST(t):
+def t_FLOATCONST(t):
     r'-?\d+\.\d+'
     try:
         t.value = float(t.value)
@@ -910,7 +910,7 @@ SEMANTIC_RULES = {
     
     ('Expresion3', ('oppar', 'Expresion', 'clpar')): [(3, action_exp3_par)],
     ('Expresion3', ('intconst',)): [(1, action_type_int)],
-    ('Expresion3', ('realconst',)): [(1, action_type_float)],
+    ('Expresion3', ('floatconst',)): [(1, action_type_float)],
     ('Expresion3', ('str',)): [(1, action_type_string)],
     ('Expresion3', ('true',)): [(1, action_type_bool)],
     ('Expresion3', ('false',)): [(1, action_type_bool)],
@@ -1139,7 +1139,7 @@ def token_type_to_grammar_symbol(token):
         'WRITE': 'write',
         'FALSE': 'false',
         'TRUE': 'true',
-        'REALCONST': 'floatconst',
+        'FLOATCONST': 'floatconst',
         'INTCONST': 'intconst',
         'STR': 'str',
         'PLUSEQ': 'pluseq',

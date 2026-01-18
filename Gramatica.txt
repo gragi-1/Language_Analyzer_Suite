@@ -61,17 +61,17 @@ ExpReturn -> lambda
 
 Expresion -> Expresion1 ExpresionAux
 
-ExpresionAux -> and Expresion
+ExpresionAux -> and Expresion1 ExpresionAux
 ExpresionAux -> lambda
 
 Expresion1 -> Expresion2 Expresion1Aux
 
-Expresion1Aux -> minorthan Expresion1
+Expresion1Aux -> minorthan Expresion2 Expresion1
 Expresion1Aux -> lambda
 
 Expresion2 -> Expresion3 Expresion2Aux
 
-Expresion2Aux -> sum Expresion2
+Expresion2Aux -> sum Expresion3 Expresion2
 Expresion2Aux -> lambda
 
 Expresion3 -> oppar Expresion clpar
