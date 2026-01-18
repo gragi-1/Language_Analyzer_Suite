@@ -2,6 +2,20 @@ import ply.lex as lex
 import ply.yacc as yacc
 import argparse
 import sys
+import os
+
+# Habilitar colores ANSI en Windows
+if os.name == 'nt':
+    os.system('')  # Habilita secuencias ANSI en Windows 10+
+
+# Códigos de color ANSI
+class Colors:
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    GREEN = '\033[92m'
+    CYAN = '\033[96m'
+    BOLD = '\033[1m'
+    RESET = '\033[0m'
 
 ######    SECCIÓN DE ANALIZADOR LÉXICO    ######
 
@@ -22,7 +36,7 @@ def has_lex_errors():
 def print_lex_errors():
     """Imprime todos los errores léxicos acumulados."""
     for lineno, msg in lex_errors:
-        print(f"MyJS Lex Error: (línea {lineno}): {msg}")
+        print(f"{Colors.RED}{Colors.BOLD}MyJS Lex Error:{Colors.RESET}{Colors.RED} En la línea {lineno} {msg}{Colors.RESET}")
 
 def clear_lex_errors():
     """Limpia la lista de errores léxicos."""
@@ -41,7 +55,7 @@ def has_sem_errors():
 def print_sem_errors():
     """Imprime todos los errores semánticos acumulados."""
     for lineno, msg in sem_errors:
-        print(f"MyJS Semantic Error: En la línea {lineno} {msg}")
+        print(f"{Colors.RED}{Colors.BOLD}MyJS Semantic Error:{Colors.RESET}{Colors.RED} En la línea {lineno} {msg}{Colors.RESET}")
 
 def clear_sem_errors():
     """Limpia la lista de errores semánticos."""
@@ -286,7 +300,7 @@ def write_single_table(file_handle, table_num, table_name, symbols_dict):
                 file_handle.write(f"    + tipo: 'funcion'\n")
                 args = types_parts[0].split("x")
                 # Escribir el número de parámetros y sus tipos
-                file_handle.write(f"    + numeroParams: {len(args)}\n")
+                file_handle.write(f"    + numParams: {len(args)}\n")
                 for i, arg in enumerate(args):
                     file_handle.write(f"            + tipoParam{i+1}: '{arg.strip()}'\n")
                 file_handle.write(f"    + tipoRetorno: '{types_parts[1].strip()}'\n")
@@ -1301,71 +1315,71 @@ def handle_syntactic_error(no_terminal, terminal, token):
         showID = token_info['value']
 
     # Mensajes de error específicos por no terminal
-    print(f"MyJS Syntactic Error: En la línea {line}", end=' ')
+    print(f"{Colors.RED}{Colors.BOLD}MyJS Syntactic Error:{Colors.RESET}{Colors.RED} En la línea {line}", end=' ')
 
     if no_terminal == 'S':
-        print(f"se esperaba el inicio de una sentencia o función, pero se encontró '{showID}'")
+        print(f"se esperaba el inicio de una sentencia o función, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'LC':
-        print(f"se esperaba el inicio de una sentencia, pero se encontró '{showID}'")
+        print(f"se esperaba el inicio de una sentencia, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'LF':
-        print(f"se esperaba 'function', pero se encontró '{showID}'")
+        print(f"se esperaba 'function', pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'CuerpoIf':
-        print(f"se esperaba el inicio de una sentencia o un '{{', pero se encontró '{showID}'")
+        print(f"se esperaba el inicio de una sentencia o un '{{{{', pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Cuerpo':
-        print(f"se esperaba el inicio de una sentencia o un '}}', pero se encontró '{showID}'")
+        print(f"se esperaba el inicio de una sentencia o un '}}}}', pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Args':
-        print(f"se esperaba un tipo de dato o falta ')', se encontró '{showID}'")
+        print(f"se esperaba un tipo de dato o falta ')', se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'ArgsLlamada':
-        print(f"hay un argumento no válido o falta ')', se encontró '{showID}'")
+        print(f"hay un argumento no válido o falta ')', se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'ArgMoreLlamada':
-        print(f"se esperaba ',' para llamar más argumentos o falta ')', se encontró '{showID}'")
+        print(f"se esperaba ',' para llamar más argumentos o falta ')', se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'ArgMore':
-        print(f"se esperaba ',' para llamar más argumentos o falta ')', se encontró '{showID}'")
+        print(f"se esperaba ',' para llamar más argumentos o falta ')', se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'LS':
-        print(f"se esperaba la llamada a una función o una declaración, pero se encontró '{showID}'")
+        print(f"se esperaba la llamada a una función o una declaración, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'IdOpt':
-        print(f"se esperaba '=' o una llamada de función, pero se encontró '{showID}'")
+        print(f"se esperaba '=' o una llamada de función, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'TypeFun':
-        print(f"se esperaba un tipo de función, pero se encontró '{showID}'")
+        print(f"se esperaba un tipo de función, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Tipo':
-        print(f"se esperaba un tipo de dato, pero se encontró '{showID}'")
+        print(f"se esperaba un tipo de dato, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Asignar':
-        print(f"se esperaba '=' , pero se encontró '{showID}'")
+        print(f"se esperaba '=' , pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'ExpReturn':
         if changed:
-            print(f"se esperaba ';'")
+            print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"hay una expresión no válida después del return, se encontró '{showID}'")
+            print(f"hay una expresión no válida después del return, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion':
-        print(f"hay una expresión mal declarada, se encontró '{showID}'")
+        print(f"hay una expresión mal declarada, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'ExpresionAux':
         if changed:
-            print(f"se esperaba ';'")
+            print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"se esperaba un operador, pero se encontró '{showID}'")
+            print(f"se esperaba un operador, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion1':
-        print(f"hay una expresión mal declarada, se encontró '{showID}'")
+        print(f"hay una expresión mal declarada, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion1Aux':
         if changed:
-            print(f"se esperaba ';'")
+            print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"se esperaba un operador, pero se encontró '{showID}'")
+            print(f"se esperaba un operador, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion2':
-        print(f"hay una expresión mal declarada, se encontró '{showID}'")
+        print(f"hay una expresión mal declarada, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion2Aux':
         if changed:
-            print(f"se esperaba ';'")
+            print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"se esperaba un operador, pero se encontró '{showID}'")
+            print(f"se esperaba un operador, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion3':
-        print(f"hay una expresión no válida, se encontró '{showID}'")
+        print(f"hay una expresión no válida, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion4':
         if changed:
-            print(f"se esperaba ';'")
+            print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"hay una función mal llamada o falta ')', pero se encontró '{showID}'")
+            print(f"hay una función mal llamada o falta ')', pero se encontró '{showID}'{Colors.RESET}")
     else:
-        print(f"se esperaba '{no_terminal}', pero se encontró '{showID}'")
+        print(f"se esperaba '{no_terminal}', pero se encontró '{showID}'{Colors.RESET}")
 
 current_token = None
 prev_token = None
@@ -1589,14 +1603,14 @@ def main():
                 f.write("Descendente ")
                 for production_num in production_sequence:
                     f.write(f"{production_num} ")
-            print("Análisis completado exitosamente.")
-            print("Archivos generados: lexed.txt, symbols.txt, parse.txt")
+            print(f"{Colors.GREEN}{Colors.BOLD}Análisis completado exitosamente.{Colors.RESET}")
+            print(f"{Colors.GREEN}Archivos generados: lexed.txt, symbols.txt, parse.txt{Colors.RESET}")
         except IOError as e:
-            print(f"Error al escribir parse.txt: {e}")
+            print(f"{Colors.RED}Error al escribir parse.txt: {e}{Colors.RESET}")
             sys.exit(1)
     else:
-        print("\nAnálisis finalizado con errores.")
-        print("Archivos generados: lexed.txt, symbols.txt")
+        print(f"\n{Colors.RED}{Colors.BOLD}Análisis finalizado con errores.{Colors.RESET}")
+        print(f"{Colors.YELLOW}Archivos generados: lexed.txt, symbols.txt{Colors.RESET}")
         sys.exit(1)
 
 if __name__ == "__main__":
