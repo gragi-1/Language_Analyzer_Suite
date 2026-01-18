@@ -8,6 +8,9 @@ import sys
 # Errores léxicos acumulados: se registran durante el scan y se reportan al final.
 lex_errors = []
 
+# Errores semánticos acumulados: se registran durante el análisis y se reportan al final.
+sem_errors = []
+
 def lex_error(lineno, msg):
     """Registra un error léxico."""
     lex_errors.append((lineno, msg))
@@ -25,6 +28,25 @@ def clear_lex_errors():
     """Limpia la lista de errores léxicos."""
     global lex_errors
     lex_errors = []
+
+# --- Funciones para errores semánticos ---
+def add_sem_error(lineno, msg):
+    """Registra un error semántico."""
+    sem_errors.append((lineno, msg))
+
+def has_sem_errors():
+    """Retorna True si hay errores semánticos."""
+    return len(sem_errors) > 0
+
+def print_sem_errors():
+    """Imprime todos los errores semánticos acumulados."""
+    for lineno, msg in sem_errors:
+        print(f"MyJS Semantic Error: En la línea {lineno} {msg}")
+
+def clear_sem_errors():
+    """Limpia la lista de errores semánticos."""
+    global sem_errors
+    sem_errors = []
 
 noattr = [
         "PLUSEQ",
@@ -371,8 +393,20 @@ def get_symbol_name(pos):
         return str(sym['value'])
     return f"ID_{pos}"
 
+def get_current_line():
+    """Obtiene la línea actual del análisis (del token previo procesado)."""
+    global prev_token, current_token
+    # Usamos prev_token porque es el último token consumido
+    if prev_token and hasattr(prev_token, 'lineno') and prev_token.lineno > 0:
+        return prev_token.lineno
+    if current_token and hasattr(current_token, 'lineno'):
+        return current_token.lineno
+    return 1  # Fallback
+
 def sem_error(msg):
-    print(f"MyJS Semantic Error: {msg}")
+    """Registra un error semántico con la línea actual."""
+    lineno = get_current_line()
+    add_sem_error(lineno, msg)
 
 # --- ACCIONES SEMÁNTICAS ---
 
@@ -600,7 +634,7 @@ def action_ls_let_res():
         # Coerción implícita int -> float
         sem_stack.append(tipo)
     else:
-        sem_error(f"Asignación incorrecta en 'let {name}'. Esperado {tipo}, recibido {asign}")
+        sem_error(f"asignación incorrecta en 'let {name}'. Tipo de la variable es {tipo}, valor asignado es {asign}")
         sem_stack.append(T_ERROR)
 
 def action_ls_id_pre():
@@ -659,7 +693,7 @@ def action_ls_id_res():
         elif sym_type == T_FLOAT and idopt == T_INT:
              sem_stack.append(sym_type)
         else:
-             sem_error(f"Asignación incorrecta a '{name}'. Variable es {sym_type}, valor es {idopt}")
+             sem_error(f"asignación incorrecta a '{name}'. Tipo de la variable es {sym_type}, valor asignado es {idopt}")
              sem_stack.append(T_ERROR)
 
 def action_ls_read():
@@ -1512,6 +1546,7 @@ def main():
     
     # Limpiar errores de ejecuciones anteriores
     clear_lex_errors()
+    clear_sem_errors()
 
     # `lexed.txt` se genera durante el análisis (streaming). La TS se vuelca al final.
     try:
@@ -1536,6 +1571,10 @@ def main():
     if has_lex_errors():
         print_lex_errors()
 
+    # Reportar errores semánticos acumulados (si existen).
+    if has_sem_errors():
+        print_sem_errors()
+
     # Escribir tabla de símbolos al final con todos los atributos
     try:
         with open('symbols.txt', 'w', encoding='utf-8') as sf:
@@ -1544,7 +1583,7 @@ def main():
         print(f"Error al escribir tabla de símbolos: {e}")
 
     # Generar parse.txt
-    if ok and not has_lex_errors():
+    if ok and not has_lex_errors() and not has_sem_errors():
         try:
             with open('parse.txt', 'w') as f:
                 f.write("Descendente ")

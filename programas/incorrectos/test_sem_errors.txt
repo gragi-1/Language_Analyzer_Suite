@@ -1,0 +1,5 @@
+let int x = 10;
+let string z = "hola";
+x = z;
+let int duplicada = 5;
+let int duplicada = 10;
