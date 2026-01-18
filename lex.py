@@ -242,10 +242,8 @@ def write_single_table(file_handle, table_num, table_name, symbols_dict):
         table_name: Nombre de la tabla (None para global, nombre de función para locales)
         symbols_dict: Diccionario de símbolos a escribir
     """
-    if table_name:
-        file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num} : {table_name}\n\n")
-    else:
-        file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num}:\n\n")
+    # Formato unificado: CONTENIDOS DE LA TABLA #N:
+    file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num}:\n\n")
     
     # Ordenar por posición y escribir
     sorted_symbols = sorted(symbols_dict.items(), key=lambda x: x[1]['position'])
@@ -452,9 +450,8 @@ def action_fun_end():
     func_name = get_symbol_name(current_func_id)
     current_scope = symbol_table_stack[-1].copy()  # Copia del scope actual
     
-    # Solo guardar si hay símbolos locales (parámetros o variables)
-    if current_scope:
-        function_tables.append((func_name, current_scope))
+    # Guardar SIEMPRE la tabla (incluso vacía) - requerido por el formato de salida
+    function_tables.append((func_name, current_scope))
     
     exit_scope()
     in_function = False
