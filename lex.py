@@ -311,7 +311,7 @@ def write_single_table(file_handle, table_num, table_name, symbols_dict):
         
         # Escribir desplazamiento si existe
         if sym.get('displacement') is not None:
-            file_handle.write(f"    + desplazamiento: {sym['displacement']}\n")
+            file_handle.write(f"    + despl: {sym['displacement']}\n")
         
         file_handle.write("  --------- ---------\n\n")
 
