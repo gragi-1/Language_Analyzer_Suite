@@ -168,6 +168,13 @@ tok_gcounter = -1
 symbol_table = {}
 symbol_table_stack = [{}]
 
+# Almacena las tablas de funciones antes de destruirlas al salir del scope
+# Formato: [(nombre_funcion, {copia del scope}), ...]
+function_tables = []
+
+# Contador de tablas para numeración
+table_counter = 1
+
 symbols_file = None  # Fichero para volcar la tabla de símbolos en tiempo real
 
 def add_symbol(name, type=None, value=None):
@@ -226,20 +233,24 @@ def get_symbol_displacement(pos):
         return sym.get('displacement')
     return None
 
-def write_symbol_table_to_file(file_handle):
-    """Escribe la tabla de símbolos completa al archivo."""
-    file_handle.write("CONTENIDOS DE LA TABLA #1:\n\n")
+def write_single_table(file_handle, table_num, table_name, symbols_dict):
+    """Escribe una tabla de símbolos individual al archivo.
     
-    # Recopilar todos los símbolos de todos los scopes
-    all_symbols = {}
-    for scope in symbol_table_stack:
-        for name, sym in scope.items():
-            if sym['position'] not in all_symbols:
-                all_symbols[sym['position']] = (name, sym)
+    Args:
+        file_handle: Archivo de salida
+        table_num: Número de la tabla
+        table_name: Nombre de la tabla (None para global, nombre de función para locales)
+        symbols_dict: Diccionario de símbolos a escribir
+    """
+    if table_name:
+        file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num} : {table_name}\n\n")
+    else:
+        file_handle.write(f"CONTENIDOS DE LA TABLA #{table_num}:\n\n")
     
     # Ordenar por posición y escribir
-    for pos in sorted(all_symbols.keys()):
-        name, sym = all_symbols[pos]
+    sorted_symbols = sorted(symbols_dict.items(), key=lambda x: x[1]['position'])
+    
+    for name, sym in sorted_symbols:
         file_handle.write(f"* LEXEMA : '{name}'\n")
         file_handle.write("  Atributos:\n")
         
@@ -250,18 +261,35 @@ def write_symbol_table_to_file(file_handle):
                 types_parts = str(sym['type']).split("->")
                 file_handle.write(f"    + tipo: 'funcion'\n")
                 args = types_parts[0].split("x")
-                #Escribir el número de parámetros y sus tipos
+                # Escribir el número de parámetros y sus tipos
                 file_handle.write(f"    + numeroParams: {len(args)}\n")
                 for i, arg in enumerate(args):
                     file_handle.write(f"            + tipoParam{i+1}: '{arg.strip()}'\n")
                 file_handle.write(f"    + tipoRetorno: '{types_parts[1].strip()}'\n")
                 file_handle.write(f"    + EtiqFuncion: 'Et{name}'\n")
+            else:
+                # Tipo simple (variable)
+                file_handle.write(f"    + tipo: '{sym['type']}'\n")
         
         # Escribir desplazamiento si existe
         if sym.get('displacement') is not None:
             file_handle.write(f"    + desplazamiento: {sym['displacement']}\n")
         
         file_handle.write("  --------- ---------\n\n")
+
+def write_symbol_table_to_file(file_handle):
+    """Escribe todas las tablas de símbolos al archivo (global + funciones)."""
+    table_num = 1
+    
+    # 1. Escribir tabla global (scope 0)
+    if symbol_table_stack:
+        write_single_table(file_handle, table_num, None, symbol_table_stack[0])
+        table_num += 1
+    
+    # 2. Escribir tablas de funciones (guardadas antes de destruirse)
+    for func_name, func_scope in function_tables:
+        write_single_table(file_handle, table_num, func_name, func_scope)
+        table_num += 1
 
 def enter_scope():
     symbol_table_stack.append({})
@@ -352,13 +380,14 @@ def action_init_global():
     Per el EdT: if TSG = nulo then TSG := CrearTabla(), despG := 0
     Solo inicializa si no se ha hecho antes.
     """
-    global despG, sem_stack, id_stack, decl_id_stack, global_initialized
+    global despG, sem_stack, id_stack, decl_id_stack, global_initialized, function_tables
     
     if not global_initialized:
         despG = 0
         sem_stack = []
         id_stack = []
         decl_id_stack = []
+        function_tables = []  # Resetear tablas de funciones
         global_initialized = True
 
 def action_lc_check():
@@ -416,7 +445,17 @@ def action_fun_def():
         sem_error(f"No se pudo registrar la función {get_symbol_name(current_func_id)}")
 
 def action_fun_end():
-    global in_function
+    """LF: Fin de función - guarda la tabla local antes de destruirla."""
+    global in_function, function_tables
+    
+    # Guardar la tabla de la función antes de destruirla
+    func_name = get_symbol_name(current_func_id)
+    current_scope = symbol_table_stack[-1].copy()  # Copia del scope actual
+    
+    # Solo guardar si hay símbolos locales (parámetros o variables)
+    if current_scope:
+        function_tables.append((func_name, current_scope))
+    
     exit_scope()
     in_function = False
 
