@@ -378,13 +378,13 @@ def get_width(type_str):
     """Ancho (bytes) de un tipo para cálculo de desplazamientos (despG/despL).
     
     Per el EdT:
-    - int: 2 bytes
-    - float: 4 bytes  
+    - int: 1 byte
+    - float: 2 bytes  
     - boolean: 1 byte
     - string: 64 bytes (tamaño máximo permitido por el lexer)
     """
-    if type_str == T_INT: return 2
-    if type_str == T_FLOAT: return 4
+    if type_str == T_INT: return 1
+    if type_str == T_FLOAT: return 2
     if type_str == T_BOOL: return 1
     if type_str == T_STRING: return 64  # Tamaño máximo de cadena en MyJS
     return 0
@@ -667,7 +667,7 @@ def action_ls_id_pre():
         # Declaración implícita de variable no declarada (comportamiento EdT)
         set_symbol_type(last_id_pos, T_INT)
         set_symbol_displacement(last_id_pos, despG)
-        despG += 2
+        despG += get_width(T_INT)
 
 def action_ls_id_res():
     """LS -> id IdOpt: Acción final (después de IdOpt).

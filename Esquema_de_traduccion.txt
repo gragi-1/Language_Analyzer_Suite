@@ -72,9 +72,9 @@ IdOpt -> pluseq Expresion {IdOpt.igualacion := tipo_ok, IdOpt.tipo := if Expresi
 TypeFun -> void {TypeFun.tipo := void}
 TypeFun -> Tipo {TypeFun.tipo := Tipo.tipo}
 
-Tipo -> int {Tipo.tipo := int, Tipo.desp := 2}
-Tipo -> float {Tipo.tipo := float, Tipo.desp := 4}
-Tipo -> string {Tipo.tipo := string, Tipo.desp := strlen} // TODO: Implementar longitud en Código
+Tipo -> int {Tipo.tipo := int, Tipo.desp := 1}
+Tipo -> float {Tipo.tipo := float, Tipo.desp := 2}
+Tipo -> string {Tipo.tipo := string, Tipo.desp := 64}
 Tipo -> boolean {Tipo.tipo := boolean, Tipo.desp := 1}
 
 Asignar -> eq Expresion {Asignar.tipo := Expresion.tipo, Asignar.igualacion := tipo_error}
