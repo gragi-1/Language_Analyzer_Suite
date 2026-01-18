@@ -245,7 +245,17 @@ def write_symbol_table_to_file(file_handle):
         
         # Escribir tipo si existe
         if sym.get('type'):
-            file_handle.write(f"    + tipo: '{sym['type']}'\n")
+            # Separar la cadena sym['type'] por tokens de ->
+            if "->" in str(sym['type']):
+                types_parts = str(sym['type']).split("->")
+                file_handle.write(f"    + tipo: 'funcion'\n")
+                args = types_parts[0].split("x")
+                #Escribir el número de parámetros y sus tipos
+                file_handle.write(f"    + numeroParams: {len(args)}\n")
+                for i, arg in enumerate(args):
+                    file_handle.write(f"            + tipoParam{i+1}: '{arg.strip()}'\n")
+                file_handle.write(f"    + tipoRetorno: '{types_parts[1].strip()}'\n")
+                file_handle.write(f"    + EtiqFuncion: 'Et{name}'\n")
         
         # Escribir desplazamiento si existe
         if sym.get('displacement') is not None:
