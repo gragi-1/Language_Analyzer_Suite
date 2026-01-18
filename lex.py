@@ -128,15 +128,15 @@ def t_STR(t):
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
-    lower = t.value.lower()
-    if lower in reserved:
-        t.type = reserved[lower]
+    # MyJS es case-sensitive: las palabras reservadas solo se reconocen en minúsculas
+    if t.value in reserved:
+        t.type = reserved[t.value]
         t.value = ''
     else:
         t.type = "ID"
         name = t.value
         # El parser trabaja con id.pos: guardamos el lexema en la TS y propagamos su posición.
-        t.value = add_symbol(name, t.type, t.value)
+        t.value = add_symbol(name, t.type, name)
     return t
 
 def t_COMMENT(t):
@@ -710,9 +710,20 @@ def action_exp_logic():
         sem_stack.append(T_ERROR)
 
 def action_expaux_and():
-    t = sem_stack.pop()
-    if t == T_BOOL: sem_stack.append(T_BOOL)
-    else: sem_stack.append(T_ERROR)
+    # ExpresionAux -> and Expresion1 ExpresionAux
+    # Pila: [Expresion1.tipo, ExpresionAux.tipo]
+    aux = sem_stack.pop()   # ExpresionAux recursivo
+    e1 = sem_stack.pop()    # Expresion1
+    if e1 == T_BOOL:
+        if aux == T_VOID:
+            sem_stack.append(T_BOOL)
+        elif aux == T_BOOL:
+            sem_stack.append(T_BOOL)
+        else:
+            sem_stack.append(T_ERROR)
+    else:
+        sem_error(f"Operador && requiere boolean. Recibido: {e1}")
+        sem_stack.append(T_ERROR)
 
 def action_expaux_lambda():
     sem_stack.append(T_VOID)
@@ -725,11 +736,15 @@ def action_exp1_rel():
     else: sem_stack.append(T_ERROR)
 
 def action_exp1aux_min():
-    t = sem_stack.pop()
-    if t in [T_INT, T_FLOAT]: 
-        sem_stack.append(T_BOOL) 
-    else: 
-        sem_error(f"Operador < requiere numéricos. Recibido: {t}")
+    # Expresion1Aux -> minorthan Expresion2 Expresion1Aux
+    # Pila: [Expresion2.tipo, Expresion1Aux.tipo]
+    aux = sem_stack.pop()   # Expresion1Aux recursivo
+    e2 = sem_stack.pop()    # Expresion2
+    if e2 in [T_INT, T_FLOAT]:
+        # < siempre produce boolean, independiente del aux recursivo
+        sem_stack.append(T_BOOL)
+    else:
+        sem_error(f"Operador < requiere numéricos. Recibido: {e2}")
         sem_stack.append(T_ERROR)
 
 def action_exp1aux_lambda():
@@ -745,9 +760,21 @@ def action_exp2_arit():
     else: sem_stack.append(T_ERROR)
 
 def action_exp2aux_sum():
-    t = sem_stack.pop()
-    if t in [T_INT, T_FLOAT]: sem_stack.append(t)
-    else: sem_stack.append(T_ERROR)
+    # Expresion2Aux -> sum Expresion3 Expresion2Aux
+    # Pila: [Expresion3.tipo, Expresion2Aux.tipo]
+    aux = sem_stack.pop()   # Expresion2Aux recursivo
+    e3 = sem_stack.pop()    # Expresion3
+    if aux == T_VOID:
+        # No hay más sumas, el tipo es el de Expresion3
+        sem_stack.append(e3)
+    elif e3 in [T_INT, T_FLOAT] and aux in [T_INT, T_FLOAT]:
+        # Coerción: si alguno es float, resultado es float
+        if e3 == T_FLOAT or aux == T_FLOAT:
+            sem_stack.append(T_FLOAT)
+        else:
+            sem_stack.append(T_INT)
+    else:
+        sem_stack.append(T_ERROR)
 
 def action_exp2aux_lambda():
     sem_stack.append(T_VOID)
@@ -895,17 +922,17 @@ SEMANTIC_RULES = {
     
     ('Expresion', ('Expresion1', 'ExpresionAux')): [(2, action_exp_logic)],
     
-    ('ExpresionAux', ('and', 'Expresion')): [(2, action_expaux_and)],
+    ('ExpresionAux', ('and', 'Expresion1', 'ExpresionAux')): [(3, action_expaux_and)],
     ('ExpresionAux', ('lambda',)): [(1, action_expaux_lambda)],
     
     ('Expresion1', ('Expresion2', 'Expresion1Aux')): [(2, action_exp1_rel)],
     
-    ('Expresion1Aux', ('minorthan', 'Expresion1')): [(2, action_exp1aux_min)],
+    ('Expresion1Aux', ('minorthan', 'Expresion2', 'Expresion1Aux')): [(3, action_exp1aux_min)],
     ('Expresion1Aux', ('lambda',)): [(1, action_exp1aux_lambda)],
     
     ('Expresion2', ('Expresion3', 'Expresion2Aux')): [(2, action_exp2_arit)],
     
-    ('Expresion2Aux', ('sum', 'Expresion2')): [(2, action_exp2aux_sum)],
+    ('Expresion2Aux', ('sum', 'Expresion3', 'Expresion2Aux')): [(3, action_exp2aux_sum)],
     ('Expresion2Aux', ('lambda',)): [(1, action_exp2aux_lambda)],
     
     ('Expresion3', ('oppar', 'Expresion', 'clpar')): [(3, action_exp3_par)],

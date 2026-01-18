@@ -66,12 +66,12 @@ ExpresionAux -> lambda
 
 Expresion1 -> Expresion2 Expresion1Aux
 
-Expresion1Aux -> minorthan Expresion2 Expresion1
+Expresion1Aux -> minorthan Expresion2 Expresion1Aux
 Expresion1Aux -> lambda
 
 Expresion2 -> Expresion3 Expresion2Aux
 
-Expresion2Aux -> sum Expresion3 Expresion2
+Expresion2Aux -> sum Expresion3 Expresion2Aux
 Expresion2Aux -> lambda
 
 Expresion3 -> oppar Expresion clpar
