@@ -1,19 +1,15 @@
-// Programa 4: Control de inventario
-let int stock = 15;
-let int pedido = 8;
-let string estado;
+// Programa 4: Variables booleanas
+let boolean flag1 = true;
+let boolean flag2 = false;
+let int valor = 3;
 
-if (stock >= pedido) {
-    stock -= pedido; // Vendemos
-    estado = 'Venta realizada';
-    if (stock < 5) {
-        stock += 10; // Reabastecemos
-        estado = 'Venta y reabastecimiento';
-    }
+if (valor < 5 && flag1) {
+    valor += 2;
+    write 'Caso 1: ';
 } else {
-    estado = 'Stock insuficiente';
-    stock += 20; // Pedido urgente
+    if (valor < 10) {
+        write 'Caso 2: ';
+    }
 }
-write estado;
-write 'Stock final: ';
-write stock;
+
+write valor;

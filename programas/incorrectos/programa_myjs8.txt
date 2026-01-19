@@ -1,15 +1,19 @@
-// Programa 8: Ámbito y estructura incorrecta
-if (x > 5) {  // ERROR SEMÁNTICO: x no declarada
-    let int y = 10;
-    y += x;
+// Programa 8: Estructura incorrecta
+let int x = 5;
+
+if (x < 10) {
+    let int x = 3;  // ERROR SEMÁNTICO: redeclaración en mismo ámbito
+    x += 2;
 } else {
-    let int y = 5;  // ERROR SEMÁNTICO: redeclaración en mismo ámbito?
+    write 'Mayor';
 }
 
-// ERROR SINTÁCTICO: bloque if sin condición
+// ERROR SINTÁCTICO: if sin condición
 if {
     write 'Error';
 }
 
-let string cadena = 'texto
-otra linea';  // ERROR LÉXICO: cadena multilínea
+// ERROR: Variable no declarada en contexto de uso
+if (y < 5) {  // ERROR SEMÁNTICO: y no declarada
+    write y;
+}

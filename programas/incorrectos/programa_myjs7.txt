@@ -1,12 +1,15 @@
-// Programa 7: Errores de tipo
+// Programa 7: Tipos incompatibles
 let int numero = 10;
 let string texto = '5';
-let float decimal = 3.14;
+let boolean flag = true;
 
-if (numero) {  // ERROR SEMÁNTICO: condición no booleana
-    texto += numero;  // ERROR SEMÁNTICO: += con string e int
-    decimal = texto;  // ERROR SEMÁNTICO: asignación string a float
+if (numero) {  // ERROR SEMÁNTICO: condición no booleana (falta comparación)
+    texto += numero;  // ERROR SEMÁNTICO: string += int (tipos incompatibles)
+    numero = texto;  // ERROR SEMÁNTICO: int = string
 }
 
-numero += decimal;  // ERROR SEMÁNTICO: int += float sin conversión
+if (flag < numero) {  // ERROR SEMÁNTICO: boolean < int
+    write 'Imposible';
+}
+
 write numero;

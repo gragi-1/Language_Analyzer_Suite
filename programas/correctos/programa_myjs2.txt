@@ -1,18 +1,12 @@
-// Programa 2: Sistema de calificaciones
-let int nota = 75;
-let string mensaje;
+// Programa 2: Uso correcto de &&
+let int x = 5;
+let int y = 8;
+let boolean activo = true;
 
-if (nota >= 70) {
-    if (nota >= 90) {
-        mensaje = 'Excelente';
-    } else {
-        mensaje = 'Aprobado';
-        nota += 5; // Bono por esfuerzo
-    }
+if (x < y && activo) {
+    x += y;
+    write 'Suma realizada: ';
+    write x;
 } else {
-    mensaje = 'Reprobado';
+    write 'No se cumple';
 }
-write 'Estado: ';
-write mensaje;
-write 'Nota final: ';
-write nota;

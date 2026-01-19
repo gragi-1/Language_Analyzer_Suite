@@ -1,16 +1,14 @@
-// Programa 1: Verificación de números
+// Programa 1: Solo con operadores permitidos
 let int a = 10;
 let int b = 5;
-let int resultado;
+let boolean condicion;
 
-if (a > b) {
-    resultado = a - b;
-    a += 3; // Incrementamos a
+if (a < b) {
+    condicion = true;
 } else {
-    resultado = b - a;
-    b += 2;
+    condicion = false;
+    a += 3;
 }
-write 'El resultado es: ';
-write resultado;
-write 'Valor final de a: ';
+
+write 'Resultado: ';
 write a;

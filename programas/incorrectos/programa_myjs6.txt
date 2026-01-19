@@ -1,11 +1,10 @@
-// Programa 6: Con errores léxicos
+// Programa 6: Cadena sin cerrar y error sintáctico
 let int valor = 25;
-let string texto = 'Ejemplo;  // ERROR LÉXICO: cadena sin cerrar
+let string texto = 'Ejemplo de error';
 
-if (valor > 20 {
-    valor += 10; // ERROR SINTÁCTICO: falta paréntesis de cierre
-} else 
-    valor = 5;  // ERROR SINTÁCTICO: falta llave
+if (valor < 10 {  // ERROR SINTÁCTICO: falta paréntesis de cierre
+    valor += 5;
+ else 
+    valor = 5;
 
 write valor;
-// Falta punto y coma en varias líneas

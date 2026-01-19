@@ -1,20 +1,22 @@
-// Programa 5: Calculadora de descuentos
-let float precio = 100.50;
-let int cantidad = 3;
-let float total;
-let string cliente = 'preferente';
+// Programa 5: Validaciones encadenadas
+let int edad = 18;
+let boolean tieneCarnet = true;
+let boolean padresAutorizan = false;
+let string puedeConducir;
 
-if (cantidad > 2) {
-    total = precio * cantidad;
-    if (cliente == 'preferente') {
-        total *= 0.85; // 15% descuento
-        write 'Descuento aplicado';
-    } else {
-        total *= 0.90; // 10% descuento
-    }
-    precio += 5.0; // Ajuste por cantidad
+if (edad < 18 && padresAutorizan) {
+    puedeConducir = 'Con supervisión';
+    edad += 1;
 } else {
-    total = precio * cantidad;
+    if (edad < 18) {
+        puedeConducir = 'No puede';
+    } else {
+        if (tieneCarnet) {
+            puedeConducir = 'Puede conducir';
+        } else {
+            puedeConducir = 'Neita carnet';
+        }
+    }
 }
-write 'Total a pagar: ';
-write total;
+
+write puedeConducir;

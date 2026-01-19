@@ -1,15 +1,16 @@
-// Programa 3: Manipulación de texto
-let string saludo = 'Hola';
-let string nombre = 'Juan';
-let string mensajeCompleto;
+// Programa 3: Estructuras anidadas
+let int contador = 0;
+let int limite = 5;
+let string estado = 'inicio';
 
-if (nombre != '') {
-    mensajeCompleto = saludo;
-    mensajeCompleto += ', '; // Concatenamos
-    mensajeCompleto += nombre;
-    mensajeCompleto += '!';
-} else {
-    mensajeCompleto = 'Hola anónimo!';
+if (contador < limite) {
+    contador += 1;
+    if (contador < 3) {
+        estado = 'temprano';
+    } else {
+        estado = 'avanzado';
+    }
 }
-write mensajeCompleto;
-// Fin del programa
+
+write estado;
+write contador;
