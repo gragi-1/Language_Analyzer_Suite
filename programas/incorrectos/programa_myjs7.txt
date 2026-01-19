@@ -1,0 +1,12 @@
+// Programa 7: Errores de tipo
+let int numero = 10;
+let string texto = '5';
+let float decimal = 3.14;
+
+if (numero) {  // ERROR SEMÁNTICO: condición no booleana
+    texto += numero;  // ERROR SEMÁNTICO: += con string e int
+    decimal = texto;  // ERROR SEMÁNTICO: asignación string a float
+}
+
+numero += decimal;  // ERROR SEMÁNTICO: int += float sin conversión
+write numero;

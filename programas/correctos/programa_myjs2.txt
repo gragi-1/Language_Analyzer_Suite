@@ -1,11 +1,18 @@
-let boolean check;
-check = 10 < 30;
+// Programa 2: Sistema de calificaciones
+let int nota = 75;
+let string mensaje;
 
-function void print(string mostrar){
-    write mostrar;
+if (nota >= 70) {
+    if (nota >= 90) {
+        mensaje = 'Excelente';
+    } else {
+        mensaje = 'Aprobado';
+        nota += 5; // Bono por esfuerzo
+    }
+} else {
+    mensaje = 'Reprobado';
 }
-
-if(check)
-    write('Diez es menor que 30');
-else
-    print('Diez es mayor que 30');
+write 'Estado: ';
+write mensaje;
+write 'Nota final: ';
+write nota;

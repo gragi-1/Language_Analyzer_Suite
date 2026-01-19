@@ -1,0 +1,19 @@
+// Programa 4: Control de inventario
+let int stock = 15;
+let int pedido = 8;
+let string estado;
+
+if (stock >= pedido) {
+    stock -= pedido; // Vendemos
+    estado = 'Venta realizada';
+    if (stock < 5) {
+        stock += 10; // Reabastecemos
+        estado = 'Venta y reabastecimiento';
+    }
+} else {
+    estado = 'Stock insuficiente';
+    stock += 20; // Pedido urgente
+}
+write estado;
+write 'Stock final: ';
+write stock;

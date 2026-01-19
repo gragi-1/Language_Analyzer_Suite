@@ -1,8 +1,0 @@
-function int mulPorCuatro(int num){
-    return num+num+num+num;
-}
-
-let num1;
-write 'Introduce el número a multiplicar por cuatro';
-read num1;
-write(mulPorCuatro(num1));

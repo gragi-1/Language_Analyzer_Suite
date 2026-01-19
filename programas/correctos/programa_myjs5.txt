@@ -1,0 +1,20 @@
+// Programa 5: Calculadora de descuentos
+let float precio = 100.50;
+let int cantidad = 3;
+let float total;
+let string cliente = 'preferente';
+
+if (cantidad > 2) {
+    total = precio * cantidad;
+    if (cliente == 'preferente') {
+        total *= 0.85; // 15% descuento
+        write 'Descuento aplicado';
+    } else {
+        total *= 0.90; // 10% descuento
+    }
+    precio += 5.0; // Ajuste por cantidad
+} else {
+    total = precio * cantidad;
+}
+write 'Total a pagar: ';
+write total;

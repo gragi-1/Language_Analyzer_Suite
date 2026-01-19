@@ -1,0 +1,14 @@
+// Programa 9: Múltiples errores
+let int a b c;  // ERROR SINTÁCTICO: declaración múltiple incorrecta
+a = 10;
+b = 20;
+
+if (a == 10 && b == 20  // ERROR SINTÁCTICO: paréntesis no cerrado
+    c = a + b;
+    c += 'texto';  // ERROR SEMÁNTICO: int += string
+}
+
+// ERROR LÉXICO: número mal formado
+let float f = 3.14.15;  // Dos puntos decimales
+
+write c;

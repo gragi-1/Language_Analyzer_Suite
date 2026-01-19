@@ -1,10 +1,15 @@
-function boolean comparar(int num1, int num2){
-    return num1 < num2;
+// Programa 3: Manipulación de texto
+let string saludo = 'Hola';
+let string nombre = 'Juan';
+let string mensajeCompleto;
+
+if (nombre != '') {
+    mensajeCompleto = saludo;
+    mensajeCompleto += ', '; // Concatenamos
+    mensajeCompleto += nombre;
+    mensajeCompleto += '!';
+} else {
+    mensajeCompleto = 'Hola anónimo!';
 }
-
-write('Mostrando comparación...');
-write(comparar(3+(27+32+54), 2+2+2+2+(3+4)+74));
-
-let string input;
-read input;
-write input;
+write mensajeCompleto;
+// Fin del programa
