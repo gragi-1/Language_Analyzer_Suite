@@ -17,7 +17,7 @@ LC -> if oppar Expresion clpar CuerpoIf {LC.tipo := if Expresion.tipo = boolean 
 LF -> function TypeFun id {TSL := CrearTabla(), despL := 0} oppar Args clpar {AñadeTipo(id.pos, Args.tipo -> TypeFun.tipo), AñadeEtiq(id.pos, NuevaEtiq())} opbra Cuerpo clbra {LiberarTabla(TSL)}
 
 CuerpoIf -> opbra Cuerpo clbra LE {CuerpoIf.tipo := if Cuerpo.tipo = tipo_ok then LE.tipo
-													else LE.tipo}
+													else tipo_error}
 CuerpoIf -> LC {CuerpoIf.tipo := LC.tipo}
 
 LE -> else opbra Cuerpo clbra {LE.tipo := Cuerpo.tipo}
