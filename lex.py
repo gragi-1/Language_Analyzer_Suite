@@ -1399,21 +1399,21 @@ def handle_syntactic_error(no_terminal, terminal, token):
         if changed:
             print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"se esperaba un operador, pero se encontró '{showID}'{Colors.RESET}")
+            print(f"se esperaba un operador o el cierre de una sentencia, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion1':
         print(f"hay una expresión mal declarada, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion1Aux':
         if changed:
             print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"se esperaba un operador, pero se encontró '{showID}'{Colors.RESET}")
+            print(f"se esperaba un operador o el cierre de una sentencia, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion2':
         print(f"hay una expresión mal declarada, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion2Aux':
         if changed:
             print(f"se esperaba ';'{Colors.RESET}")
         else:
-            print(f"se esperaba un operador, pero se encontró '{showID}'{Colors.RESET}")
+            print(f"se esperaba un operador o el cierre de una sentencia, pero se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion3':
         print(f"hay una expresión no válida, se encontró '{showID}'{Colors.RESET}")
     elif no_terminal == 'Expresion4':
@@ -1505,7 +1505,7 @@ def parse():
                     advance_token()
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
-                return False
+                continue
         
         # 3. Expandir No Terminal
         elif top in grammar['non_terminals']:
@@ -1562,7 +1562,7 @@ def parse():
                         
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
-                return False
+                continue
         else:
             print(f"Error: Símbolo desconocido {top}")
             return False
