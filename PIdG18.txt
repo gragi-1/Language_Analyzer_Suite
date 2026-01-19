@@ -1,5 +1,6 @@
 let int a ;
 let  int   b  ;
+let int b;
 let boolean bbb ;
 a = 3;
 b=a					    		 	 	  	 	 	 	 	 	 	 	 	  	 								;

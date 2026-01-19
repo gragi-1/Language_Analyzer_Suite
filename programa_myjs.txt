@@ -1,3 +1,4 @@
+let int temp = 0;
 function int calcular(int x, int y) {
     let int temp = x + y;
     if (temp < 100)

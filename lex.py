@@ -242,6 +242,31 @@ def add_symbol(name, type=None, value=None):
     }
     return tok_gcounter
 
+def add_symbol_to_current_scope(name, type=None, value=None):
+    """Fuerza la creación de un símbolo en el scope ACTUAL (para declaraciones let).
+    
+    Esta función se usa cuando sabemos que es una DECLARACIÓN (let), no una referencia.
+    Permite 'shadowing': declarar una variable local con el mismo nombre que una global.
+    """
+    global tok_gcounter
+    
+    # Verificar si ya existe en el scope ACTUAL (error: redeclaración)
+    current_scope = symbol_table_stack[-1]
+    if name in current_scope:
+        # Ya existe en este scope, devolver su posición (será un error semántico después)
+        return current_scope[name]['position']
+    
+    # Crear nuevo símbolo en el scope actual
+    tok_gcounter += 1
+    current_scope[name] = {
+        'type': type,
+        'value': value,
+        'position': tok_gcounter,
+        'displacement': None,
+        'lexeme': name
+    }
+    return tok_gcounter
+
 def get_symbol(value):
     for scope in reversed(symbol_table_stack):
         for tok in scope.values():
@@ -600,9 +625,27 @@ def action_ls_let_id():
     
     Guarda el id en decl_id_stack para preservarlo durante el análisis de Asignar.
     Per el EdT: AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(...)
+    
+    IMPORTANTE: Si estamos en una función, debemos forzar la creación del símbolo
+    en el scope local, permitiendo 'shadowing' de variables globales.
     """
-    global despG, despL, decl_id_stack
-    tipo = sem_stack[-1] 
+    global despG, despL, decl_id_stack, last_id_pos
+    tipo = sem_stack[-1]
+    
+    # Obtener el nombre del símbolo actual
+    sym = get_symbol(last_id_pos)
+    if sym:
+        name = sym['lexeme']
+        
+        # Si estamos en una función, verificar si necesitamos crear símbolo local
+        if in_function:
+            current_scope = symbol_table_stack[-1]
+            if name not in current_scope:
+                # El símbolo existe en scope externo pero no en el local
+                # Crear nuevo símbolo LOCAL (shadowing)
+                new_pos = add_symbol_to_current_scope(name, tipo, name)
+                last_id_pos = new_pos  # Actualizar para usar el nuevo símbolo local
+    
     set_symbol_type(last_id_pos, tipo)
     w = get_width(tipo)
     
