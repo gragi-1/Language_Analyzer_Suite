@@ -1,0 +1,17 @@
+// Test errores semánticos
+let int x = 5;
+let string s = 'hola';
+
+// Error 1: asignar string a int
+x = s;
+
+// Error 2: if con int (no boolean)
+if (x) {
+    write x;
+}
+
+// Error 3: comparar boolean con int
+let boolean b = true;
+if (b < x) {
+    write s;
+}

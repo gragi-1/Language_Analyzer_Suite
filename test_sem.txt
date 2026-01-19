@@ -1,0 +1,15 @@
+// Test semántico básico
+let int x = 5;
+let string s = 'hola';
+
+// Caso 1: Asignación correcta
+x = 10;
+
+// Caso 2: if con boolean
+if (true) {
+    write x;
+}
+
+// Caso 3: if sin else
+if (x < 10)
+    write s;

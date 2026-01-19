@@ -471,21 +471,50 @@ def action_lc_check():
     sem_stack.append(res)
 
 def action_lc_if():
-    # Pila: LE, CuerpoIf, Exp (se poppea en orden inverso a como se sintetiza)
-    le_type = sem_stack.pop()
-    cuerpo_type = sem_stack.pop()
+    """LC -> if oppar Expresion clpar CuerpoIf
+    
+    Per el EdT:
+    LC.tipo := if Expresion.tipo = boolean then CuerpoIf.tipo
+               else tipo_error
+    """
+    cuerpo_if_type = sem_stack.pop()
     exp_type = sem_stack.pop()
     
     if exp_type == T_BOOL:
-        if cuerpo_type == T_OK:
-            sem_stack.append(le_type)
-        else:
-            sem_stack.append(T_ERROR)
+        sem_stack.append(cuerpo_if_type)
     else:
         sem_error(f"La condición 'if' requiere boolean. Recibido: {exp_type}")
         sem_stack.append(T_ERROR)
 
+def action_cuerpoif_block():
+    """CuerpoIf -> opbra Cuerpo clbra LE
+    
+    Per el EdT:
+    CuerpoIf.tipo := if Cuerpo.tipo = tipo_ok then LE.tipo
+                     else tipo_error
+    """
+    le_type = sem_stack.pop()
+    cuerpo_type = sem_stack.pop()
+    
+    if cuerpo_type == T_OK:
+        sem_stack.append(le_type)
+    else:
+        sem_stack.append(T_ERROR)
+
+def action_cuerpoif_lc():
+    """CuerpoIf -> LC
+    
+    Per el EdT: CuerpoIf.tipo := LC.tipo
+    """
+    # LC.tipo ya está en la pila, no hacer nada (herencia directa)
+    pass
+
 def action_le_else():
+    """LE -> else opbra Cuerpo clbra
+    
+    Per el EdT: LE.tipo := Cuerpo.tipo
+    """
+    # Cuerpo.tipo ya está en la pila, no hacer nada (herencia directa)
     pass 
 
 def action_le_lambda():
@@ -566,6 +595,11 @@ def action_args_res():
         sem_stack.append(f"{t} x {am}")
 
 def action_args_void():
+    """Args -> void: Función sin parámetros (explícito void)."""
+    sem_stack.append(T_VOID)
+
+def action_args_lambda():
+    """Args -> lambda: Función sin parámetros (implícito)."""
     sem_stack.append(T_VOID)
 
 def action_argsl_call():
@@ -579,6 +613,11 @@ def action_argsl_call():
         sem_stack.append(f"{e} x {am}")
 
 def action_argsl_lambda():
+    """ArgsLlamada -> lambda: Llamada sin argumentos."""
+    sem_stack.append(T_VOID)
+
+def action_argsl_void():
+    """ArgsLlamada -> void: Llamada explícita sin argumentos."""
     sem_stack.append(T_VOID)
 
 def action_argmore_call():
@@ -628,6 +667,9 @@ def action_ls_let_id():
     
     IMPORTANTE: Si estamos en una función, debemos forzar la creación del símbolo
     en el scope local, permitiendo 'shadowing' de variables globales.
+    
+    Verificación de redeclaración: Si el símbolo ya tiene desplazamiento asignado
+    en el scope actual, es una redeclaración (error semántico).
     """
     global despG, despL, decl_id_stack, last_id_pos
     tipo = sem_stack[-1]
@@ -637,9 +679,19 @@ def action_ls_let_id():
     if sym:
         name = sym['lexeme']
         
+        # Verificar redeclaración en el scope actual
+        current_scope = symbol_table_stack[-1]
+        if name in current_scope:
+            existing_sym = current_scope[name]
+            if existing_sym.get('displacement') is not None:
+                # Ya fue declarado con 'let' en este scope - ERROR semántico
+                sem_error(f"Variable '{name}' ya declarada en este scope")
+                # Guardamos en la pila pero NO modificamos desplazamientos
+                decl_id_stack.append(last_id_pos)
+                return
+        
         # Si estamos en una función, verificar si necesitamos crear símbolo local
         if in_function:
-            current_scope = symbol_table_stack[-1]
             if name not in current_scope:
                 # El símbolo existe en scope externo pero no en el local
                 # Crear nuevo símbolo LOCAL (shadowing)
@@ -699,6 +751,7 @@ def action_ls_id_pre():
     
     Per el EdT: Guardar id.pos para usarlo en IdOpt (que puede modificar last_id_pos).
     Si el id no existe en TS, se asigna tipo int por defecto (declaración implícita).
+    EdT: despG := despG + 2 (para declaraciones implícitas)
     """
     global despG, ls_id_stack
     
@@ -710,7 +763,7 @@ def action_ls_id_pre():
         # Declaración implícita de variable no declarada (comportamiento EdT)
         set_symbol_type(last_id_pos, T_INT)
         set_symbol_displacement(last_id_pos, despG)
-        despG += get_width(T_INT)
+        despG += 2  # Per el EdT: despG := despG + 2
 
 def action_ls_id_res():
     """LS -> id IdOpt: Acción final (después de IdOpt).
@@ -1007,75 +1060,104 @@ def action_exp4_lambda():
     sem_stack.append(T_VOID)
 
 # --- MAPEO COMPLETO DE REGLAS ---
+# Según Gramatica.txt y Esquema_de_traduccion.txt actualizados
 
 SEMANTIC_RULES = {
+    # S -> LC S | LF S | eof
     ('S', ('LC', 'S')): [(0, action_init_global)],
     ('S', ('LF', 'S')): [(0, action_init_global)],
     ('S', ('eof',)): [(0, action_init_global)],
     
+    # LC -> LS semicolon | if oppar Expresion clpar CuerpoIf
     ('LC', ('LS', 'semicolon')): [(2, action_lc_check)],
-    ('LC', ('if', 'oppar', 'Expresion', 'clpar', 'CuerpoIf', 'LE')): [(6, action_lc_if)],
+    ('LC', ('if', 'oppar', 'Expresion', 'clpar', 'CuerpoIf')): [(5, action_lc_if)],
     
-    ('LE', ('else', 'CuerpoIf')): [(2, action_le_else)],
-    ('LE', ('lambda',)): [(1, action_le_lambda)],
-    
+    # LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
     ('LF', ('function', 'TypeFun', 'id', 'oppar', 'Args', 'clpar', 'opbra', 'Cuerpo', 'clbra')): 
         [(3, action_fun_init), (6, action_fun_def), (9, action_fun_end)],
     
+    # CuerpoIf -> opbra Cuerpo clbra LE | LC
+    ('CuerpoIf', ('opbra', 'Cuerpo', 'clbra', 'LE')): [(4, action_cuerpoif_block)],
+    ('CuerpoIf', ('LC',)): [(1, action_cuerpoif_lc)],
+    
+    # LE -> else opbra Cuerpo clbra | lambda
+    ('LE', ('else', 'opbra', 'Cuerpo', 'clbra')): [(4, action_le_else)],
+    ('LE', ('lambda',)): [(1, action_le_lambda)],
+    
+    # Cuerpo -> LC Cuerpo | lambda
     ('Cuerpo', ('LC', 'Cuerpo')): [(2, action_cuerpo_lc)],
     ('Cuerpo', ('lambda',)): [(1, action_cuerpo_lambda)],
     
+    # Args -> Tipo id ArgMore | void | lambda
     ('Args', ('Tipo', 'id', 'ArgMore')): [(1, action_args_init), (2, action_args_id), (3, action_args_res)],
     ('Args', ('void',)): [(1, action_args_void)],
+    ('Args', ('lambda',)): [(1, action_args_lambda)],
     
+    # ArgMore -> comma Tipo id ArgMore | lambda
     ('ArgMore', ('comma', 'Tipo', 'id', 'ArgMore')): [(2, action_argmore_tipo), (3, action_argmore_id), (4, action_argmore_res)],
     ('ArgMore', ('lambda',)): [(1, action_argmore_lambda)],
     
+    # ArgsLlamada -> Expresion ArgMoreLlamada | void | lambda
     ('ArgsLlamada', ('Expresion', 'ArgMoreLlamada')): [(2, action_argsl_call)],
+    ('ArgsLlamada', ('void',)): [(1, action_argsl_void)],
     ('ArgsLlamada', ('lambda',)): [(1, action_argsl_lambda)],
     
+    # ArgMoreLlamada -> comma Expresion ArgMoreLlamada | lambda
     ('ArgMoreLlamada', ('comma', 'Expresion', 'ArgMoreLlamada')): [(3, action_argmore_call)],
     ('ArgMoreLlamada', ('lambda',)): [(1, action_argmore_lambda)],
     
+    # LS -> let Tipo id Asignar | id IdOpt | read id | write Expresion | return ExpReturn
     ('LS', ('let', 'Tipo', 'id', 'Asignar')): [(2, action_ls_let_pre), (3, action_ls_let_id), (4, action_ls_let_res)],
     ('LS', ('id', 'IdOpt')): [(1, action_ls_id_pre), (2, action_ls_id_res)],
     ('LS', ('read', 'id')): [(2, action_ls_read)],
     ('LS', ('write', 'Expresion')): [(2, action_ls_write)],
     ('LS', ('return', 'ExpReturn')): [(2, action_ls_return)],
     
+    # IdOpt -> oppar ArgsLlamada clpar | eq Expresion | pluseq Expresion
     ('IdOpt', ('oppar', 'ArgsLlamada', 'clpar')): [(3, action_idopt_call)],
     ('IdOpt', ('eq', 'Expresion')): [(2, action_idopt_eq)],
     ('IdOpt', ('pluseq', 'Expresion')): [(2, action_idopt_pluseq)],
     
+    # TypeFun -> void | Tipo
     ('TypeFun', ('void',)): [(1, action_type_void)],
     ('TypeFun', ('Tipo',)): [(1, action_type_inherit)],
     
+    # Tipo -> int | float | string | boolean
     ('Tipo', ('int',)): [(1, action_type_int)],
     ('Tipo', ('float',)): [(1, action_type_float)],
     ('Tipo', ('string',)): [(1, action_type_string)],
     ('Tipo', ('boolean',)): [(1, action_type_bool)],
     
+    # Asignar -> eq Expresion | lambda
     ('Asignar', ('eq', 'Expresion')): [(2, action_asign_eq)],
     ('Asignar', ('lambda',)): [(1, action_asign_lambda)],
     
+    # ExpReturn -> Expresion | lambda
     ('ExpReturn', ('Expresion',)): [(1, action_ret_exp)],
     ('ExpReturn', ('lambda',)): [(1, action_ret_lambda)],
     
+    # Expresion -> Expresion1 ExpresionAux
     ('Expresion', ('Expresion1', 'ExpresionAux')): [(2, action_exp_logic)],
     
+    # ExpresionAux -> and Expresion1 ExpresionAux | lambda
     ('ExpresionAux', ('and', 'Expresion1', 'ExpresionAux')): [(3, action_expaux_and)],
     ('ExpresionAux', ('lambda',)): [(1, action_expaux_lambda)],
     
+    # Expresion1 -> Expresion2 Expresion1Aux
     ('Expresion1', ('Expresion2', 'Expresion1Aux')): [(2, action_exp1_rel)],
     
+    # Expresion1Aux -> minorthan Expresion2 Expresion1Aux | lambda
     ('Expresion1Aux', ('minorthan', 'Expresion2', 'Expresion1Aux')): [(3, action_exp1aux_min)],
     ('Expresion1Aux', ('lambda',)): [(1, action_exp1aux_lambda)],
     
+    # Expresion2 -> Expresion3 Expresion2Aux
     ('Expresion2', ('Expresion3', 'Expresion2Aux')): [(2, action_exp2_arit)],
     
+    # Expresion2Aux -> sum Expresion3 Expresion2Aux | lambda
     ('Expresion2Aux', ('sum', 'Expresion3', 'Expresion2Aux')): [(3, action_exp2aux_sum)],
     ('Expresion2Aux', ('lambda',)): [(1, action_exp2aux_lambda)],
     
+    # Expresion3 -> oppar Expresion clpar | intconst | floatconst | str | true | false | id Expresion4
     ('Expresion3', ('oppar', 'Expresion', 'clpar')): [(3, action_exp3_par)],
     ('Expresion3', ('intconst',)): [(1, action_type_int)],
     ('Expresion3', ('floatconst',)): [(1, action_type_float)],
@@ -1084,6 +1166,7 @@ SEMANTIC_RULES = {
     ('Expresion3', ('false',)): [(1, action_type_bool)],
     ('Expresion3', ('id', 'Expresion4')): [(1, action_exp3_id_pre), (2, action_exp3_id)],
     
+    # Expresion4 -> oppar ArgsLlamada clpar | lambda
     ('Expresion4', ('oppar', 'ArgsLlamada', 'clpar')): [(3, action_exp4_call)],
     ('Expresion4', ('lambda',)): [(1, action_exp4_lambda)],
 }
