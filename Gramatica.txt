@@ -10,15 +10,15 @@ S -> LF S
 S -> eof
 
 LC -> LS semicolon
-LC -> if oppar Expresion clpar CuerpoIf LE
+LC -> if oppar Expresion clpar CuerpoIf
 
-LE -> else CuerpoIf
-LE -> lambda
+LF -> function TypeFun id oppar Args clpar CuerpoIf
 
-LF -> function TypeFun id oppar Args clpar opbra Cuerpo clbra
-
-CuerpoIf -> opbra Cuerpo clbra
+CuerpoIf -> opbra Cuerpo clbra LE
 CuerpoIf -> LC
+
+LE -> else opbra Cuerpo clbra
+LE -> lambda
 
 Cuerpo -> LC Cuerpo
 Cuerpo -> lambda
