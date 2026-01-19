@@ -89,8 +89,9 @@ Expresion -> Expresion1 ExpresionAux {Expresion.tipo := if ExpresionAux.tipo = v
 									  else if ExpresionAux.tipo = Expresion1.tipo then boolean
 									  else tipo_error}
 
-ExpresionAux -> and Expresion ExpresionAux1 {ExpresionAux.tipo := if Expresion.tipo = boolean then ExpresionAux1.tipo
-							  				 else tipo_error}
+ExpresionAux -> and Expresion1 ExpresionAux1 {ExpresionAux.tipo := if ExpresionAux1.tipo = void then Expresion1.tipo
+																   else if Expresion1.tipo = ExpresionAux1.tipo then Expresion1.tipo
+																   else tipo_error}
 ExpresionAux -> lambda {ExpresionAux.tipo := void}
 
 Expresion1 -> Expresion2 Expresion1Aux {Expresion1.tipo := if Expresion1Aux.tipo = void then Expresion2.tipo
@@ -98,8 +99,8 @@ Expresion1 -> Expresion2 Expresion1Aux {Expresion1.tipo := if Expresion1Aux.tipo
 										else tipo_error}
 
 Expresion1Aux -> minorthan Expresion2 Expresion1Aux1 {Expresion1Aux.tipo := if Expresion1Aux1.tipo = void then Expresion2.tipo
-													  else if Expresion1Aux1.tipo = Expresion2.tipo then Expresion2.tipo
-													  else tipo_error}
+													  						else if Expresion1Aux1.tipo = Expresion2.tipo then Expresion2.tipo
+													 						else tipo_error}
 Expresion1Aux -> lambda {Expresion1Aux.tipo := void}
 
 Expresion2 -> Expresion3 Expresion2Aux {Expresion2.tipo := if Expresion2Aux.tipo = void then Expresion3.tipo
