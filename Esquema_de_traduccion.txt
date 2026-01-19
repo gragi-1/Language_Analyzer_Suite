@@ -11,18 +11,18 @@ S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} eof {LiberarTabla(TSG)
 
 LC -> LS semicolon {LC.tipo := if LS.tipo = tipo_error then tipo_error
 							   else tipo_ok}
-LC -> if oppar Expresion clpar CuerpoIf LE {LC.tipo := if Expresion.tipo = boolean then
-													if CuerpoIf.tipo = tipo_ok then LE.tipo
-													else tipo_error
-												  else tipo_error}
-
-LE -> else CuerpoIf {LE.tipo := CuerpoIf.tipo}
-LE -> lambda {LE.tipo := tipo_ok}
+LC -> if oppar Expresion clpar CuerpoIf {LC.tipo := if Expresion.tipo = boolean then CuerpoIf.tipo
+													else tipo_error}
 
 LF -> function TypeFun id {TSL := CrearTabla(), despL := 0} oppar Args clpar {AñadeTipo(id.pos, Args.tipo -> TypeFun.tipo), AñadeEtiq(id.pos, NuevaEtiq())} opbra Cuerpo clbra {LiberarTabla(TSL)}
 
-CuerpoIf -> opbra Cuerpo clbra {CuerpoIf.tipo := Cuerpo.tipo}
+CuerpoIf -> opbra Cuerpo clbra LE {CuerpoIf.tipo := if Cuerpo.tipo = tipo_ok then LE.tipo
+													else LE.tipo}
 CuerpoIf -> LC {CuerpoIf.tipo := LC.tipo}
+
+LE -> else opbra Cuerpo clbra {LE.tipo := Cuerpo.tipo}
+
+LE -> lambda {LE.tipo := tipo_ok}
 
 Cuerpo -> LC Cuerpo_1 {Cuerpo.tipo := if LC.tipo = tipo_ok then Cuerpo_1.tipo
 									  else tipo_error}
@@ -30,10 +30,12 @@ Cuerpo -> lambda {Cuerpo.tipo := tipo_ok}
 
 Args -> Tipo {AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL), despL := despL + Tipo.desp} id ArgMore {Args.tipo := Tipo.tipo x ArgMore.tipo}
 Args -> void {}
+Args -> lambda {}
 
 ArgsLlamada -> Expresion ArgMoreLlamada {ArgsLlamada.tipo := if Expresion.tipo = tipo_error then tipo_error
 																else if ArgMoreLlamada.tipo = tipo_error then tipo_error
 																else Expresion.tipo x ArgMoreLlamada.tipo}
+ArgsLlamada -> void {}
 ArgsLlamada -> lambda {}
 
 ArgMoreLlamada -> comma Expresion ArgMoreLlamada_1 {ArgMoreLlamada.tipo := if Expresion.tipo = tipo_error then tipo_error
@@ -87,26 +89,26 @@ Expresion -> Expresion1 ExpresionAux {Expresion.tipo := if ExpresionAux.tipo = v
 									  else if ExpresionAux.tipo = Expresion1.tipo then boolean
 									  else tipo_error}
 
-ExpresionAux -> and Expresion {ExpresionAux.tipo := if Expresion.tipo = boolean then boolean
-							   else tipo_error}
+ExpresionAux -> and Expresion ExpresionAux1 {ExpresionAux.tipo := if Expresion.tipo = boolean then ExpresionAux1.tipo
+							  				 else tipo_error}
 ExpresionAux -> lambda {ExpresionAux.tipo := void}
 
 Expresion1 -> Expresion2 Expresion1Aux {Expresion1.tipo := if Expresion1Aux.tipo = void then Expresion2.tipo
 										else if Expresion1Aux.tipo = Expresion2.tipo then Expresion2.tipo
 										else tipo_error}
 
-Expresion1Aux -> minorthan Expresion1 {Expresion1Aux.tipo := if Expresion1.tipo = int then int
-									   else if Expresion1.tipo = float then float
-									   else tipo_error}
+Expresion1Aux -> minorthan Expresion2 Expresion1Aux1 {Expresion1Aux.tipo := if Expresion1Aux1.tipo = void then Expresion2.tipo
+													  else if Expresion1Aux1.tipo = Expresion2.tipo then Expresion2.tipo
+													  else tipo_error}
 Expresion1Aux -> lambda {Expresion1Aux.tipo := void}
 
 Expresion2 -> Expresion3 Expresion2Aux {Expresion2.tipo := if Expresion2Aux.tipo = void then Expresion3.tipo
 														   else if Expresion2Aux.tipo = Expresion3.tipo then Expresion3.tipo
 														   else tipo_error}
 
-Expresion2Aux -> sum Expresion2 {Expresion2Aux.tipo := if Expresion2.tipo = int then int
-								 else if Expresion2.tipo = float then float
-								 else tipo_error}
+Expresion2Aux -> sum Expresion3 Expresion2Aux1 {Expresion2Aux.tipo := if Expresion2Aux1.tipo = void then Expresion3.tipo
+																	  else if Expresion3.tipo = Expresion2Aux1.tipo then Expresion3.tipo
+																	  else tipo_error}
 Expresion2Aux -> lambda {Expresion2Aux.tipo := void}
 
 Expresion3 -> oppar Expresion clpar {Expresion3.tipo := Expresion.tipo}
