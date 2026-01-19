@@ -185,7 +185,7 @@ def t_newline(t):
 
 def t_error(t):
     """Manejo de caracteres ilegales."""
-    lex_error(t.lineno, f"Carácter ilegal: '{t.value[0]}'")
+    lex_error(t.lineno, f"se ha encontrado un carácter ilegal: '{t.value[0]}'")
     t.lexer.skip(1)
 
 def t_eof(t):
