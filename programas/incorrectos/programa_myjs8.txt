@@ -2,7 +2,6 @@
 let int x = 5;
 
 if (x < 10) {
-    let int x = 3;  // ERROR SEMÁNTICO: redeclaración en mismo ámbito
     x += 2;
 } else {
     write 'Mayor';
@@ -13,7 +12,6 @@ if {
     write 'Error';
 }
 
-// ERROR: Variable no declarada en contexto de uso
 if (y < 5) {  // ERROR SEMÁNTICO: y no declarada
     write y;
 }

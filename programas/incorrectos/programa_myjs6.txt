@@ -4,7 +4,7 @@ let string texto = 'Ejemplo de error';
 
 if (valor < 10 {  // ERROR SINTÁCTICO: falta paréntesis de cierre
     valor += 5;
- else 
+  else            // ERROR SINTÁCTICO: falta llave
     valor = 5;
 
 write valor;

@@ -2,20 +2,16 @@
 let int contador = 0;
 let string mensaje = 'Valor: ';
 
-// ERROR LÉXICO: Carácter no permitido en identificador
 let int número = 5;  // ERROR: 'ó' no es ASCII básico
 
-// ERROR LÉXICO/SINTÁCTICO: Número mal formado
 if (contador < 0x10) {  // ERROR: notación hexadecimal no permitida
     contador += 1;
 }
 
-// ERROR SEMÁNTICO: Comparación sin sentido
-if (mensaje < contador) {  // string < int
+if (mensaje < contador) {  // string < int ERROR SEMÁNTICO
     mensaje = 'Raro';
 }
 
-// ERROR SINTÁCTICO: Llaves desbalanceadas
 if (contador < 10) {
     contador += 2;
     // Falta llave de cierre
