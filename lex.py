@@ -1505,7 +1505,7 @@ def parse():
                     advance_token()
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
-                continue
+                return False
         
         # 3. Expandir No Terminal
         elif top in grammar['non_terminals']:
@@ -1562,7 +1562,7 @@ def parse():
                         
             else:
                 handle_syntactic_error(top, current_symbol, current_token)
-                continue
+                return False
         else:
             print(f"Error: Símbolo desconocido {top}")
             return False
