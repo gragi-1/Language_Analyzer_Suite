@@ -8,6 +8,15 @@ import os
 if os.name == 'nt':
     os.system('')  # Habilita secuencias ANSI en Windows 10+
 
+def get_resource_path(filename):
+    """Obtiene la ruta correcta para recursos, compatible con PyInstaller."""
+    # Si se ejecuta desde PyInstaller, los recursos están en _MEIPASS
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, filename)
+
 # Códigos de color ANSI
 class Colors:
     RED = '\033[91m'
@@ -1675,8 +1684,9 @@ def main():
         sys.exit(1)
 
     # Verificar que existe el archivo de gramática
+    grammar_path = get_resource_path('Gramatica.txt')
     try:
-        with open('Gramatica.txt', 'r') as f:
+        with open(grammar_path, 'r') as f:
             pass
     except FileNotFoundError:
         print("Error: No se encontró el archivo 'Gramatica.txt'")
@@ -1694,7 +1704,7 @@ def main():
             lexed_file = lf
             symbols_file = None
 
-            load_grammar('Gramatica.txt')
+            load_grammar(grammar_path)
             build_parsing_table()
 
             # Inicializar lexer (lookahead listo) y ejecutar parser+semántico.
