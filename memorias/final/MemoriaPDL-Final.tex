@@ -32,6 +32,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%% Main document
 %\section*{Note:}
 %\emph{This document is intended to provide a sample structure for the reports in ME303 at the University of Waterloo. }
+\section{Introducción}
+El objetivo de este proyecto es desarrollar un procesador de lenguajes capaz de reconocer y analizar un lenguaje de programación sencillo llamado MyJS, que es una versión reducida de JavaScript.\\ El procesador de lenguajes constará de tres componentes principales: un analizador léxico, un analizador sintáctico y un analizador semántico. Cada uno de estos componentes desempeñará un papel crucial en la comprensión y procesamiento del lenguaje MyJS.\\
+
+En las siguientes secciones, se describirá en detalle el diseño y la implementación de cada uno de estos componentes, así como los desafíos enfrentados y las soluciones adoptadas durante el desarrollo del proyecto.\\
+
+Para el uso del procesador de lenguajes, se tiene que ejecutar el siguiente comando en la terminal:
+\begin{verbatim}
+    python3 lex.py archivo_entrada.txt
+\end{verbatim}
+
+O desde el ejecutable con:
+\begin{verbatim}
+    ./myjs_analizer.exe archivo_entrada.txt
+\end{verbatim}
 
 \section{Analizador Léxico}
 %\emph{Describe the physical problem under investigation and the briefly summarize the governing equations. Example:}
@@ -60,7 +74,7 @@ Hemos definido los siguientes tokens en funcion de las necesidades de nuestra pr
     \item String: $<$STRING, $>$
     \item Void: $<$VOID, $>$
     \item Write: $<$WRITE, $>$
-    \item Constante real: $<$REALCONST, $>$
+    \item Constante real: $<$FLOATCONST, $>$
     \item Constante entera: $<$INTCONST, $>$
     \item Cadena: $<$STR, '$\text{c*}$'$>$
     \item Identificador: $<$ID, posTS$>$
@@ -274,7 +288,6 @@ El autómata tiene que ir acompañado de una serie de acciones que realizar mien
 \\
 Cuando aparece una transición o.c. significa que es cualquier otro caracter distinto a las demás transiciones salientes del vértice.
 
-\newpage
 \subsection{Acciones Semánticas}
 
 Las acciones semánticas son una serie de acciones que se realizan entre las transiciones del autómata que permiten realizar diferentes funciones como por ejemplo ir generando un string para cuando detectamos una cadena.
@@ -309,7 +322,7 @@ Las acciones semánticas que hemos definido para nuestro proyecto son:
     \item 11:11 Leer, $num = num*10 + d$, $cont++$
     \item 11:12 $num = num*10^{-cont}$
         \subitem if (num $>$ 117549436) error('Real demasiado grande')
-        \subitem else gentoken($<$REALCONST, num$>$)
+        \subitem else gentoken($<$FLOATCONST, num$>$)
     \item 0:14 Leer
     \item 0:15 Leer
     \item 15:15 Leer
@@ -347,17 +360,6 @@ Hemos detectado los siguientes casos capaces de generar errores:
     \item \textbf{Cadena demasiado grande:} Al declarar una cadena de más de 64 caracteres.
 \end{itemize}
 
-\subsection{Tabla de Símbolos}
-
-La tabla de símbolos es una estructura de datos que contiene información adicional sobre los tokens cuyo atributo es su posición dentro de ella.
-\\
-\\
-El diseño elegido es una pila de diccionarios en la cual cada diccionario contiene la información extra del token (actualmente vacía) y que, al ser insertados, se devuelve la posición que han recibido dentro de ella, para posteriormente generar el token correctamente.
-\\
-\\
-En nuestro caso se asigna la posición dentro de la tabla de forma lineal, el primer elemento recibe la primera posición y la enésima inserción recibe la enésima posición.
-
-\newpage
 
 \section{Analizador Sintáctico}
 
@@ -376,8 +378,8 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
   \item \texttt{LF} $\to$ \texttt{function TypeFun id oppar Args clpar opbra Cuerpo clbra}
   \item \texttt{CuerpoIf} $\to$ \texttt{opbra Cuerpo clbra | LC}
   \item \texttt{Cuerpo} $\to$ \texttt{LC Cuerpo |} $\lambda$
-  \item \texttt{Args} $\to$ \texttt{Tipo id ArgMore | void}
-  \item \texttt{ArgsLlamada} $\to$ \texttt{Expresion ArgMoreLlamada |} $\lambda$
+  \item \texttt{Args} $\to$ \texttt{Tipo id ArgMore | void |} $\lambda$
+  \item \texttt{ArgsLlamada} $\to$ \texttt{Expresion ArgMoreLlamada | void |} $\lambda$
   \item \texttt{ArgMoreLlamada} $\to$ \texttt{comma Expresion ArgMoreLlamada |} $\lambda$
   \item \texttt{ArgMore} $\to$ \texttt{comma Tipo id ArgMore |} $\lambda$
   \item \texttt{LS} $\to$ \texttt{let Tipo id Asignar | id IdOpt | read id | write Expresion | return ExpReturn}
@@ -387,11 +389,11 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
   \item \texttt{Asignar} $\to$ \texttt{eq Expresion |} $\lambda$
   \item \texttt{ExpReturn} $\to$ \texttt{Expresion |} $\lambda$
   \item \texttt{Expresion} $\to$ \texttt{Expresion1 ExpresionAux}
-  \item \texttt{ExpresionAux} $\to$ \texttt{and Expresion |} $\lambda$
+  \item \texttt{ExpresionAux} $\to$ \texttt{and Expresion1 ExpresionAux |} $\lambda$
   \item \texttt{Expresion1} $\to$ \texttt{Expresion2 Expresion1Aux}
-  \item \texttt{Expresion1Aux} $\to$ \texttt{minorthan Expresion1 |} $\lambda$
+  \item \texttt{Expresion1Aux} $\to$ \texttt{minorthan Expresion2 Expresion1Aux |} $\lambda$
   \item \texttt{Expresion2} $\to$ \texttt{Expresion3 Expresion2Aux}
-  \item \texttt{Expresion2Aux} $\to$ \texttt{sum Expresion2 |} $\lambda$
+  \item \texttt{Expresion2Aux} $\to$ \texttt{sum Expresion3 Expresion2Aux |} $\lambda$
   \item \texttt{Expresion3} $\to$ \texttt{oppar Expresion clpar | intconst | realconst | string | true | false | id Expresion4}
   \item \texttt{Expresion4} $\to$ \texttt{oppar ArgsLlamada clpar |} $\lambda$
 \end{enumerate}
@@ -401,8 +403,6 @@ Teniendo todo lo anterior en cuenta, la gramática definida es la siguiente:
 Para demostrar que una gramática es LL(1), debemos verificar que cumple las siguientes propiedades:
 
 \begin{enumerate}[itemsep=0.2em, topsep=0.5em]
-    \item No existe recursividad por la izquierda.
-    \item Está factorizada por la izquierda.
     \item Para cada no terminal $A$ con producciones alternativas $A \rightarrow \alpha_1 ~|~ \alpha_2 ~|~ \ldots ~|~ \alpha_n$, los conjuntos FIRST($\alpha_{i}$) son disjuntos entre sí.
     \item Para cada producción con $\lambda$: $A \rightarrow \alpha ~|~ \lambda$, se cumple que $\text{FIRST}(\alpha) \cap \text{FOLLOW}(A) = \emptyset$.
 \end{enumerate}
@@ -414,20 +414,21 @@ El conjunto $\text{FIRST}(\alpha)$ contiene todos los terminales que pueden apar
 \vspace{0.3em}
 \textbf{Conjuntos FIRST principales:}
 \begin{align*}
-\text{FIRST}(Tipo) ={}& \{\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}\} \\
-\text{FIRST}(TypeFun) ={}& \{\mathit{void}, \mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}\} \\
-\text{FIRST}(LS) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}\} \\
-\text{FIRST}(LC) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
-\text{FIRST}(LF) ={}& \{\mathit{function}\} \\
-\text{FIRST}(S) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}\} \\
-\text{FIRST}(Expresion3) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}\} \\
-\text{FIRST}(Expresion2) ={}& \text{FIRST}(Expresion3) \\
-\text{FIRST}(Expresion1) ={}& \text{FIRST}(Expresion2) \\
-\text{FIRST}(Expresion) ={}& \text{FIRST}(Expresion1) \\
-\text{FIRST}(Args) ={}& \{\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}, \mathit{void}\} \\
-\text{FIRST}(ArgsLlamada) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}, \lambda\} \\
-\text{FIRST}(Cuerpo) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \lambda\} \\
-\text{FIRST}(CuerpoIf) ={}& \{\mathit{opbra}, \mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\}
+\text{FIRST}(Tipo) &= {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} \\
+\text{FIRST}(TypeFun) &= {\mathit{void}, \mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} \\
+\text{FIRST}(LS) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}} \\
+\text{FIRST}(LC) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}} \\
+\text{FIRST}(LF) &= {\mathit{function}} \\
+\text{FIRST}(LE) &= {\mathit{else}, \lambda} \\
+\text{FIRST}(S) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{function}, \mathit{eof}} \\
+\text{FIRST}(Expresion3) &= {\mathit{oppar}, \mathit{intconst}, \mathit{floatconst}, \mathit{str}, \mathit{true}, \mathit{false}, \mathit{id}} \\
+\text{FIRST}(Expresion2) &= \text{FIRST}(Expresion3) \\
+\text{FIRST}(Expresion1) &= \text{FIRST}(Expresion2) \\
+\text{FIRST}(Expresion) &= \text{FIRST}(Expresion1) \\
+\text{FIRST}(Args) &= {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}, \mathit{void}, \lambda} \\
+\text{FIRST}(ArgsLlamada) &= {\mathit{oppar}, \mathit{intconst}, \mathit{floatconst}, \mathit{str}, \mathit{true}, \mathit{false}, \mathit{id}, \mathit{void}, \lambda} \\
+\text{FIRST}(Cuerpo) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \lambda} \\
+\text{FIRST}(CuerpoIf) &= {\mathit{opbra}, \mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}}
 \end{align*}
 
 \subsubsection{Cálculo de Conjuntos FOLLOW}
@@ -437,15 +438,22 @@ El conjunto $\text{FOLLOW}(A)$ contiene todos los terminales que pueden aparecer
 \vspace{0.3em}
 \textbf{Conjuntos FOLLOW principales:}
 \begin{align*}
-\text{FOLLOW}(S) ={}& \{\mathit{eof}\} \\
-\text{FOLLOW}(Cuerpo) ={}& \{\mathit{clbra}\} \\
-\text{FOLLOW}(LS) ={}& \{\mathit{semicolon}\} \\
-\text{FOLLOW}(Args) ={}& \{\mathit{clpar}\} \\
-\text{FOLLOW}(ArgsLlamada) ={}& \{\mathit{clpar}\} \\
-\text{FOLLOW}(LC) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}, \mathit{clbra}\} \\
-\text{FOLLOW}(LF) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}\} \\
-\text{FOLLOW}(CuerpoIf) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}, \mathit{function}, \mathit{eof}, \mathit{clbra}\} \\
-\text{FOLLOW}(Expresion) ={}& \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}, \mathit{minorthan}, \mathit{sum}\}
+\text{FOLLOW}(LE) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{function}, \mathit{eof}, \mathit{clbra}} \\
+\text{FOLLOW}(Cuerpo) &= {\mathit{clbra}} \\
+\text{FOLLOW}(Args) &= {\mathit{clpar}} \\
+\text{FOLLOW}(ArgsLlamada) &= {\mathit{clpar}} \\
+\text{FOLLOW}(ArgMoreLlamada) &= {\mathit{clpar}} \\
+\text{FOLLOW}(ArgMore) &= {\mathit{clpar}} \\
+\text{FOLLOW}(Asignar) &= {\mathit{semicolon}} \\
+\text{FOLLOW}(ExpReturn) &= {\mathit{semicolon}} \\
+\text{FOLLOW}(Expresion) &= {\mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(ExpresionAux) &= {\mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(Expresion1) &= {\mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(Expresion1Aux) &= {\mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(Expresion2) &= {\mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(Expresion2Aux) &= {\mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(Expresion3) &= {\mathit{sum}, \mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{FOLLOW}(Expresion4) &= {\mathit{sum}, \mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}}
 \end{align*}
 
 \subsubsection{Verificación de la Propiedad LL(1)}
@@ -454,76 +462,140 @@ Debemos verificar que para cada no terminal con producciones alternativas, los c
 
 \vspace{0.3em}
 \textbf{Caso 1: No terminal $S$}
+\begin{align}
+S &\rightarrow LC~S \mid LF~S \mid \mathit{eof} \\
+\text{FIRST}(LC~S) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}} \\
+\text{FIRST}(LF~S) &= {\mathit{function}} \\
+\text{FIRST}(\mathit{eof}) &= {\mathit{eof}} \\
+\text{Los tres conjuntos son disjuntos dos a dos: } &\checkmark
+\end{align}
 
-\begin{center}
-\begin{minipage}{0.85\textwidth}
-\begin{align*}
-S \rightarrow{}& LC~S ~|~ LF~S ~|~ \mathit{eof} \\
-\text{FIRST}(LC~S) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
-\text{FIRST}(LF~S) ={}& \{\mathit{function}\} \\
-\text{FIRST}(\mathit{eof}) ={}& \{\mathit{eof}\} \quad \text{Los tres conjuntos son disjuntos dos a dos: } \checkmark
-\end{align*}
-\end{minipage}
-\end{center}
+\textbf{Caso 2: No terminal $CuerpoIf$}
+\begin{align}
+CuerpoIf &\rightarrow \mathit{opbra}~Cuerpo~\mathit{clbra}~LE \mid LC \\
+\text{FIRST}(\mathit{opbra}~\ldots) &= {\mathit{opbra}} \\
+\text{FIRST}(LC) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}} \\
+\text{Conjuntos disjuntos: } &\checkmark
+\end{align}
 
+\textbf{Caso 3: No terminal $LE$}
+\begin{align}
+LE &\rightarrow \mathit{else}~\mathit{opbra}~Cuerpo~\mathit{clbra} \mid \lambda \\
+\text{FIRST}(\mathit{else}~\ldots) &= {\mathit{else}} \\
+\text{FOLLOW}(LE) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{function}, \mathit{eof}, \mathit{clbra}} \\
+\text{Verificación: } & {\mathit{else}} \cap \text{FOLLOW}(LE) = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Caso 2: No terminal $LC$}
-\begin{align*}
-LC \rightarrow{}& LS~; ~|~ \mathit{if}~(~\ldots ~|~ \mathit{else}~\ldots \\
-\text{FIRST}(LS~;) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}\} \\
-\text{FIRST}(\mathit{if}\ldots) ={}& \{\mathit{if}\} \\
-\text{FIRST}(\mathit{else}\ldots) ={}& \{\mathit{else}\} \quad \text{Los tres conjuntos son disjuntos dos a dos: } \checkmark
-\end{align*}
+\textbf{Caso 4: No terminal $Cuerpo$}
+\begin{align}
+Cuerpo &\rightarrow LC~Cuerpo \mid \lambda \\
+\text{FIRST}(LC~Cuerpo) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}} \\
+\text{FOLLOW}(Cuerpo) &= {\mathit{clbra}} \\
+\text{Verificación: } & \text{FIRST}(LC~Cuerpo) \cap {\mathit{clbra}} = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Caso 3: No terminal $LS$ (5 producciones)}
-\begin{align*}
-LS \rightarrow{}& \mathit{let}~\ldots ~|~ \mathit{id}~\ldots ~|~ \mathit{read}~\ldots ~|~ \mathit{write}~\ldots ~|~ \mathit{return}~\ldots \\
-\text{FIRST}(\mathit{let}\ldots) ={}& \{\mathit{let}\}, \quad \text{FIRST}(\mathit{id}\ldots) = \{\mathit{id}\}, \quad \text{FIRST}(\mathit{read}\ldots) = \{\mathit{read}\} \\
-\text{FIRST}(\mathit{write}\ldots) ={}& \{\mathit{write}\}, \quad \text{FIRST}(\mathit{return}\ldots) = \{\mathit{return}\} \quad \text{Todos disjuntos dos a dos: } \checkmark
-\end{align*}
+\textbf{Caso 5: No terminal $Args$}
+\begin{align}
+Args &\rightarrow \mathit{Tipo}~\mathit{id}~ArgMore \mid \mathit{void} \mid \lambda \\
+\text{FIRST}(\mathit{Tipo}~\ldots) &= {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} \\
+\text{FIRST}(\mathit{void}) &= {\mathit{void}} \\
+\text{FOLLOW}(Args) &= {\mathit{clpar}} \\
+\text{Verificaciones: } & {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} \cap {\mathit{void}} = \emptyset \quad \checkmark \\
+& {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} \cap {\mathit{clpar}} = \emptyset \quad \checkmark \\
+& {\mathit{void}} \cap {\mathit{clpar}} = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Caso 4: No terminal $Cuerpo$ (con $\lambda$)}
-\begin{align*}
-Cuerpo \rightarrow{}& LC~Cuerpo ~|~ \lambda \\
-\text{FIRST}(LC~Cuerpo) ={}& \{\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}, \mathit{if}, \mathit{else}\} \\
-\text{FOLLOW}(Cuerpo) ={}& \{\mathit{clbra}\} \quad \text{Verificación: } \text{FIRST}(LC~Cuerpo) \cap \text{FOLLOW}(Cuerpo) = \emptyset \quad \checkmark
-\end{align*}
+\textbf{Caso 6: No terminal $ArgsLlamada$}
+\begin{align}
+ArgsLlamada &\rightarrow Expresion~ArgMoreLlamada \mid \mathit{void} \mid \lambda \\
+\text{FIRST}(Expresion~\ldots) &= {\mathit{oppar}, \mathit{intconst}, \mathit{floatconst}, \mathit{str}, \mathit{true}, \mathit{false}, \mathit{id}} \\
+\text{FIRST}(\mathit{void}) &= {\mathit{void}} \\
+\text{FOLLOW}(ArgsLlamada) &= {\mathit{clpar}} \\
+\text{Verificaciones: } & \text{FIRST}(Expresion~\ldots) \cap {\mathit{void}} = \emptyset \quad \checkmark \\
+& \text{FIRST}(Expresion~\ldots) \cap {\mathit{clpar}} = \emptyset \quad \checkmark \\
+& {\mathit{void}} \cap {\mathit{clpar}} = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Caso 5: No terminal $ArgsLlamada$ (con $\lambda$)}
-\begin{align*}
-ArgsLlamada \rightarrow{}& Expresion~ArgMoreLlamada ~|~ \lambda \\
-\text{FIRST}(Expresion\ldots) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}\} \\
-\text{FOLLOW}(ArgsLlamada) ={}& \{\mathit{clpar}\} \quad \text{Verificación: } \text{FIRST}(Expresion\ldots) \cap \text{FOLLOW}(ArgsLlamada) = \emptyset \quad \checkmark
-\end{align*}
+\textbf{Caso 7: No terminal $ArgMoreLlamada$}
+\begin{align}
+ArgMoreLlamada &\rightarrow \mathit{comma}~Expresion~ArgMoreLlamada \mid \lambda \\
+\text{FIRST}(\mathit{comma}~\ldots) &= {\mathit{comma}} \\
+\text{FOLLOW}(ArgMoreLlamada) &= {\mathit{clpar}} \\
+\text{Verificación: } & {\mathit{comma}} \cap {\mathit{clpar}} = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Casos 6 y 7: No terminales $ArgMore$ y $ArgMoreLlamada$ (con $\lambda$)}
-\begin{align*}
-ArgMore \rightarrow{}& ,~Tipo~id~ArgMore ~|~ \lambda \\
-\text{FIRST}(,\ldots) ={}& \{\mathit{comma}\} \quad \text{FOLLOW}(ArgMore) = \{\mathit{clpar}\} \quad \checkmark \\
-ArgMoreLlamada \rightarrow{}& ,~Expresion~ArgMoreLlamada ~|~ \lambda \\
-\text{FIRST}(,\ldots) ={}& \{\mathit{comma}\} \quad \text{FOLLOW}(ArgMoreLlamada) = \{\mathit{clpar}\} \quad \checkmark
-\end{align*}
+\textbf{Caso 8: No terminal $ArgMore$}
+\begin{align}
+ArgMore &\rightarrow \mathit{comma}~\mathit{Tipo}~\mathit{id}~ArgMore \mid \lambda \\
+\text{FIRST}(\mathit{comma}~\ldots) &= {\mathit{comma}} \\
+\text{FOLLOW}(ArgMore) &= {\mathit{clpar}} \\
+\text{Verificación: } & {\mathit{comma}} \cap {\mathit{clpar}} = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Casos 8 y 9: No terminales $Asignar$ y $ExpReturn$ (con $\lambda$)}
-\begin{align*}
-Asignar \rightarrow{}& =~Expresion ~|~ \lambda \\
-\text{FIRST}(=\ldots) ={}& \{\mathit{eq}\} \quad \text{FOLLOW}(Asignar) = \{\mathit{semicolon}\} \quad \checkmark \\
-ExpReturn \rightarrow{}& Expresion ~|~ \lambda \\
-\text{FIRST}(Expresion) ={}& \{\mathit{oppar}, \mathit{intconst}, \mathit{realconst}, \mathit{string}, \mathit{true}, \mathit{false}, \mathit{id}\} \\
-\text{FOLLOW}(ExpReturn) ={}& \{\mathit{semicolon}\} \quad \text{Verificación: } \text{FIRST}(Expresion) \cap \{\mathit{semicolon}\} = \emptyset \quad \checkmark
-\end{align*}
+\textbf{Caso 9: No terminal $Asignar$}
+\begin{align}
+Asignar &\rightarrow \mathit{eq}~Expresion \mid \lambda \\
+\text{FIRST}(\mathit{eq}~\ldots) &= {\mathit{eq}} \\
+\text{FOLLOW}(Asignar) &= {\mathit{semicolon}} \\
+\text{Verificación: } & {\mathit{eq}} \cap {\mathit{semicolon}} = \emptyset \quad \checkmark
+\end{align}
 
-\textbf{Caso 10: No terminales de expresiones (con $\lambda$)}
-\begin{align*}
-ExpresionAux \rightarrow{}& \mathit{and}~Expresion ~|~ \lambda \\
-\text{FIRST}(\mathit{and}\ldots) ={}& \{\mathit{and}\} \quad \text{FOLLOW}(ExpresionAux) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}\} \quad \checkmark \\
-Expresion1Aux \rightarrow{}& \mathit{minorthan}~Expresion1 ~|~ \lambda \\
-\text{FIRST}(\mathit{minorthan}\ldots) ={}& \{\mathit{minorthan}\} \quad \text{FOLLOW}(Expresion1Aux) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}\} \quad \checkmark \\
-Expresion2Aux \rightarrow{}& \mathit{sum}~Expresion2 ~|~ \lambda \\
-\text{FIRST}(\mathit{sum}\ldots) ={}& \{\mathit{sum}\} \quad \text{FOLLOW}(Expresion2Aux) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}, \mathit{minorthan}\} \quad \checkmark \\
-Expresion4 \rightarrow{}& (~ArgsLlamada~) ~|~ \lambda \\
-\text{FIRST}((\ldots) ={}& \{\mathit{oppar}\} \quad \text{FOLLOW}(Expresion4) = \{\mathit{clpar}, \mathit{semicolon}, \mathit{comma}, \mathit{and}, \mathit{minorthan}, \mathit{sum}\} \quad \checkmark
-\end{align*}
+\textbf{Caso 10: No terminal $ExpReturn$}
+\begin{align}
+ExpReturn &\rightarrow Expresion \mid \lambda \\
+\text{FIRST}(Expresion) &= {\mathit{oppar}, \mathit{intconst}, \mathit{floatconst}, \mathit{str}, \mathit{true}, \mathit{false}, \mathit{id}} \\
+\text{FOLLOW}(ExpReturn) &= {\mathit{semicolon}} \\
+\text{Verificación: } & \text{FIRST}(Expresion) \cap {\mathit{semicolon}} = \emptyset \quad \checkmark
+\end{align}
+
+\textbf{Caso 11: No terminal $ExpresionAux$}
+\begin{align}
+ExpresionAux &\rightarrow \mathit{and}~Expresion~ExpresionAux \mid \lambda \\
+\text{FIRST}(\mathit{and}~\ldots) &= {\mathit{and}} \\
+\text{FOLLOW}(ExpresionAux) &= {\mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{Verificación: } & {\mathit{and}} \cap {\mathit{clpar}, \mathit{semicolon}, \mathit{comma}} = \emptyset \quad \checkmark
+\end{align}
+
+\textbf{Caso 12: No terminal $Expresion1Aux$}
+\begin{align}
+Expresion1Aux &\rightarrow \mathit{minorthan}~Expresion2~Expresion1Aux \mid \lambda \\
+\text{FIRST}(\mathit{minorthan}~\ldots) &= {\mathit{minorthan}} \\
+\text{FOLLOW}(Expresion1Aux) &= {\mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{Verificación: } & {\mathit{minorthan}} \cap {\mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} = \emptyset \quad \checkmark
+\end{align}
+
+\textbf{Caso 13: No terminal $Expresion2Aux$}
+\begin{align}
+Expresion2Aux &\rightarrow \mathit{sum}~Expresion3~Expresion2Aux \mid \lambda \\
+\text{FIRST}(\mathit{sum}~\ldots) &= {\mathit{sum}} \\
+\text{FOLLOW}(Expresion2Aux) &= {\mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{Verificación: } & {\mathit{sum}} \cap {\mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} = \emptyset \quad \checkmark
+\end{align}
+
+\textbf{Caso 14: No terminal $Expresion4$}
+\begin{align}
+Expresion4 &\rightarrow \mathit{oppar}~ArgsLlamada~\mathit{clpar} \mid \lambda \\
+\text{FIRST}(\mathit{oppar}~\ldots) &= {\mathit{oppar}} \\
+\text{FOLLOW}(Expresion4) &= {\mathit{sum}, \mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} \\
+\text{Verificación: } & {\mathit{oppar}} \cap {\mathit{sum}, \mathit{minorthan}, \mathit{and}, \mathit{clpar}, \mathit{semicolon}, \mathit{comma}} = \emptyset \quad \checkmark
+\end{align}
+
+\textbf{Caso 15: No terminal $LC$}
+\begin{align}
+LC &\rightarrow LS~semicolon \mid \mathit{if}~oppar~Expresion~clpar~CuerpoIf~LE \\
+    \text{FIRST}(LS~semicolon) &= {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}} \\
+    \text{FIRST}(\mathit{if}~\ldots) &= {\mathit{if}} \\
+    \text{Verificación: } & {\mathit{let}, \mathit{id}, \mathit{read}, \mathit{write}, \mathit{return}} \cap {\mathit{if}} = \emptyset \quad \checkmark
+\end{align}
+
+\textbf{Caso 16: No terminal $TypeFun$}
+\begin{align}
+TypeFun &\rightarrow \mathit{void} \mid Tipo \\
+\text{FIRST}(\mathit{void}) &= {\mathit{void}} \\
+\text{FIRST}(Tipo) &= {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} \\
+    \text{Verificación: } & {\mathit{void}} \cap {\mathit{int}, \mathit{float}, \mathit{string}, \mathit{boolean}} = \emptyset \quad \checkmark
+\end{align}
+
 
 \begin{flushright}
 $\square$
@@ -631,6 +703,2628 @@ Para esta entrega hemos detectado los siguientes casos de error:
     \item \textbf{Sentencia else mal declarada:} Cuando una sentencia else no es correcta, igual que con el if.
     \item \textbf{Expresión mal delcarada:} Cuando la declaración de una expresión de cualquier tipo no es correcta, por ejemplo: (1+2*3 o num1 $<$ ().
 \end{itemize}
+
+\section{Analizador Semántico}
+Durante el desarrollo del Analizador Semántico hemos implementado un sistema de tablas de símbolos para gestionar los ámbitos y tipos de las variables y funciones, así como la verificación de tipos en las expresiones y sentencias del lenguaje.
+Además, hemos generado un esquema de traducción para anotar las acciones semánticas en la gramática.
+
+\subsection{Esquema De Traducción}
+\begin{verbatim}
+S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} LC S {}
+S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} LF S {}
+S -> {if TSG = nulo then TSG := CrearTabla(), despG := 0} eof {LiberarTabla(TSG)}
+
+LC -> LS semicolon {LC.tipo := if LS.tipo = tipo_error then tipo_error
+							   else tipo_ok}
+LC -> if oppar Expresion clpar CuerpoIf 
+    {LC.tipo := if Expresion.tipo = boolean then CuerpoIf.tipo
+				else tipo_error}
+
+LF -> function TypeFun id {TSL := CrearTabla(), despL := 0} oppar Args clpar 
+{AñadeTipo(id.pos, Args.tipo -> TypeFun.tipo), AñadeEtiq(id.pos, NuevaEtiq())} 
+    opbra Cuerpo clbra {LiberarTabla(TSL)}
+
+CuerpoIf -> opbra Cuerpo clbra LE {CuerpoIf.tipo := if Cuerpo.tipo = tipo_ok then LE.tipo
+													else tipo_error}
+CuerpoIf -> LC {CuerpoIf.tipo := LC.tipo}
+
+LE -> else opbra Cuerpo clbra {LE.tipo := Cuerpo.tipo}
+
+LE -> lambda {LE.tipo := tipo_ok}
+
+Cuerpo -> LC Cuerpo_1 {Cuerpo.tipo := if LC.tipo = tipo_ok then Cuerpo_1.tipo
+									  else tipo_error}
+Cuerpo -> lambda {Cuerpo.tipo := tipo_ok}
+
+Args -> Tipo 
+    {AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL), despL := despL + Tipo.desp} 
+        id ArgMore {Args.tipo := Tipo.tipo x ArgMore.tipo}
+Args -> void {}
+Args -> lambda {}
+
+ArgsLlamada -> Expresion ArgMoreLlamada 
+            {ArgsLlamada.tipo := if Expresion.tipo = tipo_error then tipo_error
+								else if ArgMoreLlamada.tipo = tipo_error then tipo_error
+								else Expresion.tipo x ArgMoreLlamada.tipo}
+ArgsLlamada -> void {}
+ArgsLlamada -> lambda {}
+
+ArgMoreLlamada -> comma Expresion ArgMoreLlamada_1 
+            {ArgMoreLlamada.tipo := if Expresion.tipo = tipo_error then tipo_error
+									else if ArgMoreLlamada_1.tipo = tipo_error then tipo_error
+									else Expresion.tipo x ArgMoreLlamada_1.tipo}
+ArgMoreLlamada -> lambda {}
+
+ArgMore -> comma Tipo 
+{AgregarTipo(id.pos, Tipo.tipo), AgregarDesplazamiento(id.pos, despL), 
+    despL := despL + Tipo.desp} 
+        id ArgMore_1 {ArgMore.tipo := Tipo.tipo x ArgMore_1.tipo}
+ArgMore -> lambda {}
+
+LS -> let Tipo {AgregarTipo(id.pos, Tipo.tipo) 
+    if TSL = nulo then AgregarDesplazamiento(id.pos, despG), despG := despG + Tipo.desp
+    else AgregarDesplazamiento(id.pos, despL), despL := despL + Tipo.desp} id Asignar 
+            {LS.tipo := if Asignar.igualacion = true then
+                if Asignar.tipo = Tipo.tipo then Tipo.tipo
+                else tipo_error
+            else Tipo.tipo}
+LS -> id IdOpt 
+{if EstaEnTS(id.pos) = false then AgregarTipo(id.pos, int), 
+    AgregarDesplazamiento(id.pos, despG), despG := despG + 2
+        LS.tipo := if BuscaTipoTS(id.pos) = IdOpt.tipo then IdOpt.tipo
+                   else if BuscaTipoTS(id.pos) = IdOpt.tipo -> t then t
+                   else tipo_error}
+LS -> read id {LS.tipo := tipo_ok}
+LS -> write Expresion {LS.tipo := if Expresion.tipo = int then tipo_ok
+                       else if Expresion.tipo = float then tipo_ok
+                       else if Expresion.tipo = string then tipo_ok
+                       else tipo_error}
+LS -> return ExpReturn {LS.tipo := ExpReturn.tipo}
+
+IdOpt -> oppar ArgsLlamada clpar {IdOpt.tipo := ArgsLlamada.tipo}
+IdOpt -> eq Expresion {IdOpt.tipo := Expresion.tipo}
+IdOpt -> pluseq Expresion {IdOpt.tipo := if Expresion.tipo = int then int
+						   				 else if Expresion.tipo = float then float
+						   				 else tipo_error}
+
+TypeFun -> void {TypeFun.tipo := void}
+TypeFun -> Tipo {TypeFun.tipo := Tipo.tipo}
+
+Tipo -> int {Tipo.tipo := int, Tipo.desp := 1}
+Tipo -> float {Tipo.tipo := float, Tipo.desp := 2}
+Tipo -> string {Tipo.tipo := string, Tipo.desp := 64}
+Tipo -> boolean {Tipo.tipo := boolean, Tipo.desp := 1}
+
+Asignar -> eq Expresion {Asignar.tipo := Expresion.tipo, Asignar.igualacion := true}
+Asignar -> lambda {Asignar.tipo := void, Asignar.igualacion := false}
+
+ExpReturn -> Expresion {ExpReturn.tipo := Expresion.tipo}
+ExpReturn -> lambda {ExpReturn.tipo := void}
+
+Expresion -> Expresion1 ExpresionAux 
+            {Expresion.tipo :=  if ExpresionAux.tipo = void then Expresion1.tipo
+                                else if Expresion1.tipo = boolean then
+                                    if Expresion1.tipo = ExpresionAux.tipo then boolean
+                                    else tipo_error
+                                else tipo_error}
+
+ExpresionAux -> and Expresion1 ExpresionAux1 
+{ExpresionAux.tipo := if ExpresionAux1.tipo = void then Expresion1.tipo
+                      else if Expresion1.tipo = ExpresionAux1.tipo then Expresion1.tipo
+                      else tipo_error}
+ExpresionAux -> lambda {ExpresionAux.tipo := void}
+
+Expresion1 -> Expresion2 Expresion1Aux 
+                {Expresion1.tipo := if Expresion1Aux.tipo = void then Expresion2.tipo
+                                    else if Expresion1Aux.tipo = Expresion2.tipo then 
+                                        if Expresion2.tipo = int then boolean
+                                        else if Expresion2.tipo = float then boolean
+                                        else tipo_error
+                                    else tipo_error}
+
+Expresion1Aux -> minorthan Expresion2 Expresion1Aux1 
+    {Expresion1Aux.tipo :=  if Expresion1Aux1.tipo = void then Expresion2.tipo
+                            else if Expresion1Aux1.tipo = Expresion2.tipo then boolean
+                            else tipo_error}
+Expresion1Aux -> lambda {Expresion1Aux.tipo := void}
+
+Expresion2 -> Expresion3 Expresion2Aux 
+                {Expresion2.tipo := if Expresion2Aux.tipo = void then Expresion3.tipo
+                                    else if Expresion2Aux.tipo = Expresion3.tipo then 
+                                        if Expresion3.tipo = int then int
+                                        else if Expresion3.tipo = float then float
+                                        else tipo_error
+                                    else tipo_error}
+
+Expresion2Aux -> sum Expresion3 Expresion2Aux1 
+{Expresion2Aux.tipo := if Expresion2Aux1.tipo = void then Expresion3.tipo
+                    else if Expresion3.tipo = Expresion2Aux1.tipo then Expresion3.tipo
+                    else tipo_error}
+
+Expresion2Aux -> lambda {Expresion2Aux.tipo := void}
+
+Expresion3 -> oppar Expresion clpar {Expresion3.tipo := Expresion.tipo}
+Expresion3 -> intconst {Expresion3.tipo := int}
+Expresion3 -> realconst {Expresion3.tipo := float}
+Expresion3 -> str {Expresion3.tipo := string}
+Expresion3 -> true {Expresion3.tipo := boolean}
+Expresion3 -> false {Expresion3.tipo := boolean}
+Expresion3 -> id Expresion4 {Expresion3.tipo := if BuscaTipoTS(id.pos) := Expresion4.tipo -> t then t
+							 else if BuscaTipoTS(id.pos) := s -> t then tipo_error
+							 else BuscaTipoTS(id.pos)}
+
+Expresion4 -> oppar ArgsLlamada clpar {Expresion4.tipo := ArgsLlamada.tipo}
+Expresion4 -> lambda {}
+\end{verbatim}
+
+\section{Tabla de Símbolos}
+
+Hemos diseñado la tabla de símbolos como una pila de diccionarios, donde cada diccionario representa un ámbito (scope) diferente. Cada vez que entramos en un nuevo ámbito, se añade un nuevo diccionario a la pila. Al salir del ámbito, se elimina el diccionario correspondiente.\\
+
+Cada tabla contiene las siguientes entradas para cada identificador:
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item \textbf{type:} Tipo de dato (int, float, string, boolean) y en caso de funciones, tipos de los parámetros y tipo de retorno.
+    \item \textbf{value:} Contiene el nombre del token.
+    \item \textbf{position:} Posición en la tabla de símbolos.
+    \item \textbf{displacement:} Desplazamiento en memoria.
+\end{itemize}
+
+\section{Gestor de Errores}
+Nuestro procesador de lenguajes cuenta con un gestor de errores tanto léxico, sintáctico como semántico. Este gestor se encarga de capturar los errores que se producen durante el análisis del código fuente y proporcionar mensajes claros y útiles para el usuario.\\
+Es capaz de manejar todos los errores definidos en los apartados anteriores, proporcionando información sobre la naturaleza del error y la línea en la que se ha producido.\\
+
+Somos capaces de conocer la línea exacta en la que se produce un error gracias a que el analizador léxico mantiene un contador de líneas y cada token generado incluye la información de la línea correspondiente. Esta información se propaga a través del analizador sintáctico y semántico, permitiendo que cualquier error detectado en estos niveles también incluya la línea donde ocurrió.\\
+
+El manejo de errores sintácticos se limita a un solo mensaje de error por ejecución del analizador sintáctico. Una vez que se detecta un error sintáctico, el analizador detiene su ejecución y no continúa analizando el resto del código fuente. Esto significa que si hay múltiples errores sintácticos en el código, solo se informará del primero que se encuentre durante el análisis.\\\\
+Sin embargo, el manejo de errores léxicos y semánticos puede continuar después de detectar un error, permitiendo la identificación de múltiples errores en una sola ejecución del analizador.
+
+
+\subsection{Errores Léxicos}
+Cuando se detecta un error léxico, el gestor de errores genera un mensaje que incluye la descripción del error y la línea en la que se produjo. Por ejemplo, si se encuentra un carácter no reconocido, el mensaje sería: "MyJS Lex Error: En la línea 1 se ha encontrado un carácter ilegal: '\#' "
+
+\subsection{Errores Sintácticos}
+Los errores sintácticos son manejados de manera similar. Si el analizador sintáctico encuentra una construcción incorrecta, el gestor de errores genera un mensaje que indica el tipo de error y la línea correspondiente. Por ejemplo: "MyJS Syntactic Error: En la línea 6 se esperaba un tipo de dato, pero se encontró 'num1' "
+
+\subsection{Errores Semánticos}
+Los errores semánticos son capturados por el analizador semántico. Si se detecta un uso incorrecto de una variable o una función, el gestor de errores genera un mensaje que describe el problema y la línea en la que ocurrió. Por ejemplo: "MyJS Semantic Error: En la línea 2 asignación incorrecta en 'let z'. Tipo de la variable es string, valor asignado es int"
+
+\section{Anexo}
+\subsection{Casos Correctos}
+
+\subsubsection{Caso 1}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Función simple de comparación
+function int comparar(int x, int y) {
+    let int resultado;
+    if (x < y)
+        resultado = x + y;
+    return resultado;
+}
+
+let int a = 5;
+let int b = 3;
+let int r = comparar(a, b);
+
+if (r < 10) {
+    write 'Resultado pequeño';
+} else {
+    write 'Resultado grande';
+}
+
+a += 2;
+write a;
+    \end{verbatim}
+    \item Lista de Tokens:
+    \begin{verbatim}
+<FUNCTION,>
+<INT,>
+<ID,0>
+<OPPAR,>
+<INT,>
+<ID,1>
+<COMMA,>
+<INT,>
+<ID,2>
+<CLPAR,>
+<OPBRA,>
+<LET,>
+<INT,>
+<ID,3>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,1>
+<MINORTHAN,>
+<ID,2>
+<CLPAR,>
+<ID,3>
+<EQ,>
+<ID,1>
+<SUM,>
+<ID,2>
+<SEMICOLON,>
+<RETURN,>
+<ID,3>
+<SEMICOLON,>
+<CLBRA,>
+<LET,>
+<INT,>
+<ID,4>
+<EQ,>
+<INTCONST,5>
+<SEMICOLON,>
+<LET,>
+<INT,>
+<ID,5>
+<EQ,>
+<INTCONST,3>
+<SEMICOLON,>
+<LET,>
+<INT,>
+<ID,6>
+<EQ,>
+<ID,0>
+<OPPAR,>
+<ID,4>
+<COMMA,>
+<ID,5>
+<CLPAR,>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,6>
+<MINORTHAN,>
+<INTCONST,10>
+<CLPAR,>
+<OPBRA,>
+<WRITE,>
+<STR,"Resultado pequeño">
+<SEMICOLON,>
+<CLBRA,>
+<ELSE,>
+<OPBRA,>
+<WRITE,>
+<STR,"Resultado grande">
+<SEMICOLON,>
+<CLBRA,>
+<ID,4>
+<PLUSEQ,>
+<INTCONST,2>
+<SEMICOLON,>
+<WRITE,>
+<ID,4>
+<SEMICOLON,>
+<EOF,>
+    \end{verbatim}
+    \item Árbol de Derivación de VASt:
+    \begin{verbatim}
+S (2)
+    LF (6)
+        function
+        TypeFun (32)
+            Tipo (33)
+                int
+        id
+        oppar
+        Args (13)
+            Tipo (33)
+                int
+            id
+            ArgMore (21)
+                comma
+                Tipo (33)
+                    int
+                id
+                ArgMore (22)
+                    lambda
+        clpar
+        opbra
+        Cuerpo (11)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (33)
+                        int
+                    id
+                    Asignar (38)
+                        lambda
+                semicolon
+            Cuerpo (11)
+                LC (5)
+                    if
+                    oppar
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (45)
+                                minorthan
+                                Expresion2 (47)
+                                    Expresion3 (56)
+                                        id
+                                        Expresion4 (58)
+                                            lambda
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (46)
+                                    lambda
+                        ExpresionAux (43)
+                            lambda
+                    clpar
+                    CuerpoIf (8)
+                        LC (4)
+                            LS (24)
+                                id
+                                IdOpt (29)
+                                    eq
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (56)
+                                                    id
+                                                    Expresion4 (58)
+                                                        lambda
+                                                Expresion2Aux (48)
+                                                    sum
+                                                    Expresion3 (56)
+                                                        id
+                                                        Expresion4 (58)
+                                                            lambda
+                                                    Expresion2Aux (49)
+                                                        lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                            semicolon
+                Cuerpo (11)
+                    LC (4)
+                        LS (27)
+                            return
+                            ExpReturn (39)
+                                Expresion (41)
+                                    Expresion1 (44)
+                                        Expresion2 (47)
+                                            Expresion3 (56)
+                                                id
+                                                Expresion4 (58)
+                                                    lambda
+                                            Expresion2Aux (49)
+                                                lambda
+                                        Expresion1Aux (46)
+                                            lambda
+                                    ExpresionAux (43)
+                                        lambda
+                        semicolon
+                    Cuerpo (12)
+                        lambda
+        clbra
+    S (1)
+        LC (4)
+            LS (23)
+                let
+                Tipo (33)
+                    int
+                id
+                Asignar (37)
+                    eq
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (51)
+                                    intconst
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+            semicolon
+        S (1)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (33)
+                        int
+                    id
+                    Asignar (37)
+                        eq
+                        Expresion (41)
+                            Expresion1 (44)
+                                Expresion2 (47)
+                                    Expresion3 (51)
+                                        intconst
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (46)
+                                    lambda
+                            ExpresionAux (43)
+                                lambda
+                semicolon
+            S (1)
+                LC (4)
+                    LS (23)
+                        let
+                        Tipo (33)
+                            int
+                        id
+                        Asignar (37)
+                            eq
+                            Expresion (41)
+                                Expresion1 (44)
+                                    Expresion2 (47)
+                                        Expresion3 (56)
+                                            id
+                                            Expresion4 (57)
+                                                oppar
+                                                ArgsLlamada (16)
+                                                    Expresion (41)
+                                                        Expresion1 (44)
+                                                            Expresion2 (47)
+                                                                Expresion3 (56)
+                                                                    id
+                                                                    Expresion4 (58)
+                                                                        lambda
+                                                                Expresion2Aux (49)
+                                                                    lambda
+                                                            Expresion1Aux (46)
+                                                                lambda
+                                                        ExpresionAux (43)
+                                                            lambda
+                                                    ArgMoreLlamada (19)
+                                                        comma
+                                                        Expresion (41)
+                                                            Expresion1 (44)
+                                                                Expresion2 (47)
+                                                                    Expresion3 (56)
+                                                                        id
+                                                                        Expresion4 (58)
+                                                                            lambda
+                                                                    Expresion2Aux (49)
+                                                                        lambda
+                                                                Expresion1Aux (46)
+                                                                    lambda
+                                                            ExpresionAux (43)
+                                                                lambda
+                                                        ArgMoreLlamada (20)
+                                                            lambda
+                                                clpar
+                                        Expresion2Aux (49)
+                                            lambda
+                                    Expresion1Aux (46)
+                                        lambda
+                                ExpresionAux (43)
+                                    lambda
+                    semicolon
+                S (1)
+                    LC (5)
+                        if
+                        oppar
+                        Expresion (41)
+                            Expresion1 (44)
+                                Expresion2 (47)
+                                    Expresion3 (56)
+                                        id
+                                        Expresion4 (58)
+                                            lambda
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (45)
+                                    minorthan
+                                    Expresion2 (47)
+                                        Expresion3 (51)
+                                            intconst
+                                        Expresion2Aux (49)
+                                            lambda
+                                    Expresion1Aux (46)
+                                        lambda
+                            ExpresionAux (43)
+                                lambda
+                        clpar
+                        CuerpoIf (7)
+                            opbra
+                            Cuerpo (11)
+                                LC (4)
+                                    LS (26)
+                                        write
+                                        Expresion (41)
+                                            Expresion1 (44)
+                                                Expresion2 (47)
+                                                    Expresion3 (53)
+                                                        str
+                                                    Expresion2Aux (49)
+                                                        lambda
+                                                Expresion1Aux (46)
+                                                    lambda
+                                            ExpresionAux (43)
+                                                lambda
+                                    semicolon
+                                Cuerpo (12)
+                                    lambda
+                            clbra
+                            LE (9)
+                                else
+                                opbra
+                                Cuerpo (11)
+                                    LC (4)
+                                        LS (26)
+                                            write
+                                            Expresion (41)
+                                                Expresion1 (44)
+                                                    Expresion2 (47)
+                                                        Expresion3 (53)
+                                                            str
+                                                        Expresion2Aux (49)
+                                                            lambda
+                                                    Expresion1Aux (46)
+                                                        lambda
+                                                ExpresionAux (43)
+                                                    lambda
+                                        semicolon
+                                    Cuerpo (12)
+                                        lambda
+                                clbra
+                    S (1)
+                        LC (4)
+                            LS (24)
+                                id
+                                IdOpt (30)
+                                    pluseq
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (51)
+                                                    intconst
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                            semicolon
+                        S (1)
+                            LC (4)
+                                LS (26)
+                                    write
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (56)
+                                                    id
+                                                    Expresion4 (58)
+                                                        lambda
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                                semicolon
+                            S (3)
+                                eof
+    \end{verbatim}
+    \item Tabla de Símbolos:
+    \begin{verbatim}
+CONTENIDOS DE LA TABLA #1:
+
+* LEXEMA : 'comparar'
+  Atributos:
+    + tipo: 'funcion'
+    + numParams: 2
+            + tipoParam1: 'int'
+            + tipoParam2: 'int'
+    + tipoRetorno: 'int'
+    + EtiqFuncion: 'Etcomparar'
+  --------- ---------
+
+* LEXEMA : 'a'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'b'
+  Atributos:
+    + tipo: 'int'
+    + despl: 1
+  --------- ---------
+
+* LEXEMA : 'r'
+  Atributos:
+    + tipo: 'int'
+    + despl: 2
+  --------- ---------
+
+CONTENIDOS DE LA TABLA comparar #2:
+
+* LEXEMA : 'x'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'y'
+  Atributos:
+    + tipo: 'int'
+    + despl: 1
+  --------- ---------
+
+* LEXEMA : 'resultado'
+  Atributos:
+    + tipo: 'int'
+    + despl: 2
+  --------- ---------
+
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 2}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Función básica con string
+function string estado(boolean flag) {
+    let string mensaje;
+    if (flag) mensaje = 'Activo';
+    return mensaje;
+}
+
+let boolean activo = true;
+let string s = estado(activo);
+
+if (activo) {
+    write s;
+}
+
+write 'Fin';
+    \end{verbatim}
+    \item Lista de Tokens:
+    \begin{verbatim}
+<FUNCTION,>
+<STRING,>
+<ID,0>
+<OPPAR,>
+<BOOLEAN,>
+<ID,1>
+<CLPAR,>
+<OPBRA,>
+<LET,>
+<STRING,>
+<ID,2>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,1>
+<CLPAR,>
+<ID,2>
+<EQ,>
+<STR,"Activo">
+<SEMICOLON,>
+<RETURN,>
+<ID,2>
+<SEMICOLON,>
+<CLBRA,>
+<LET,>
+<BOOLEAN,>
+<ID,3>
+<EQ,>
+<TRUE,>
+<SEMICOLON,>
+<LET,>
+<STRING,>
+<ID,4>
+<EQ,>
+<ID,0>
+<OPPAR,>
+<ID,3>
+<CLPAR,>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,3>
+<CLPAR,>
+<OPBRA,>
+<WRITE,>
+<ID,4>
+<SEMICOLON,>
+<CLBRA,>
+<WRITE,>
+<STR,"Fin">
+<SEMICOLON,>
+<EOF,>
+    \end{verbatim}
+    \item Árbol de Derivación de VASt:
+    \begin{verbatim}
+S (2)
+    LF (6)
+        function
+        TypeFun (32)
+            Tipo (35)
+                string
+        id
+        oppar
+        Args (13)
+            Tipo (36)
+                boolean
+            id
+            ArgMore (22)
+                lambda
+        clpar
+        opbra
+        Cuerpo (11)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (35)
+                        string
+                    id
+                    Asignar (38)
+                        lambda
+                semicolon
+            Cuerpo (11)
+                LC (5)
+                    if
+                    oppar
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+                    clpar
+                    CuerpoIf (8)
+                        LC (4)
+                            LS (24)
+                                id
+                                IdOpt (29)
+                                    eq
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (53)
+                                                    str
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                            semicolon
+                Cuerpo (11)
+                    LC (4)
+                        LS (27)
+                            return
+                            ExpReturn (39)
+                                Expresion (41)
+                                    Expresion1 (44)
+                                        Expresion2 (47)
+                                            Expresion3 (56)
+                                                id
+                                                Expresion4 (58)
+                                                    lambda
+                                            Expresion2Aux (49)
+                                                lambda
+                                        Expresion1Aux (46)
+                                            lambda
+                                    ExpresionAux (43)
+                                        lambda
+                        semicolon
+                    Cuerpo (12)
+                        lambda
+        clbra
+    S (1)
+        LC (4)
+            LS (23)
+                let
+                Tipo (36)
+                    boolean
+                id
+                Asignar (37)
+                    eq
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (54)
+                                    true
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+            semicolon
+        S (1)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (35)
+                        string
+                    id
+                    Asignar (37)
+                        eq
+                        Expresion (41)
+                            Expresion1 (44)
+                                Expresion2 (47)
+                                    Expresion3 (56)
+                                        id
+                                        Expresion4 (57)
+                                            oppar
+                                            ArgsLlamada (16)
+                                                Expresion (41)
+                                                    Expresion1 (44)
+                                                        Expresion2 (47)
+                                                            Expresion3 (56)
+                                                                id
+                                                                Expresion4 (58)
+                                                                    lambda
+                                                            Expresion2Aux (49)
+                                                                lambda
+                                                        Expresion1Aux (46)
+                                                            lambda
+                                                    ExpresionAux (43)
+                                                        lambda
+                                                ArgMoreLlamada (20)
+                                                    lambda
+                                            clpar
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (46)
+                                    lambda
+                            ExpresionAux (43)
+                                lambda
+                semicolon
+            S (1)
+                LC (5)
+                    if
+                    oppar
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+                    clpar
+                    CuerpoIf (7)
+                        opbra
+                        Cuerpo (11)
+                            LC (4)
+                                LS (26)
+                                    write
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (56)
+                                                    id
+                                                    Expresion4 (58)
+                                                        lambda
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                                semicolon
+                            Cuerpo (12)
+                                lambda
+                        clbra
+                        LE (10)
+                            lambda
+                S (1)
+                    LC (4)
+                        LS (26)
+                            write
+                            Expresion (41)
+                                Expresion1 (44)
+                                    Expresion2 (47)
+                                        Expresion3 (53)
+                                            str
+                                        Expresion2Aux (49)
+                                            lambda
+                                    Expresion1Aux (46)
+                                        lambda
+                                ExpresionAux (43)
+                                    lambda
+                        semicolon
+                    S (3)
+                        eof
+    \end{verbatim}
+    \item Tabla de Símbolos:
+    \begin{verbatim}
+CONTENIDOS DE LA TABLA #1:
+
+* LEXEMA : 'estado'
+  Atributos:
+    + tipo: 'funcion'
+    + numParams: 1
+            + tipoParam1: 'boolean'
+    + tipoRetorno: 'string'
+    + EtiqFuncion: 'Etestado'
+  --------- ---------
+
+* LEXEMA : 'activo'
+  Atributos:
+    + tipo: 'boolean'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 's'
+  Atributos:
+    + tipo: 'string'
+    + despl: 1
+  --------- ---------
+
+CONTENIDOS DE LA TABLA estado #2:
+
+* LEXEMA : 'flag'
+  Atributos:
+    + tipo: 'boolean'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'mensaje'
+  Atributos:
+    + tipo: 'string'
+    + despl: 1
+  --------- ---------
+
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 3}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Función suma con if-else
+function int sumar(int x, int y) {
+    let int total;
+    if (x < y) {
+        total = x + y;
+    } else {
+        total = y + x;
+    }
+    return total;
+}
+
+let int n1 = 8;
+let int n2 = 4;
+let int res = sumar(n1, n2);
+
+if (res < 20) {
+    write 'Res bajo: ';
+    write res;
+}
+
+n2 += 3;
+write 'n2: ';
+write n2;
+    \end{verbatim}
+    \item Lista de Tokens:
+    \begin{verbatim}
+<FUNCTION,>
+<INT,>
+<ID,0>
+<OPPAR,>
+<INT,>
+<ID,1>
+<COMMA,>
+<INT,>
+<ID,2>
+<CLPAR,>
+<OPBRA,>
+<LET,>
+<INT,>
+<ID,3>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,1>
+<MINORTHAN,>
+<ID,2>
+<CLPAR,>
+<OPBRA,>
+<ID,3>
+<EQ,>
+<ID,1>
+<SUM,>
+<ID,2>
+<SEMICOLON,>
+<CLBRA,>
+<ELSE,>
+<OPBRA,>
+<ID,3>
+<EQ,>
+<ID,2>
+<SUM,>
+<ID,1>
+<SEMICOLON,>
+<CLBRA,>
+<RETURN,>
+<ID,3>
+<SEMICOLON,>
+<CLBRA,>
+<LET,>
+<INT,>
+<ID,4>
+<EQ,>
+<INTCONST,8>
+<SEMICOLON,>
+<LET,>
+<INT,>
+<ID,5>
+<EQ,>
+<INTCONST,4>
+<SEMICOLON,>
+<LET,>
+<INT,>
+<ID,6>
+<EQ,>
+<ID,0>
+<OPPAR,>
+<ID,4>
+<COMMA,>
+<ID,5>
+<CLPAR,>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,6>
+<MINORTHAN,>
+<INTCONST,20>
+<CLPAR,>
+<OPBRA,>
+<WRITE,>
+<STR,"Res bajo: ">
+<SEMICOLON,>
+<WRITE,>
+<ID,6>
+<SEMICOLON,>
+<CLBRA,>
+<ID,5>
+<PLUSEQ,>
+<INTCONST,3>
+<SEMICOLON,>
+<WRITE,>
+<STR,"n2: ">
+<SEMICOLON,>
+<WRITE,>
+<ID,5>
+<SEMICOLON,>
+<EOF,>
+    \end{verbatim}
+    \item Árbol de Derivación de VASt:
+    \begin{verbatim}
+S (2)
+    LF (6)
+        function
+        TypeFun (32)
+            Tipo (35)
+                string
+        id
+        oppar
+        Args (13)
+            Tipo (36)
+                boolean
+            id
+            ArgMore (22)
+                lambda
+        clpar
+        opbra
+        Cuerpo (11)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (35)
+                        string
+                    id
+                    Asignar (38)
+                        lambda
+                semicolon
+            Cuerpo (11)
+                LC (5)
+                    if
+                    oppar
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+                    clpar
+                    CuerpoIf (8)
+                        LC (4)
+                            LS (24)
+                                id
+                                IdOpt (29)
+                                    eq
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (53)
+                                                    str
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                            semicolon
+                Cuerpo (11)
+                    LC (4)
+                        LS (27)
+                            return
+                            ExpReturn (39)
+                                Expresion (41)
+                                    Expresion1 (44)
+                                        Expresion2 (47)
+                                            Expresion3 (56)
+                                                id
+                                                Expresion4 (58)
+                                                    lambda
+                                            Expresion2Aux (49)
+                                                lambda
+                                        Expresion1Aux (46)
+                                            lambda
+                                    ExpresionAux (43)
+                                        lambda
+                        semicolon
+                    Cuerpo (12)
+                        lambda
+        clbra
+    S (1)
+        LC (4)
+            LS (23)
+                let
+                Tipo (36)
+                    boolean
+                id
+                Asignar (37)
+                    eq
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (54)
+                                    true
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+            semicolon
+        S (1)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (35)
+                        string
+                    id
+                    Asignar (37)
+                        eq
+                        Expresion (41)
+                            Expresion1 (44)
+                                Expresion2 (47)
+                                    Expresion3 (56)
+                                        id
+                                        Expresion4 (57)
+                                            oppar
+                                            ArgsLlamada (16)
+                                                Expresion (41)
+                                                    Expresion1 (44)
+                                                        Expresion2 (47)
+                                                            Expresion3 (56)
+                                                                id
+                                                                Expresion4 (58)
+                                                                    lambda
+                                                            Expresion2Aux (49)
+                                                                lambda
+                                                        Expresion1Aux (46)
+                                                            lambda
+                                                    ExpresionAux (43)
+                                                        lambda
+                                                ArgMoreLlamada (20)
+                                                    lambda
+                                            clpar
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (46)
+                                    lambda
+                            ExpresionAux (43)
+                                lambda
+                semicolon
+            S (1)
+                LC (5)
+                    if
+                    oppar
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+                    clpar
+                    CuerpoIf (7)
+                        opbra
+                        Cuerpo (11)
+                            LC (4)
+                                LS (26)
+                                    write
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (56)
+                                                    id
+                                                    Expresion4 (58)
+                                                        lambda
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                                semicolon
+                            Cuerpo (12)
+                                lambda
+                        clbra
+                        LE (10)
+                            lambda
+                S (1)
+                    LC (4)
+                        LS (26)
+                            write
+                            Expresion (41)
+                                Expresion1 (44)
+                                    Expresion2 (47)
+                                        Expresion3 (53)
+                                            str
+                                        Expresion2Aux (49)
+                                            lambda
+                                    Expresion1Aux (46)
+                                        lambda
+                                ExpresionAux (43)
+                                    lambda
+                        semicolon
+                    S (3)
+                        eof
+    \end{verbatim}
+    \item Tabla de Símbolos:
+    \begin{verbatim}
+CONTENIDOS DE LA TABLA #1:
+
+* LEXEMA : 'sumar'
+  Atributos:
+    + tipo: 'funcion'
+    + numParams: 2
+            + tipoParam1: 'int'
+            + tipoParam2: 'int'
+    + tipoRetorno: 'int'
+    + EtiqFuncion: 'Etsumar'
+  --------- ---------
+
+* LEXEMA : 'n1'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'n2'
+  Atributos:
+    + tipo: 'int'
+    + despl: 1
+  --------- ---------
+
+* LEXEMA : 'res'
+  Atributos:
+    + tipo: 'int'
+    + despl: 2
+  --------- ---------
+
+CONTENIDOS DE LA TABLA sumar #2:
+
+* LEXEMA : 'x'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'y'
+  Atributos:
+    + tipo: 'int'
+    + despl: 1
+  --------- ---------
+
+* LEXEMA : 'total'
+  Atributos:
+    + tipo: 'int'
+    + despl: 2
+  --------- ---------
+
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 4}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Función validación simple
+function boolean esValido(int valor) {
+    let boolean ok;
+    if (valor < 0) {
+        ok = false;
+    } else {
+        ok = true;
+    }
+    return ok;
+}
+
+let int dato;
+read dato;
+let boolean val = esValido(dato);
+
+if (val)
+    write 'Aceptado';
+
+if (dato < 100 && val) {
+    dato += 10;
+    write 'Ajustado';
+}
+
+write dato;
+    \end{verbatim}
+    \item Lista de Tokens:
+    \begin{verbatim}
+<FUNCTION,>
+<BOOLEAN,>
+<ID,0>
+<OPPAR,>
+<INT,>
+<ID,1>
+<CLPAR,>
+<OPBRA,>
+<LET,>
+<BOOLEAN,>
+<ID,2>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,1>
+<MINORTHAN,>
+<INTCONST,0>
+<CLPAR,>
+<OPBRA,>
+<ID,2>
+<EQ,>
+<FALSE,>
+<SEMICOLON,>
+<CLBRA,>
+<ELSE,>
+<OPBRA,>
+<ID,2>
+<EQ,>
+<TRUE,>
+<SEMICOLON,>
+<CLBRA,>
+<RETURN,>
+<ID,2>
+<SEMICOLON,>
+<CLBRA,>
+<LET,>
+<INT,>
+<ID,3>
+<SEMICOLON,>
+<READ,>
+<ID,3>
+<SEMICOLON,>
+<LET,>
+<BOOLEAN,>
+<ID,4>
+<EQ,>
+<ID,0>
+<OPPAR,>
+<ID,3>
+<CLPAR,>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,4>
+<CLPAR,>
+<WRITE,>
+<STR,"Aceptado">
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,3>
+<MINORTHAN,>
+<INTCONST,100>
+<AND,>
+<ID,4>
+<CLPAR,>
+<OPBRA,>
+<ID,3>
+<PLUSEQ,>
+<INTCONST,10>
+<SEMICOLON,>
+<WRITE,>
+<STR,"Ajustado">
+<SEMICOLON,>
+<CLBRA,>
+<WRITE,>
+<ID,3>
+<SEMICOLON,>
+<EOF,>
+    \end{verbatim}
+    \item Árbol de Derivación de VASt:
+    \begin{verbatim}
+S (2)
+    LF (6)
+        function
+        TypeFun (32)
+            Tipo (36)
+                boolean
+        id
+        oppar
+        Args (13)
+            Tipo (33)
+                int
+            id
+            ArgMore (22)
+                lambda
+        clpar
+        opbra
+        Cuerpo (11)
+            LC (4)
+                LS (23)
+                    let
+                    Tipo (36)
+                        boolean
+                    id
+                    Asignar (38)
+                        lambda
+                semicolon
+            Cuerpo (11)
+                LC (5)
+                    if
+                    oppar
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (45)
+                                minorthan
+                                Expresion2 (47)
+                                    Expresion3 (51)
+                                        intconst
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (46)
+                                    lambda
+                        ExpresionAux (43)
+                            lambda
+                    clpar
+                    CuerpoIf (7)
+                        opbra
+                        Cuerpo (11)
+                            LC (4)
+                                LS (24)
+                                    id
+                                    IdOpt (29)
+                                        eq
+                                        Expresion (41)
+                                            Expresion1 (44)
+                                                Expresion2 (47)
+                                                    Expresion3 (55)
+                                                        false
+                                                    Expresion2Aux (49)
+                                                        lambda
+                                                Expresion1Aux (46)
+                                                    lambda
+                                            ExpresionAux (43)
+                                                lambda
+                                semicolon
+                            Cuerpo (12)
+                                lambda
+                        clbra
+                        LE (9)
+                            else
+                            opbra
+                            Cuerpo (11)
+                                LC (4)
+                                    LS (24)
+                                        id
+                                        IdOpt (29)
+                                            eq
+                                            Expresion (41)
+                                                Expresion1 (44)
+                                                    Expresion2 (47)
+                                                        Expresion3 (54)
+                                                            true
+                                                        Expresion2Aux (49)
+                                                            lambda
+                                                    Expresion1Aux (46)
+                                                        lambda
+                                                ExpresionAux (43)
+                                                    lambda
+                                    semicolon
+                                Cuerpo (12)
+                                    lambda
+                            clbra
+                Cuerpo (11)
+                    LC (4)
+                        LS (27)
+                            return
+                            ExpReturn (39)
+                                Expresion (41)
+                                    Expresion1 (44)
+                                        Expresion2 (47)
+                                            Expresion3 (56)
+                                                id
+                                                Expresion4 (58)
+                                                    lambda
+                                            Expresion2Aux (49)
+                                                lambda
+                                        Expresion1Aux (46)
+                                            lambda
+                                    ExpresionAux (43)
+                                        lambda
+                        semicolon
+                    Cuerpo (12)
+                        lambda
+        clbra
+    S (1)
+        LC (4)
+            LS (23)
+                let
+                Tipo (33)
+                    int
+                id
+                Asignar (38)
+                    lambda
+            semicolon
+        S (1)
+            LC (4)
+                LS (25)
+                    read
+                    id
+                semicolon
+            S (1)
+                LC (4)
+                    LS (23)
+                        let
+                        Tipo (36)
+                            boolean
+                        id
+                        Asignar (37)
+                            eq
+                            Expresion (41)
+                                Expresion1 (44)
+                                    Expresion2 (47)
+                                        Expresion3 (56)
+                                            id
+                                            Expresion4 (57)
+                                                oppar
+                                                ArgsLlamada (16)
+                                                    Expresion (41)
+                                                        Expresion1 (44)
+                                                            Expresion2 (47)
+                                                                Expresion3 (56)
+                                                                    id
+                                                                    Expresion4 (58)
+                                                                        lambda
+                                                                Expresion2Aux (49)
+                                                                    lambda
+                                                            Expresion1Aux (46)
+                                                                lambda
+                                                        ExpresionAux (43)
+                                                            lambda
+                                                    ArgMoreLlamada (20)
+                                                        lambda
+                                                clpar
+                                        Expresion2Aux (49)
+                                            lambda
+                                    Expresion1Aux (46)
+                                        lambda
+                                ExpresionAux (43)
+                                    lambda
+                    semicolon
+                S (1)
+                    LC (5)
+                        if
+                        oppar
+                        Expresion (41)
+                            Expresion1 (44)
+                                Expresion2 (47)
+                                    Expresion3 (56)
+                                        id
+                                        Expresion4 (58)
+                                            lambda
+                                    Expresion2Aux (49)
+                                        lambda
+                                Expresion1Aux (46)
+                                    lambda
+                            ExpresionAux (43)
+                                lambda
+                        clpar
+                        CuerpoIf (8)
+                            LC (4)
+                                LS (26)
+                                    write
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (53)
+                                                    str
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                                semicolon
+                    S (1)
+                        LC (5)
+                            if
+                            oppar
+                            Expresion (41)
+                                Expresion1 (44)
+                                    Expresion2 (47)
+                                        Expresion3 (56)
+                                            id
+                                            Expresion4 (58)
+                                                lambda
+                                        Expresion2Aux (49)
+                                            lambda
+                                    Expresion1Aux (45)
+                                        minorthan
+                                        Expresion2 (47)
+                                            Expresion3 (51)
+                                                intconst
+                                            Expresion2Aux (49)
+                                                lambda
+                                        Expresion1Aux (46)
+                                            lambda
+                                ExpresionAux (42)
+                                    and
+                                    Expresion1 (44)
+                                        Expresion2 (47)
+                                            Expresion3 (56)
+                                                id
+                                                Expresion4 (58)
+                                                    lambda
+                                            Expresion2Aux (49)
+                                                lambda
+                                        Expresion1Aux (46)
+                                            lambda
+                                    ExpresionAux (43)
+                                        lambda
+                            clpar
+                            CuerpoIf (7)
+                                opbra
+                                Cuerpo (11)
+                                    LC (4)
+                                        LS (24)
+                                            id
+                                            IdOpt (30)
+                                                pluseq
+                                                Expresion (41)
+                                                    Expresion1 (44)
+                                                        Expresion2 (47)
+                                                            Expresion3 (51)
+                                                                intconst
+                                                            Expresion2Aux (49)
+                                                                lambda
+                                                        Expresion1Aux (46)
+                                                            lambda
+                                                    ExpresionAux (43)
+                                                        lambda
+                                        semicolon
+                                    Cuerpo (11)
+                                        LC (4)
+                                            LS (26)
+                                                write
+                                                Expresion (41)
+                                                    Expresion1 (44)
+                                                        Expresion2 (47)
+                                                            Expresion3 (53)
+                                                                str
+                                                            Expresion2Aux (49)
+                                                                lambda
+                                                        Expresion1Aux (46)
+                                                            lambda
+                                                    ExpresionAux (43)
+                                                        lambda
+                                            semicolon
+                                        Cuerpo (12)
+                                            lambda
+                                clbra
+                                LE (10)
+                                    lambda
+                        S (1)
+                            LC (4)
+                                LS (26)
+                                    write
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (56)
+                                                    id
+                                                    Expresion4 (58)
+                                                        lambda
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                                semicolon
+                            S (3)
+                                eof
+    \end{verbatim}
+    \item Tabla de Símbolos:
+    \begin{verbatim}
+CONTENIDOS DE LA TABLA #1:
+
+* LEXEMA : 'esValido'
+  Atributos:
+    + tipo: 'funcion'
+    + numParams: 1
+            + tipoParam1: 'int'
+    + tipoRetorno: 'boolean'
+    + EtiqFuncion: 'EtesValido'
+  --------- ---------
+
+* LEXEMA : 'dato'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'val'
+  Atributos:
+    + tipo: 'boolean'
+    + despl: 1
+  --------- ---------
+
+CONTENIDOS DE LA TABLA esValido #2:
+
+* LEXEMA : 'valor'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'ok'
+  Atributos:
+    + tipo: 'boolean'
+    + despl: 1
+  --------- ---------
+
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 5}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Sistema mínimo con funciones
+function void mostrar(int num) {
+    write 'Valor: ';
+    write num;
+}
+
+function int incrementar(int x) {
+    let int nuevo;
+    if (x < 10) nuevo = x + 1;
+    return nuevo;
+}
+
+let int cont = 5;
+mostrar(cont);
+
+if (cont < 8) {
+    cont = incrementar(cont);
+    mostrar(cont);
+} else {
+    write 'Alto';
+}
+
+cont += 2;
+write 'Final: ';
+write cont;
+    \end{verbatim}
+    \item Lista de Tokens:
+    \begin{verbatim}
+<FUNCTION,>
+<VOID,>
+<ID,0>
+<OPPAR,>
+<INT,>
+<ID,1>
+<CLPAR,>
+<OPBRA,>
+<WRITE,>
+<STR,"Valor: ">
+<SEMICOLON,>
+<WRITE,>
+<ID,1>
+<SEMICOLON,>
+<CLBRA,>
+<FUNCTION,>
+<INT,>
+<ID,2>
+<OPPAR,>
+<INT,>
+<ID,3>
+<CLPAR,>
+<OPBRA,>
+<LET,>
+<INT,>
+<ID,4>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,3>
+<MINORTHAN,>
+<INTCONST,10>
+<CLPAR,>
+<ID,4>
+<EQ,>
+<ID,3>
+<SUM,>
+<INTCONST,1>
+<SEMICOLON,>
+<RETURN,>
+<ID,4>
+<SEMICOLON,>
+<CLBRA,>
+<LET,>
+<INT,>
+<ID,5>
+<EQ,>
+<INTCONST,5>
+<SEMICOLON,>
+<ID,0>
+<OPPAR,>
+<ID,5>
+<CLPAR,>
+<SEMICOLON,>
+<IF,>
+<OPPAR,>
+<ID,5>
+<MINORTHAN,>
+<INTCONST,8>
+<CLPAR,>
+<OPBRA,>
+<ID,5>
+<EQ,>
+<ID,2>
+<OPPAR,>
+<ID,5>
+<CLPAR,>
+<SEMICOLON,>
+<ID,0>
+<OPPAR,>
+<ID,5>
+<CLPAR,>
+<SEMICOLON,>
+<CLBRA,>
+<ELSE,>
+<OPBRA,>
+<WRITE,>
+<STR,"Alto">
+<SEMICOLON,>
+<CLBRA,>
+<ID,5>
+<PLUSEQ,>
+<INTCONST,2>
+<SEMICOLON,>
+<WRITE,>
+<STR,"Final: ">
+<SEMICOLON,>
+<WRITE,>
+<ID,5>
+<SEMICOLON,>
+<EOF,>
+    \end{verbatim}
+    \item Árbol de Derivación de VASt:
+    \begin{verbatim}
+S (2)
+  LF (6)
+    function
+    TypeFun (31)
+        void
+    id
+    oppar
+    Args (13)
+        Tipo (33)
+            int
+        id
+        ArgMore (22)
+            lambda
+    clpar
+    opbra
+    Cuerpo (11)
+        LC (4)
+            LS (26)
+                write
+                Expresion (41)
+                    Expresion1 (44)
+                        Expresion2 (47)
+                            Expresion3 (53)
+                                str
+                            Expresion2Aux (49)
+                                lambda
+                        Expresion1Aux (46)
+                            lambda
+                    ExpresionAux (43)
+                        lambda
+            semicolon
+        Cuerpo (11)
+            LC (4)
+                LS (26)
+                    write
+                    Expresion (41)
+                        Expresion1 (44)
+                            Expresion2 (47)
+                                Expresion3 (56)
+                                    id
+                                    Expresion4 (58)
+                                        lambda
+                                Expresion2Aux (49)
+                                    lambda
+                            Expresion1Aux (46)
+                                lambda
+                        ExpresionAux (43)
+                            lambda
+                semicolon
+            Cuerpo (12)
+                lambda
+    clbra
+  S (2)
+    LF (6)
+      function
+      TypeFun (32)
+          Tipo (33)
+              int
+      id
+      oppar
+      Args (13)
+          Tipo (33)
+              int
+          id
+          ArgMore (22)
+              lambda
+      clpar
+      opbra
+      Cuerpo (11)
+          LC (4)
+              LS (23)
+                  let
+                  Tipo (33)
+                      int
+                  id
+                  Asignar (38)
+                      lambda
+              semicolon
+          Cuerpo (11)
+              LC (5)
+                  if
+                  oppar
+                  Expresion (41)
+                      Expresion1 (44)
+                          Expresion2 (47)
+                              Expresion3 (56)
+                                  id
+                                  Expresion4 (58)
+                                      lambda
+                              Expresion2Aux (49)
+                                  lambda
+                          Expresion1Aux (45)
+                              minorthan
+                              Expresion2 (47)
+                                  Expresion3 (51)
+                                      intconst
+                                  Expresion2Aux (49)
+                                      lambda
+                              Expresion1Aux (46)
+                                  lambda
+                      ExpresionAux (43)
+                          lambda
+                  clpar
+                  CuerpoIf (8)
+                      LC (4)
+                          LS (24)
+                              id
+                              IdOpt (29)
+                                  eq
+                                  Expresion (41)
+                                      Expresion1 (44)
+                                          Expresion2 (47)
+                                              Expresion3 (56)
+                                                  id
+                                                  Expresion4 (58)
+                                                      lambda
+                                              Expresion2Aux (48)
+                                                  sum
+                                                  Expresion3 (51)
+                                                      intconst
+                                                  Expresion2Aux (49)
+                                                      lambda
+                                          Expresion1Aux (46)
+                                              lambda
+                                      ExpresionAux (43)
+                                          lambda
+                          semicolon
+              Cuerpo (11)
+                  LC (4)
+                      LS (27)
+                          return
+                          ExpReturn (39)
+                              Expresion (41)
+                                  Expresion1 (44)
+                                      Expresion2 (47)
+                                          Expresion3 (56)
+                                              id
+                                              Expresion4 (58)
+                                                  lambda
+                                          Expresion2Aux (49)
+                                              lambda
+                                      Expresion1Aux (46)
+                                          lambda
+                                  ExpresionAux (43)
+                                      lambda
+                      semicolon
+                  Cuerpo (12)
+                      lambda
+      clbra
+    S (1)
+      LC (4)
+          LS (23)
+              let
+              Tipo (33)
+                  int
+              id
+              Asignar (37)
+                  eq
+                  Expresion (41)
+                      Expresion1 (44)
+                          Expresion2 (47)
+                              Expresion3 (51)
+                                  intconst
+                              Expresion2Aux (49)
+                                  lambda
+                          Expresion1Aux (46)
+                              lambda
+                      ExpresionAux (43)
+                          lambda
+          semicolon
+      S (1)
+          LC (4)
+              LS (24)
+                  id
+                  IdOpt (28)
+                      oppar
+                      ArgsLlamada (16)
+                          Expresion (41)
+                              Expresion1 (44)
+                                  Expresion2 (47)
+                                      Expresion3 (56)
+                                          id
+                                          Expresion4 (58)
+                                              lambda
+                                      Expresion2Aux (49)
+                                          lambda
+                                  Expresion1Aux (46)
+                                      lambda
+                              ExpresionAux (43)
+                                  lambda
+                          ArgMoreLlamada (20)
+                              lambda
+                      clpar
+              semicolon
+          S (1)
+              LC (5)
+                  if
+                  oppar
+                  Expresion (41)
+                      Expresion1 (44)
+                          Expresion2 (47)
+                              Expresion3 (56)
+                                  id
+                                  Expresion4 (58)
+                                      lambda
+                              Expresion2Aux (49)
+                                  lambda
+                          Expresion1Aux (45)
+                              minorthan
+                              Expresion2 (47)
+                                  Expresion3 (51)
+                                      intconst
+                                  Expresion2Aux (49)
+                                      lambda
+                              Expresion1Aux (46)
+                                  lambda
+                      ExpresionAux (43)
+                          lambda
+                  clpar
+                  CuerpoIf (7)
+                    opbra
+                    Cuerpo (11)
+                      LC (4)
+                        LS (24)
+                          id
+                          IdOpt (29)
+                              eq
+                              Expresion (41)
+                                  Expresion1 (44)
+                                      Expresion2 (47)
+                                          Expresion3 (56)
+                                              id
+                                              Expresion4 (57)
+                                                  oppar
+                                                  ArgsLlamada (16)
+                                                      Expresion (41)
+                                                          Expresion1 (44)
+                                                              Expresion2 (47)
+                                                                  Expresion3 (56)
+                                                                      id
+                                                                      Expresion4 (58)
+                                                                          lambda
+                                                                  Expresion2Aux (49)
+                                                                      lambda
+                                                              Expresion1Aux (46)
+                                                                  lambda
+                                                          ExpresionAux (43)
+                                                              lambda
+                                                      ArgMoreLlamada (20)
+                                                          lambda
+                                                  clpar
+                                          Expresion2Aux (49)
+                                              lambda
+                                      Expresion1Aux (46)
+                                          lambda
+                                  ExpresionAux (43)
+                                      lambda
+                          semicolon
+                      Cuerpo (11)
+                          LC (4)
+                              LS (24)
+                                  id
+                                  IdOpt (28)
+                                      oppar
+                                      ArgsLlamada (16)
+                                          Expresion (41)
+                                              Expresion1 (44)
+                                                  Expresion2 (47)
+                                                      Expresion3 (56)
+                                                          id
+                                                          Expresion4 (58)
+                                                              lambda
+                                                      Expresion2Aux (49)
+                                                          lambda
+                                                  Expresion1Aux (46)
+                                                      lambda
+                                              ExpresionAux (43)
+                                                  lambda
+                                          ArgMoreLlamada (20)
+                                              lambda
+                                      clpar
+                              semicolon
+                          Cuerpo (12)
+                              lambda
+                    clbra
+                    LE (9)
+                        else
+                        opbra
+                        Cuerpo (11)
+                            LC (4)
+                                LS (26)
+                                    write
+                                    Expresion (41)
+                                        Expresion1 (44)
+                                            Expresion2 (47)
+                                                Expresion3 (53)
+                                                    str
+                                                Expresion2Aux (49)
+                                                    lambda
+                                            Expresion1Aux (46)
+                                                lambda
+                                        ExpresionAux (43)
+                                            lambda
+                                semicolon
+                            Cuerpo (12)
+                                lambda
+                        clbra
+              S (1)
+                  LC (4)
+                      LS (24)
+                          id
+                          IdOpt (30)
+                              pluseq
+                              Expresion (41)
+                                  Expresion1 (44)
+                                      Expresion2 (47)
+                                          Expresion3 (51)
+                                              intconst
+                                          Expresion2Aux (49)
+                                              lambda
+                                      Expresion1Aux (46)
+                                          lambda
+                                  ExpresionAux (43)
+                                      lambda
+                      semicolon
+                  S (1)
+                      LC (4)
+                          LS (26)
+                              write
+                              Expresion (41)
+                                  Expresion1 (44)
+                                      Expresion2 (47)
+                                          Expresion3 (53)
+                                              str
+                                          Expresion2Aux (49)
+                                              lambda
+                                      Expresion1Aux (46)
+                                          lambda
+                                  ExpresionAux (43)
+                                      lambda
+                          semicolon
+                      S (1)
+                          LC (4)
+                              LS (26)
+                                  write
+                                  Expresion (41)
+                                      Expresion1 (44)
+                                          Expresion2 (47)
+                                              Expresion3 (56)
+                                                  id
+                                                  Expresion4 (58)
+                                                      lambda
+                                              Expresion2Aux (49)
+                                                  lambda
+                                          Expresion1Aux (46)
+                                              lambda
+                                      ExpresionAux (43)
+                                          lambda
+                              semicolon
+                          S (3)
+                                  eof
+    \end{verbatim}
+    \item Tabla de Símbolos:
+    \begin{verbatim}
+CONTENIDOS DE LA TABLA #1:
+
+* LEXEMA : 'mostrar'
+  Atributos:
+    + tipo: 'funcion'
+    + numParams: 1
+            + tipoParam1: 'int'
+    + tipoRetorno: 'void'
+    + EtiqFuncion: 'Etmostrar'
+  --------- ---------
+
+* LEXEMA : 'incrementar'
+  Atributos:
+    + tipo: 'funcion'
+    + numParams: 1
+            + tipoParam1: 'int'
+    + tipoRetorno: 'int'
+    + EtiqFuncion: 'Etincrementar'
+  --------- ---------
+
+* LEXEMA : 'cont'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+CONTENIDOS DE LA TABLA mostrar #2:
+
+* LEXEMA : 'num'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+CONTENIDOS DE LA TABLA incrementar #3:
+
+* LEXEMA : 'x'
+  Atributos:
+    + tipo: 'int'
+    + despl: 0
+  --------- ---------
+
+* LEXEMA : 'nuevo'
+  Atributos:
+    + tipo: 'int'
+    + despl: 1
+  --------- ---------
+
+    \end{verbatim}
+\end{itemize}
+
+\subsection{Casos Incorrectos}
+
+\subsubsection{Caso 1}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Programa con errores léxicos
+function int calcular(int x) {
+    let int resultado;
+    resultado = x + x;
+    return resultado;
+}
+
+let int num = 7;
+if (num < 10)
+    num = calcular(num);
+
+let string texto = 'error sin cerrar;  // ERROR LÉXICO
+
+if (num < 20 {
+    num += 5;  // ERROR SINTÁCTICO: falta )
+} else {
+    num = 0;
+}
+
+write num;
+    \end{verbatim}
+    \item Salida del Gestor de Errores:
+    \begin{verbatim}
+MyJS Syntactic Error: 
+    En la línea 12 hay una función mal llamada o falta ')', pero se encontró 'sin'
+MyJS Lex Error: En la línea 12 se ha encontrado un carácter ilegal: '''
+
+Análisis finalizado con errores.
+Archivos generados: lexed.txt, symbols.txt
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 2}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Programa con errores sintácticos
+function int suma(int a, int b) {
+    let int total
+    total = a + b  // ERROR: falta ;
+    return total;
+}
+
+let int x = 5;
+let int y = 3;
+
+if (x < y) {
+    x += y
+}  // ERROR: falta ; después de bloque
+
+else {
+    y = x;  // ERROR: else sin if correspondiente
+}
+
+if (x && ) {  // ERROR: && sin segundo operando
+    write x;
+}
+
+write 'Fin';
+    \end{verbatim}
+    \item Salida del Gestor de Errores:
+    \begin{verbatim}
+MyJS Syntactic Error: En la línea 3 se esperaba '=' , pero se encontró 'total'
+
+Análisis finalizado con errores.
+Archivos generados: lexed.txt, symbols.txt
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 3}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Programa con errores semánticos
+function string convertir(int valor) {
+    let string texto;
+    texto = valor;  // ERROR SEMÁNTICO: int a string sin conversión
+    return texto;
+}
+
+let int numero = 10;
+let boolean flag = true;
+
+if (numero) {  // ERROR SEMÁNTICO: condición no booleana
+    numero += 5;
+}
+
+if (flag < numero) {  // ERROR SEMÁNTICO: boolean < int
+    write 'Error';
+}
+
+let string cadena = convertir(numero);
+cadena += numero;  // ERROR SEMÁNTICO: string += int
+
+write cadena;
+    \end{verbatim}
+    \item Salida del Gestor de Errores:
+    \begin{verbatim}
+MyJS Semantic Error: 
+    En la línea 4 asignación incorrecta a 'texto'. 
+    Tipo de la variable es string, valor asignado es int
+MyJS Semantic Error: 
+    En la línea 13 La condición 'if' requiere boolean. Recibido: int
+MyJS Semantic Error: 
+    En la línea 20 asignación incorrecta a 'cadena'. 
+    Tipo de la variable es string, valor asignado es int
+
+Análisis finalizado con errores.
+Archivos generados: lexed.txt, symbols.txt
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 4}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Programa con varios errores
+function int procesar(int dato) {
+    let int resultado;
+    if (dato < 10) {
+        resultado = dato + 5;
+    } else {
+        resultado = dato;
+    }
+    return resultado;
+}
+
+let int valor;
+read valor;
+
+if (valor < 0) {
+    write 'Negativo';
+} 
+else if (valor > 100) {  // ERROR: else if no permitido
+    write 'Grande';
+}
+
+let int total = procesar();  // ERROR: falta argumento
+
+if (total) {  // ERROR: condición no booleana
+    total += 'texto';  // ERROR: int += string
+}
+
+write total;
+    \end{verbatim}
+    \item Salida del Gestor de Errores:
+    \begin{verbatim}
+MyJS Syntactic Error: 
+    En la línea 18 se esperaba 'opbra', pero se encontró 'if'
+
+Análisis finalizado con errores.
+Archivos generados: lexed.txt, symbols.txt
+    \end{verbatim}
+\end{itemize}
+
+\subsubsection{Caso 5}
+\begin{itemize}[itemsep=0.0em, topsep=0.5em]
+    \item Código Fuente:
+    \begin{verbatim}
+// Programa con errores variados
+function boolean verificar(int a, int b) {
+    let boolean cond;
+    if (a < b &&) {  // ERROR SINTÁCTICO: && incompleto
+        cond = true;
+    } else {
+        cond = false;
+    }
+    return cond;
+}
+
+let int x = 5;
+let int y = 10;
+
+if (x < y {  // ERROR SINTÁCTICO: falta )
+    x += y;
+}
+
+let boolean ok = verificar(x, y);
+
+if (ok) {
+    x += 5;
+    y = x + y;
+} else {
+    y = x;
+}
+
+write x;
+write y;
+    \end{verbatim}
+    \item Salida del Gestor de Errores:
+    \begin{verbatim}
+MyJS Syntactic Error: 
+    En la línea 4 hay una expresión mal declarada, se encontró 'clpar'
+
+Análisis finalizado con errores.
+Archivos generados: lexed.txt, symbols.txt
+    \end{verbatim}
+\end{itemize}
+
+\begin{landscape}
+    \thispagestyle{empty}
+    \section{\centering Tabla LL1}
+\begin{table}[!ht]
+    \centering
+    \noindent\hspace*{-0.065\textwidth}
+    \resizebox{1.5\textwidth}{0.25\textheight}{%
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+        ~ & function & return & write & read & if & else & TRUE & FALSE & let & id & void & int & float & string & boolean & intconst & floatconst & str & pluseq & eq & comma & semicolon & oppar & clpar & opbra & clbra & sum & and & minorthan & eof \\ \hline
+        S & LF S & LC S & LC S & LC S & LC S & ~ & ~ & ~ & LC S & LC S & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & eof \\ \hline
+        LC & ~ & LS semicolon & LS semicolon & LS semicolon & if oppar EX clpar CI & ~ & ~ & ~ & LS semicolon & LS semicolon & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        LF & function TF id oppar AR clpar opbra CU clbra & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        LE & $\lambda$ & $\lambda$ & $\lambda$ & $\lambda$ & $\lambda$ & else opbra CU clbra & ~ & ~ & $\lambda$ & $\lambda$ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ \\ \hline
+        CI & ~ & LC & LC & LC & ~ & ~ & ~ & ~ & LC & LC & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & opbra CU clbra LE & ~ & ~ & ~ & ~ & ~ \\ \hline
+        CU & ~ & LC CU & LC CU & LC CU & ~ & ~ & ~ & ~ & LC CU & LC CU & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ & ~ & ~ & ~ & ~ \\ \hline
+        AR & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & void & TI id AM & TI id AM & TI id AM & TI id AM & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        AL & ~ & ~ & ~ & ~ & ~ & ~ & EX ArgmoreLlamada & EX ArgmoreLlamada & ~ & EX ArgmoreLlamada & void & ~ & ~ & ~ & ~ & EX ArgmoreLlamada & EX ArgmoreLlamada & EX ArgmoreLlamada & ~ & ~ & ~ & ~ & EX ArgmoreLlamada & $\lambda$ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        AM & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & comma TI id AM & ~ & ~ & $\lambda$ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        AML & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & comma EX AML & ~ & ~ & $\lambda$ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        LS & ~ & return ER & write EX & read id & ~ & ~ & ~ & ~ & let TI id AS & id IO & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        IO & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & pluseq EX & eq EX & ~ & ~ & oppar AL clpar & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        TF & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & void & TI & TI & TI & TI & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        TI & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & int & float & string & boolean & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        AS & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & eq EX & ~ & $\lambda$ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        ER & ~ & ~ & ~ & ~ & ~ & ~ & EX & EX & ~ & EX & ~ & ~ & ~ & ~ & ~ & EX & EX & EX & ~ & ~ & ~ & $\lambda$ & EX & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        EX & ~ & ~ & ~ & ~ & ~ & ~ & E1 EA & E1 EA & ~ & E1 EA & ~ & ~ & ~ & ~ & ~ & E1 EA & E1 EA & E1 EA & ~ & ~ & ~ & ~ & E1 EA & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        EA & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ & $\lambda$ & ~ & $\lambda$ & ~ & ~ & ~ & and E1 EA & ~ & ~ \\ \hline
+        E1 & ~ & ~ & ~ & ~ & ~ & ~ & E2 E1A & E2 E1A & ~ & E2 E1A & ~ & ~ & ~ & ~ & ~ & E2 E1A & E2 E1A & E2 E1A & ~ & ~ & ~ & ~ & E2 E1A & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        E1A & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ & $\lambda$ & ~ & $\lambda$ & ~ & ~ & ~ & $\lambda$ & minorthan E2 E1A & ~ \\ \hline
+        E2 & ~ & ~ & ~ & ~ & ~ & ~ & E3 E2A & E3 E2A & ~ & E3 E2A & ~ & ~ & ~ & ~ & ~ & E3 E2A & E3 E2A & E3 E2A & ~ & ~ & ~ & ~ & E3 E2A & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        E2A & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ & $\lambda$ & ~ & $\lambda$ & ~ & ~ & sum E3 E2A & $\lambda$ & $\lambda$ & ~ \\ \hline
+        E3 & ~ & ~ & ~ & ~ & ~ & ~ & TRUE & FALSE & ~ & id E4 & ~ & ~ & ~ & ~ & ~ & intconst & floatconst & str & ~ & ~ & ~ & ~ & oppar EX clpar & ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ \hline
+        E4 & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & ~ & $\lambda$ & $\lambda$ & oppar AL clpar & $\lambda$ & ~ & ~ & $\lambda$ & $\lambda$ & $\lambda$ & ~ \\ \hline
+    \end{tabular}
+    }
+\end{table}
+        \label{sec:tabla}
+\end{landscape}
 
 \newpage
 \begin{figure}
