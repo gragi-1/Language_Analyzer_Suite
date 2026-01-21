@@ -1,15 +1,23 @@
-// Programa 7: Tipos incompatibles
-let int numero = 10;
-let string texto = '5';
-let boolean flag = true;
-
-if (numero) {  // ERROR SEMÁNTICO: condición no booleana (falta comparación)
-    texto += numero;  // ERROR SEMÁNTICO: string += int (tipos incompatibles)
-    numero = texto;  // ERROR SEMÁNTICO: int = string
+// Programa con errores sintácticos
+function int suma(int a, int b) {
+    let int total
+    total = a + b  // ERROR: falta ;
+    return total;
 }
 
-if (flag < numero) {  // ERROR SEMÁNTICO: boolean < int
-    write 'Imposible';
+let int x = 5;
+let int y = 3;
+
+if (x < y) {
+    x += y
+}  // ERROR: falta ; después de bloque
+
+else {
+    y = x;  // ERROR: else sin if correspondiente
 }
 
-write numero;
+if (x && ) {  // ERROR: && sin segundo operando
+    write x;
+}
+
+write 'Fin';

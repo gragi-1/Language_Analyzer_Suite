@@ -1,14 +1,20 @@
-// Programa 1: Solo con operadores permitidos
-let int a = 10;
-let int b = 5;
-let boolean condicion;
-
-if (a < b) {
-    condicion = true;
-} else {
-    condicion = false;
-    a += 3;
+// Función simple de comparación
+function int comparar(int x, int y) {
+    let int resultado;
+    if (x < y)
+        resultado = x + y;
+    return resultado;
 }
 
-write 'Resultado: ';
+let int a = 5;
+let int b = 3;
+let int r = comparar(a, b);
+
+if (r < 10) {
+    write 'Resultado pequeño';
+} else {
+    write 'Resultado grande';
+}
+
+a += 2;
 write a;

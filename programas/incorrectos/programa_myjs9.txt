@@ -1,16 +1,28 @@
-// Programa 9: Mezcla de errores
-let int a = 10;
-let int b = 20;
-let string resultado;
-
-if (a < b && ) {  // ERROR SINTÁCTICO: && sin segundo operando
-    resultado = 'a menor que b';
-    a += b;
+// Programa con varios errores
+function int procesar(int dato) {
+    let int resultado;
+    if (dato < 10) {
+        resultado = dato + 5;
+    } else {
+        resultado = dato;
+    }
+    return resultado;
 }
 
-// ERROR SEMÁNTICO: uso incorrecto de +=
-resultado += 5;  // string += int
+let int valor;
+read valor;
 
-// ERROR: Punto y coma faltante
-write resultado
-write a
+if (valor < 0) {
+    write 'Negativo';
+} 
+else if (valor > 100) {  // ERROR: else if no permitido
+    write 'Grande';
+}
+
+let int total = procesar();  // ERROR: falta argumento
+
+if (total) {  // ERROR: condición no booleana
+    total += 'texto';  // ERROR: int += string
+}
+
+write total;

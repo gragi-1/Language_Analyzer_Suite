@@ -1,16 +1,23 @@
-// Programa 3: Estructuras anidadas
-let int contador = 0;
-let int limite = 5;
-let string estado = 'inicio';
-
-if (contador < limite) {
-    contador += 1;
-    if (contador < 3) {
-        estado = 'temprano';
+// Función suma con if-else
+function int sumar(int x, int y) {
+    let int total;
+    if (x < y) {
+        total = x + y;
     } else {
-        estado = 'avanzado';
+        total = y + x;
     }
+    return total;
 }
 
-write estado;
-write contador;
+let int n1 = 8;
+let int n2 = 4;
+let int res = sumar(n1, n2);
+
+if (res < 20) {
+    write 'Res bajo: ';
+    write res;
+}
+
+n2 += 3;
+write 'n2: ';
+write n2;

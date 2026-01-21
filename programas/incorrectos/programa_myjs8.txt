@@ -1,17 +1,22 @@
-// Programa 8: Estructura incorrecta
-let int x = 5;
-
-if (x < 10) {
-    x += 2;
-} else {
-    write 'Mayor';
+// Programa con errores semánticos
+function string convertir(int valor) {
+    let string texto;
+    texto = valor;  // ERROR SEMÁNTICO: int a string sin conversión
+    return texto;
 }
 
-// ERROR SINTÁCTICO: if sin condición
-if {
+let int numero = 10;
+let boolean flag = true;
+
+if (numero) {  // ERROR SEMÁNTICO: condición no booleana
+    numero += 5;
+}
+
+if (flag < numero) {  // ERROR SEMÁNTICO: boolean < int
     write 'Error';
 }
 
-if (y < 5) {  // ERROR SEMÁNTICO: y no declarada
-    write y;
-}
+let string cadena = convertir(numero);
+cadena += numero;  // ERROR SEMÁNTICO: string += int
+
+write cadena;

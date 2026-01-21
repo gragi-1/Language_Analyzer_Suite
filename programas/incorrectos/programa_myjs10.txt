@@ -1,19 +1,32 @@
-// Programa 10: Errores complejos
-let int contador = 0;
-let string mensaje = 'Valor: ';
-
-let int número = 5;  // ERROR: 'ó' no es ASCII básico
-
-if (contador < 0x10) {  // ERROR: notación hexadecimal no permitida
-    contador += 1;
+// Programa con errores variados
+function boolean verificar(int a, int b) {
+    let boolean cond;
+    if (a < b &&) {  // ERROR SINTÁCTICO: && incompleto
+        cond = true;
+    } else {
+        cond = false;
+    }
+    return cond;
 }
 
-if (mensaje < contador) {  // string < int ERROR SEMÁNTICO
-    mensaje = 'Raro';
+let int x = 5;
+let int y = 10;
+
+if (x < y {  // ERROR SINTÁCTICO: falta )
+    x += y;
 }
 
-if (contador < 10) {
-    contador += 2;
-    // Falta llave de cierre
+let boolean ok = verificar(x, y);
 
-write 'Fin del programa';
+if (ok) {
+    x += 5;
+    y = x + y;
+} else {
+    y = x;
+}
+
+// ERROR LÉXICO: caracter raro en comentario
+// Comentario con comilla suelta '
+
+write x;
+write y;

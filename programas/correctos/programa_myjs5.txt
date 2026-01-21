@@ -1,22 +1,25 @@
-// Programa 5: Validaciones encadenadas
-let int edad = 18;
-let boolean tieneCarnet = true;
-let boolean padresAutorizan = false;
-let string puedeConducir;
-
-if (edad < 18 && padresAutorizan) {
-    puedeConducir = 'Con supervisión';
-    edad += 1;
-} else {
-    if (edad < 18) {
-        puedeConducir = 'No puede';
-    } else {
-        if (tieneCarnet) {
-            puedeConducir = 'Puede conducir';
-        } else {
-            puedeConducir = 'Neita carnet';
-        }
-    }
+// Sistema mínimo con funciones
+function void mostrar(int num) {
+    write 'Valor: ';
+    write num;
 }
 
-write puedeConducir;
+function int incrementar(int x) {
+    let int nuevo;
+    if (x < 10) nuevo = x + 1;
+    return nuevo;
+}
+
+let int cont = 5;
+mostrar(cont);
+
+if (cont < 8) {
+    cont = incrementar(cont);
+    mostrar(cont);
+} else {
+    write 'Alto';
+}
+
+cont += 2;
+write 'Final: ';
+write cont;

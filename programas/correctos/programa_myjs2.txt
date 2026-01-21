@@ -1,12 +1,15 @@
-// Programa 2: Uso correcto de &&
-let int x = 5;
-let int y = 8;
-let boolean activo = true;
-
-if (x < y && activo) {
-    x += y;
-    write 'Suma realizada: ';
-    write x;
-} else {
-    write 'No se cumple';
+// Función básica con string
+function string estado(boolean flag) {
+    let string mensaje;
+    if (flag) mensaje = 'Activo';
+    return mensaje;
 }
+
+let boolean activo = true;
+let string s = estado(activo);
+
+if (activo) {
+    write s;
+}
+
+write 'Fin';

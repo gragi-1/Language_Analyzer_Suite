@@ -1,10 +1,20 @@
-// Programa 6: Cadena sin cerrar y error sintáctico
-let int valor = 25;
-let string texto = 'Ejemplo de error';
+// Programa con errores léxicos
+function int calcular(int x) {
+    let int resultado;
+    resultado = x + x;
+    return resultado;
+}
 
-if (valor < 10 {  // ERROR SINTÁCTICO: falta paréntesis de cierre
-    valor += 5;
-  else            // ERROR SINTÁCTICO: falta llave
-    valor = 5;
+let int num = 7;
+if (num < 10)
+    num = calcular(num);
 
-write valor;
+let string texto = 'error sin cerrar;  // ERROR LÉXICO
+
+if (num < 20 {
+    num += 5;  // ERROR SINTÁCTICO: falta )
+} else {
+    num = 0;
+}
+
+write num;

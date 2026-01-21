@@ -1,15 +1,24 @@
-// Programa 4: Variables booleanas
-let boolean flag1 = true;
-let boolean flag2 = false;
-let int valor = 3;
-
-if (valor < 5 && flag1) {
-    valor += 2;
-    write 'Caso 1: ';
-} else {
-    if (valor < 10) {
-        write 'Caso 2: ';
+// Función validación simple
+function boolean esValido(int valor) {
+    let boolean ok;
+    if (valor < 0) {
+        ok = false;
+    } else {
+        ok = true;
     }
+    return ok;
 }
 
-write valor;
+let int dato;
+read dato;
+let boolean val = esValido(dato);
+
+if (val)
+    write 'Aceptado';
+
+if (dato < 100 && val) {
+    dato += 10;
+    write 'Ajustado';
+}
+
+write dato;
